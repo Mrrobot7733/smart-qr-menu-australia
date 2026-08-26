@@ -227,18 +227,18 @@
 
     // --- Australian Venue Profile & Data ---
     const INITIAL_RESTAURANT_AU = {
-      name: "The Beaufort Craft Bar & Kitchen",
-      subtitle: "Bistro, Woodfired Pizzas & Craft Beers on Tap",
-      address: "521 Beaufort St, Highgate / Mount Lawley, Perth WA",
-      abn: "48 612 345 678", // Australian Business Number for Tax Invoice
-      wifiName: "Beaufort_Guest_WiFi",
-      wifiPassword: "craftbeerontap",
+      name: "Demo Bar & Bistro (Live Demo)",
+      subtitle: "Smart QR Menu & Kitchen Order System (AU)",
+      address: "100 Exhibition Street, Melbourne VIC 3000",
+      abn: "51 824 753 556", // Australian Business Number for Tax Invoice
+      wifiName: "SmartMenu_Demo_WiFi",
+      wifiPassword: "demopassword",
       currency: "$",
       gstRate: 0.10, // 10% GST included
       cardSurchargeRate: 0.015, // 1.5% Card Processing Surcharge (standard in AU)
       sundaySurchargeRate: 0.10, // 10% Sunday Surcharge (optional)
       isSundayActive: false,
-      stripeAccountId: "acct_1N984AU_BEAUFORT",
+      stripeAccountId: "acct_demo_australia",
       stripeDashboardUrl: "https://dashboard.stripe.com/"
     };
 
@@ -291,7 +291,7 @@
       {
         id: "au-3",
         categoryId: "burgers",
-        name: "The Beaufort Wagyu Beef Burger",
+        name: "Aussie Wagyu Beef Burger",
         description: "200g Margaret River Wagyu patty, Swiss cheese, Aussie beetroot, streaky bacon, caramelized onion, house relish, brioche bun & beer battered chips.",
         price: 26.00,
         image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80",
@@ -506,7 +506,7 @@
             return v.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
           }
         } catch(e) {}
-        return 'the-beaufort'; // Default Australian venue
+        return 'demo'; // Default Demo venue
       }, []);
 
       const getStored = (key, fallback) => {
@@ -524,7 +524,7 @@
       };
 
       const initialVenueRestaurant = useMemo(() => {
-        if (venueId === 'the-beaufort' || venueId === 'default') {
+        if (venueId === 'demo' || venueId === 'default' || venueId === 'the-beaufort') {
           return INITIAL_RESTAURANT_AU;
         }
         const formattedName = venueId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -3005,19 +3005,19 @@
       const [settingsCardRate, setSettingsCardRate] = useState(((restaurant.cardSurchargeRate || 0) * 100).toFixed(1));
       const [settingsSundayRate, setSettingsSundayRate] = useState(((restaurant.sundaySurchargeRate || 0.10) * 100).toFixed(0));
       const [settingsSundayActive, setSettingsSundayActive] = useState(!!restaurant.isSundayActive);
-      const [settingsStripeId, setSettingsStripeId] = useState(restaurant.stripeAccountId || 'acct_1N984AU_BEAUFORT');
+      const [settingsStripeId, setSettingsStripeId] = useState(restaurant.stripeAccountId || 'acct_demo_australia');
       const [settingsStripeUrl, setSettingsStripeUrl] = useState(restaurant.stripeDashboardUrl || 'https://dashboard.stripe.com/');
       // Base Domain & QR Custom Link State (AU)
       const [customBaseDomain, setCustomBaseDomain] = useState(() => window.location.origin);
       const [customQrUrl, setCustomQrUrl] = useState(() => {
-        const vParam = venueId && venueId !== 'the-beaufort' ? `venue=${encodeURIComponent(venueId)}&` : '';
+        const vParam = venueId && venueId !== 'demo' ? `venue=${encodeURIComponent(venueId)}&` : '';
         return `${window.location.origin}${window.location.pathname}?${vParam}table=1`;
       });
 
       const generateDefaultTableLink = (targetNum, baseDom = customBaseDomain) => {
         const origin = (baseDom || '').trim() || window.location.origin;
         const path = window.location.pathname || '';
-        const vParam = venueId && venueId !== 'the-beaufort' ? `venue=${encodeURIComponent(venueId)}&` : '';
+        const vParam = venueId && venueId !== 'demo' ? `venue=${encodeURIComponent(venueId)}&` : '';
         return targetNum === 'takeaway'
           ? `${origin}${path}?${vParam}mode=takeaway`
           : `${origin}${path}?${vParam}table=${targetNum}`;
