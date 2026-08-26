@@ -624,10 +624,11 @@
         tipAmount: 0.00,
         totalAmount: 32.00,
         paymentMethod: "counter",
-        paymentStatus: "pending",
-        status: "ready",
+        paymentStatus: "pending_counter",
+        status: "pending_approval",
+        counterPin: "4829",
         takeawayTime: "As soon as possible",
-        createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+        createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
         station: "kitchen"
       }
     ];
@@ -684,6 +685,7 @@
         const handler = (e) => {
           const { type, payload } = e.data || {};
           if (type === 'NEW_ORDER') { setOrders(p => [payload, ...p]); playSound.kitchenChime(); }
+          else if (type === 'ORDER_APPROVED') { setOrders(p => p.map(o => o.id === payload.id ? payload : o)); playSound.kitchenChime(); }
           else if (type === 'STATUS') { setOrders(p => p.map(o => o.id === payload.id ? payload : o)); }
           else if (type === 'CALL') { setServiceCalls(p => [payload, ...p]); playSound.waiterAlert(); }
           else if (type === 'RESOLVE') { setServiceCalls(p => p.map(c => c.id === payload.id ? payload : c)); }
@@ -759,6 +761,9 @@
         let hasBar = false, hasKitchen = false;
         cart.forEach(c => { if (c.station === 'bar') hasBar = true; else hasKitchen = true; });
 
+        const isCounterPay = paymentMethod === 'counter';
+        const counterPin = isCounterPay ? Math.floor(1000 + Math.random() * 9000).toString() : undefined;
+
         const newOrder = {
           id: `ord-au-${Date.now()}`,
           orderNumber: orderNum,
@@ -778,8 +783,9 @@
           paymentMethod,
           splitCount: (hasDineIn && !hasTakeaway) ? (splitCount || 1) : 1,
           splitShareAmount: (hasDineIn && !hasTakeaway) ? (splitShareAmount || totalAmount) : totalAmount,
-          paymentStatus: paymentMethod === 'counter' ? 'pending_counter' : 'paid',
-          status: 'new',
+          paymentStatus: isCounterPay ? 'pending_counter' : 'paid',
+          status: isCounterPay ? 'pending_approval' : 'new',
+          counterPin,
           station: hasKitchen && hasBar ? 'both' : (hasBar ? 'bar' : 'kitchen'),
           notes: notes || '',
           createdAt: new Date().toISOString()
@@ -791,6 +797,40 @@
         playSound.orderSuccess();
         if (channel) channel.postMessage({ type: 'NEW_ORDER', payload: newOrder });
         return newOrder;
+      };
+
+      const approveCounterOrder = (orderId, pinEntered, paidMethod = 'counter_cash') => {
+        const ord = orders.find(o => o.id === orderId || (pinEntered && String(o.counterPin) === String(pinEntered).trim()));
+        if (!ord) {
+          showToast('❌ Comanda non trovata o PIN non corrispondente');
+          return { success: false, error: 'Order not found' };
+        }
+        if (pinEntered && String(ord.counterPin) !== String(pinEntered).trim()) {
+          showToast('❌ Codice PIN errato!');
+          return { success: false, error: 'Invalid PIN' };
+        }
+        const updated = {
+          ...ord,
+          status: 'new',
+          paymentStatus: 'paid',
+          paymentMethod: paidMethod || ord.paymentMethod || 'counter',
+          paidAt: new Date().toISOString()
+        };
+        setOrders(p => p.map(o => o.id === ord.id ? updated : o));
+        if (typeof playSound !== 'undefined' && playSound.kitchenChime) {
+          playSound.kitchenChime();
+        }
+        showToast(`✓ Comanda #${ord.orderNumber} (PIN ${ord.counterPin}) incassata e inviata in cucina!`);
+        if (channel) channel.postMessage({ type: 'ORDER_APPROVED', payload: updated });
+        return { success: true, order: updated };
+      };
+
+      const cancelCounterOrder = (orderId) => {
+        const ord = orders.find(o => o.id === orderId);
+        const updated = orders.map(o => o.id === orderId ? { ...o, status: 'cancelled', paymentStatus: 'cancelled' } : o);
+        setOrders(updated);
+        showToast(`Comanda #${ord ? ord.orderNumber : ''} annullata`);
+        if (channel) channel.postMessage({ type: 'STATUS', payload: { id: orderId, status: 'cancelled' } });
       };
 
       const sendServiceCall = (type = 'call_waiter') => {
@@ -902,6 +942,7 @@
           restaurant, setRestaurant, updateRestaurantSettings, categories, items, tables, orders, serviceCalls,
           cart, addToCart, removeFromCart, updateCartQuantity, clearCart, toggleCartItemDiningOption,
           submitOrder, sendServiceCall, resolveServiceCall, updateOrderStatus,
+          approveCounterOrder, cancelCounterOrder,
           toggleItemStock, saveItem, deleteItem, saveTable, deleteTable, resetDemoData,
           activeTable, setActiveTable, orderType, setOrderType, takeawayTime, setTakeawayTime,
           customerName, setCustomerName,
@@ -1121,17 +1162,62 @@
                 <div className="bg-gradient-to-b from-[#1c1815] to-[#120f0d] border border-amber-900/30 rounded-3xl p-5 shadow-2xl space-y-5">
                   <div className="flex justify-between items-start">
                     <div>
-                      <span className="text-[10px] bg-amber-500/20 text-amber-400 font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-amber-500/30">
-                        ● LIVE ORDER STATUS
+                      <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
+                        activeOrder.status === 'pending_approval'
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 animate-pulse'
+                          : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                      }`}>
+                        {activeOrder.status === 'pending_approval' ? '⏳ AWAITING CASHIER PAYMENT' : '● LIVE ORDER STATUS'}
                       </span>
                       <h2 className="text-xl font-bold text-white mt-1">
                         {activeOrder.orderType === 'takeaway' ? '🛍️ Takeaway Pickup' : `Table #${activeOrder.tableNumber}`}
                       </h2>
                     </div>
-                    <span className="text-xs font-extrabold text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-3 py-1 rounded-xl shadow">
-                      {activeOrder.paymentStatus === 'paid' ? '✓ Paid Online (Apple Pay)' : 'Pay on Collection'}
+                    <span className={`text-xs font-extrabold px-3 py-1 rounded-xl shadow border ${
+                      activeOrder.status === 'pending_approval'
+                        ? 'text-amber-300 bg-amber-950/90 border-amber-600 animate-pulse'
+                        : activeOrder.paymentStatus === 'paid'
+                        ? 'text-emerald-400 bg-emerald-950/80 border-emerald-800'
+                        : 'text-stone-300 bg-stone-900 border-stone-800'
+                    }`}>
+                      {activeOrder.status === 'pending_approval' ? '💵 Pay at Counter' : activeOrder.paymentStatus === 'paid' ? '✓ Paid Online' : 'Pay on Collection'}
                     </span>
                   </div>
+
+                  {/* 4-Digit Counter PIN Card (When paying at Counter) */}
+                  {activeOrder.status === 'pending_approval' && activeOrder.counterPin && (
+                    <div className="bg-gradient-to-br from-[#2c1a0e] via-[#20150d] to-[#160f09] border-2 border-amber-500/80 rounded-2xl p-4 sm:p-5 text-center space-y-2.5 shadow-2xl animate-in zoom-in duration-200">
+                      <div className="inline-flex items-center gap-1.5 bg-amber-500 text-stone-950 font-black px-3 py-0.5 rounded-full text-[10px] uppercase tracking-wider shadow">
+                        <span>🔢</span> <span>SHOW THIS 4-DIGIT PIN AT CASHIER / BAR</span>
+                      </div>
+
+                      <div>
+                        <div className="text-5xl sm:text-6xl font-black text-amber-300 font-mono tracking-widest my-1 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+                          #{activeOrder.counterPin}
+                        </div>
+                        <span className="text-[11px] text-amber-200 font-bold uppercase tracking-wider block">
+                          Counter Verification PIN
+                        </span>
+                      </div>
+
+                      <div className="bg-black/60 border border-amber-500/30 p-2.5 rounded-xl text-xs space-y-1 max-w-sm mx-auto">
+                        <div className="flex justify-between font-bold text-stone-200">
+                          <span>Amount to pay at bar/counter:</span>
+                          <span className="font-mono font-black text-amber-300 text-sm">${activeOrder.totalAmount?.toFixed(2)} AUD</span>
+                        </div>
+                        {activeOrder.splitCount > 1 && (
+                          <div className="text-[11px] text-amber-400 font-semibold border-t border-stone-800/80 pt-1 flex justify-between">
+                            <span>Bill Split ({activeOrder.splitCount} people):</span>
+                            <span className="font-mono font-bold">${activeOrder.splitShareAmount} AUD each</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <p className="text-[11px] text-stone-300 max-w-sm mx-auto leading-relaxed pt-1">
+                        👉 <strong>Please show PIN #{activeOrder.counterPin} to the staff.</strong> Your order will be sent to the kitchen & bar printers immediately once payment is confirmed.
+                      </p>
+                    </div>
+                  )}
 
                   {/* Big 3-Digit Call Ticket Badge */}
                   <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/20 to-amber-500/15 border-2 border-dashed border-amber-500/50 rounded-2xl p-4 text-center space-y-1.5 shadow-inner">
@@ -1147,21 +1233,30 @@
                     <p className="text-[10px] text-stone-400 max-w-xs mx-auto pt-1 leading-snug">
                       {activeOrder.status === 'ready'
                         ? '🔔 YOUR ORDER IS READY! Collect it at the bar by calling Order #' + activeOrder.orderNumber
+                        : activeOrder.status === 'pending_approval'
+                        ? '⏳ Waiting for cashier confirmation with PIN #' + activeOrder.counterPin
                         : '💡 Keep this number handy. The bar and kitchen will call Order #' + activeOrder.orderNumber + ' as soon as ready.'}
                     </p>
                   </div>
 
                   {/* Visual Progress Stepper */}
                   <div className="space-y-4 pt-1">
-                    {[
+                    {(activeOrder.status === 'pending_approval' ? [
+                      { k: 'pending_approval', label: `1. Pay at Counter (PIN #${activeOrder.counterPin})`, desc: 'Show PIN to cashier/bar staff to confirm payment and unlock order' },
+                      { k: 'preparing', label: '2. Kitchen & Bar Preparation', desc: 'Chefs & bartenders start crafting your food once paid' },
+                      { k: 'ready', label: '3. Ready for Service', desc: 'Heading to Table ' + activeOrder.tableNumber },
+                      { k: 'delivered', label: '4. Served at Table', desc: 'Enjoy your meal!' }
+                    ] : [
                       { k: 'new', label: 'Order Sent & Received', desc: 'Received at the kitchen & bar printers' },
                       { k: 'preparing', label: 'In Kitchen / Bar Preparation', desc: 'Chefs & bartenders are crafting your food & drinks' },
                       { k: 'ready', label: 'Ready for Service', desc: 'Your order is hot and heading to Table ' + activeOrder.tableNumber },
                       { k: 'delivered', label: 'Served at Table', desc: 'Enjoy your meal! Need anything else? Just scan again.' }
-                    ].map((st, i) => {
-                      const cur = ['new', 'preparing', 'ready', 'delivered'].indexOf(activeOrder.status);
-                      const isDone = i <= cur;
-                      const isCurrent = i === cur;
+                    ]).map((st, i) => {
+                      const cur = activeOrder.status === 'pending_approval'
+                        ? 0
+                        : (['new', 'preparing', 'ready', 'delivered'].indexOf(activeOrder.status) >= 0 ? ['new', 'preparing', 'ready', 'delivered'].indexOf(activeOrder.status) : 0);
+                      const isDone = activeOrder.status !== 'pending_approval' && (i <= cur);
+                      const isCurrent = (activeOrder.status === 'pending_approval' && i === 0) || (activeOrder.status !== 'pending_approval' && i === cur);
 
                       return (
                         <div key={st.k} className="flex items-start gap-3.5">
@@ -2206,7 +2301,7 @@
       // Auto-print effect when new order arrives
       useEffect(() => {
         if (autoPrint && orders.length > 0) {
-          const latestNew = orders.find(o => o.status === 'new');
+          const latestNew = orders.find(o => o.status === 'new' && o.status !== 'pending_approval');
           if (latestNew) {
             handlePrintDocket(latestNew);
             setTimeout(() => {
@@ -2215,6 +2310,8 @@
           }
         }
       }, [orders, autoPrint]);
+
+      const pendingCounterOrders = orders.filter(o => o.status === 'pending_approval');
 
       return (
         <div className="p-4 space-y-4 max-w-6xl mx-auto">
@@ -2255,6 +2352,19 @@
             </div>
           </div>
 
+          {/* Pending Counter Payment Notice for Kitchen */}
+          {pendingCounterOrders.length > 0 && (
+            <div className="bg-[#1e1814] border border-amber-500/50 p-3 rounded-2xl flex flex-wrap justify-between items-center text-xs text-amber-300 gap-2">
+              <span className="flex items-center gap-2">
+                <span>⏳</span>
+                <span><strong>{pendingCounterOrders.length} order(s) awaiting cashier counter payment</strong> (Kitchen tickets hold until PIN confirmed).</span>
+              </span>
+              <span className="text-[10px] bg-amber-950/80 border border-amber-700 text-amber-300 font-mono px-2 py-0.5 rounded">
+                Pending PINs: {pendingCounterOrders.map(p => `#${p.counterPin}`).join(', ')}
+              </span>
+            </div>
+          )}
+
           {/* Pending Service Calls */}
           {pending.length > 0 && (
             <div className="bg-gradient-to-r from-amber-950 via-[#2a1d15] to-amber-950 border border-amber-500/80 p-3.5 rounded-2xl flex justify-between items-center text-xs font-bold text-amber-200 shadow-xl animate-pulse">
@@ -2275,7 +2385,7 @@
               { st: 'preparing', title: '👨‍🍳 In Preparation (Cooking/Pouring)', color: 'border-amber-900/40 bg-amber-950/10' },
               { st: 'ready', title: '🍽️ Ready to Serve at Table', color: 'border-emerald-900/40 bg-emerald-950/10' }
             ].map(col => {
-              const list = orders.filter(o => o.status === col.st);
+              const list = orders.filter(o => o.status === col.st && o.status !== 'pending_approval');
               return (
                 <div key={col.st} className={`bg-[#14110f]/80 border rounded-3xl p-3.5 space-y-3 min-h-[450px] flex flex-col justify-between ${col.color}`}>
                   <div className="space-y-3">
@@ -2784,7 +2894,7 @@
 
     // --- Admin (Australia) ---
     function AdminDashboardAU() {
-      const { tables, saveTable, deleteTable, restaurant, updateRestaurantSettings, items, categories, toggleItemStock, saveItem, deleteItem, resetDemoData, orders } = useOrderAU();
+      const { tables, saveTable, deleteTable, restaurant, updateRestaurantSettings, items, categories, toggleItemStock, saveItem, deleteItem, resetDemoData, orders, approveCounterOrder, cancelCounterOrder, showToast } = useOrderAU();
       const [tab, setTab] = useState('menu'); // menu, qr, stats, settings
       const [selT, setSelT] = useState(1);
       const [qrUrl, setQrUrl] = useState('');
@@ -2795,6 +2905,25 @@
       const [selectedOrderForDetail, setSelectedOrderForDetail] = useState(null);
       const [orderSearchTerm, setOrderSearchTerm] = useState('');
       const [orderStatusFilter, setOrderStatusFilter] = useState('all');
+      const [counterPinInput, setCounterPinInput] = useState('');
+      const [counterPaymentOrder, setCounterPaymentOrder] = useState(null);
+      const [counterPaymentMethod, setCounterPaymentMethod] = useState('counter_cash');
+
+      const handleVerifyPinSubmit = (e) => {
+        if (e) e.preventDefault();
+        const pin = (counterPinInput || '').trim();
+        if (!pin) {
+          if (showToast) showToast('Inserisci il PIN a 4 cifre');
+          return;
+        }
+        const found = orders.find(o => o.status === 'pending_approval' && String(o.counterPin) === pin);
+        if (found) {
+          setCounterPaymentOrder(found);
+          setCounterPinInput('');
+        } else {
+          if (showToast) showToast(`❌ Nessuna comanda in attesa con PIN #${pin}`);
+        }
+      };
 
       // Table Management state (AU)
       const [editingTable, setEditingTable] = useState(null);
@@ -3471,6 +3600,67 @@
                   </div>
                 </div>
 
+                {/* 🔢 Quick Cashier PIN Unlock Bar */}
+                <div className="bg-gradient-to-r from-amber-950/70 via-slate-950 to-amber-950/70 border-2 border-amber-500/60 p-4 rounded-2xl space-y-3 shadow-xl">
+                  <div className="flex flex-wrap justify-between items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🔢</span>
+                      <div>
+                        <h4 className="font-black text-amber-300 text-sm">Cashier 4-Digit PIN Unlock & Payment Confirmation</h4>
+                        <p className="text-[11px] text-slate-300">Enter customer 4-digit PIN code to review bill, confirm cash/EFTPOS payment, and release order to kitchen.</p>
+                      </div>
+                    </div>
+                    {orders.filter(o => o.status === 'pending_approval').length > 0 && (
+                      <span className="text-xs bg-amber-500 text-stone-950 font-black px-3 py-1 rounded-full animate-bounce shadow">
+                        {orders.filter(o => o.status === 'pending_approval').length} Order(s) Awaiting Payment
+                      </span>
+                    )}
+                  </div>
+
+                  <form onSubmit={handleVerifyPinSubmit} className="flex flex-wrap items-center gap-2 pt-1">
+                    <div className="relative flex-1 min-w-[200px] max-w-xs">
+                      <input
+                        type="text"
+                        maxLength="4"
+                        value={counterPinInput}
+                        onChange={(e) => setCounterPinInput(e.target.value.replace(/\D/g, ''))}
+                        placeholder="Enter 4-Digit PIN (e.g. 4829)"
+                        className="w-full bg-slate-900 border-2 border-amber-500/80 rounded-xl px-3.5 py-2 text-base font-mono font-black text-amber-300 tracking-widest placeholder:text-slate-600 focus:outline-none focus:border-amber-300"
+                      />
+                      <span className="absolute right-3 top-2.5 text-xs text-amber-400 font-bold">PIN</span>
+                    </div>
+                    <button
+                      type="submit"
+                      className="bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-stone-950 font-black text-xs px-5 py-2.5 rounded-xl shadow-lg flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                    >
+                      <span>🔓 Open & Verify Bill</span>
+                    </button>
+                  </form>
+
+                  {/* Pending Counter Orders Quick Chips */}
+                  {orders.filter(o => o.status === 'pending_approval').length > 0 && (
+                    <div className="pt-2 border-t border-amber-900/50 space-y-1.5">
+                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Orders Waiting at Counter (Click to open):</span>
+                      <div className="flex flex-wrap gap-2">
+                        {orders.filter(o => o.status === 'pending_approval').map(pOrd => (
+                          <button
+                            key={pOrd.id}
+                            type="button"
+                            onClick={() => setCounterPaymentOrder(pOrd)}
+                            className="bg-amber-950 hover:bg-amber-900 border border-amber-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg transition-all active:scale-95"
+                          >
+                            <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-1.5 py-0.5 rounded font-mono">
+                              PIN #{pOrd.counterPin}
+                            </span>
+                            <span>{pOrd.orderType === 'takeaway' ? '🛍️ Takeaway' : `Table #${pOrd.tableNumber}`}</span>
+                            <span className="text-amber-300 font-mono font-black">${pOrd.totalAmount?.toFixed(2)} AUD</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Filter and Search Bar */}
                 <div className="flex flex-wrap justify-between items-center gap-3 bg-slate-950 p-3 rounded-2xl border border-slate-800/80">
                   <div className="relative flex-1 min-w-[200px] max-w-md">
@@ -3487,6 +3677,7 @@
                   <div className="flex items-center gap-1 overflow-x-auto hide-scrollbar">
                     {[
                       { id: 'all', label: 'All Orders' },
+                      { id: 'pending_approval', label: '⏳ Awaiting PIN' },
                       { id: 'new', label: '🔵 New' },
                       { id: 'preparing', label: '🟡 Cooking' },
                       { id: 'ready', label: '🟢 Ready / Served' },
@@ -3498,8 +3689,8 @@
                         onClick={() => setOrderStatusFilter(f.id)}
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                           orderStatusFilter === f.id
-                            ? 'bg-orange-500 text-white shadow'
-                            : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                            ? (f.id === 'pending_approval' ? 'bg-amber-500 text-stone-950 font-black shadow' : 'bg-orange-500 text-white shadow')
+                            : (f.id === 'pending_approval' ? 'bg-amber-950/80 text-amber-300 border border-amber-700/80 hover:bg-amber-900' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800')
                         }`}
                       >
                         {f.label}
@@ -4090,6 +4281,167 @@
             </div>
           )}
 
+          {/* Modal: Cashier Counter Verification & Payment Confirmation */}
+          {counterPaymentOrder && (() => {
+            const pOrd = counterPaymentOrder;
+            const dineInItems = pOrd.items?.filter(i => i.diningOption === 'dine_in') || [];
+            const takeawayItems = pOrd.items?.filter(i => i.diningOption === 'takeaway') || [];
+            const isHybrid = dineInItems.length > 0 && takeawayItems.length > 0;
+            const isTakeawayOnly = pOrd.orderType === 'takeaway' || (dineInItems.length === 0 && takeawayItems.length > 0);
+            const totalDishes = pOrd.items?.reduce((s, i) => s + i.quantity, 0) || 0;
+            const subtotalCalc = pOrd.items?.reduce((s, i) => s + (i.totalItemPrice || (i.price * i.quantity)), 0) || 0;
+            const grandTotal = pOrd.totalAmount || (subtotalCalc + (pOrd.surchargeAmount || 0) + (pOrd.tipAmount || 0));
+
+            return (
+              <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto no-print">
+                <div className="bg-slate-900 border-2 border-amber-500 rounded-3xl p-5 sm:p-6 w-full max-w-lg space-y-4 shadow-2xl animate-in zoom-in duration-150 font-sans text-xs my-auto text-white">
+                  
+                  {/* Top Bar */}
+                  <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl text-amber-300 font-black">
+                        🔢
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-black text-white text-base">Cashier Bill & Payment Unlock</h3>
+                          <span className="bg-amber-500 text-stone-950 font-mono font-black text-xs px-2 py-0.5 rounded-lg shadow">
+                            PIN #{pOrd.counterPin}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-400">Order #{pOrd.orderNumber} • Table #{pOrd.tableNumber}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setCounterPaymentOrder(null)}
+                      className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* Summary Box */}
+                  <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-2">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-slate-400">Patron:</span>
+                      <strong className="text-white text-sm font-bold">{pOrd.customerName || 'Guest Patron'}</strong>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-slate-400">Service:</span>
+                      <span className="font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-amber-300">
+                        {isHybrid ? `🍽️ Table #${pOrd.tableNumber} + 🛍️ Takeaway` : (isTakeawayOnly ? '🛍️ Takeaway / Pickup' : `🍽️ Table #${pOrd.tableNumber}`)}
+                      </span>
+                    </div>
+                    {pOrd.takeawayTime && (
+                      <div className="flex justify-between items-center text-xs text-emerald-400 font-bold bg-emerald-950/40 p-2 rounded-xl border border-emerald-900">
+                        <span>Pickup Time:</span>
+                        <span>{pOrd.takeawayTime}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Itemized Dish List */}
+                  <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-2 max-h-48 overflow-y-auto">
+                    <div className="text-[11px] font-black text-slate-400 uppercase tracking-wider flex justify-between border-b border-slate-800 pb-1">
+                      <span>Items ({totalDishes})</span>
+                      <span>Price</span>
+                    </div>
+                    {pOrd.items?.map((it, idx) => (
+                      <div key={idx} className="flex justify-between items-start text-xs border-b border-slate-900/60 pb-1.5 last:border-0">
+                        <div>
+                          <span className="font-bold text-white">{it.quantity}x {it.name}</span>
+                          {it.notes && <p className="text-[10px] text-amber-400">Note: {it.notes}</p>}
+                        </div>
+                        <span className="font-mono text-slate-300 font-bold">${(it.totalItemPrice || (it.price * it.quantity)).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Bill Split Alert if requested */}
+                  {pOrd.splitCount > 1 && (
+                    <div className="bg-purple-950/40 border border-purple-800/80 p-3 rounded-2xl flex justify-between items-center text-xs text-purple-200">
+                      <span className="flex items-center gap-1.5">
+                        <span>👥</span>
+                        <span>Bill split requested ({pOrd.splitCount} people):</span>
+                      </span>
+                      <span className="font-black font-mono text-purple-300 text-sm">
+                        ${pOrd.splitShareAmount} AUD ea
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Payment Method Selector */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-300 block">Payment Method Received at Counter:</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCounterPaymentMethod('counter_cash')}
+                        className={`p-3 rounded-xl border font-bold flex items-center justify-center gap-2 transition-all ${
+                          counterPaymentMethod === 'counter_cash'
+                            ? 'bg-amber-500 border-amber-400 text-stone-950 font-black shadow'
+                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <span className="text-base">💵</span>
+                        <span>Cash Payment</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCounterPaymentMethod('counter_eftpos')}
+                        className={`p-3 rounded-xl border font-bold flex items-center justify-center gap-2 transition-all ${
+                          counterPaymentMethod === 'counter_eftpos'
+                            ? 'bg-amber-500 border-amber-400 text-stone-950 font-black shadow'
+                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <span className="text-base">💳</span>
+                        <span>EFTPOS / Terminal</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Grand Total Bar */}
+                  <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 flex justify-between items-center">
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total To Collect:</span>
+                      <span className="text-[10px] text-slate-500">Includes ${(grandTotal / 11).toFixed(2)} GST</span>
+                    </div>
+                    <div className="text-2xl font-black font-mono text-amber-300">
+                      ${grandTotal.toFixed(2)} AUD
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm(`Are you sure you want to cancel and void Order #${pOrd.orderNumber}?`)) {
+                          cancelCounterOrder(pOrd.id);
+                          setCounterPaymentOrder(null);
+                        }
+                      }}
+                      className="bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 font-bold py-3 rounded-2xl text-xs transition-all active:scale-95 text-center"
+                    >
+                      ✕ Void Order
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        approveCounterOrder(pOrd.id, pOrd.counterPin, counterPaymentMethod);
+                        setCounterPaymentOrder(null);
+                      }}
+                      className="sm:col-span-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:brightness-110 text-stone-950 font-black py-3 rounded-2xl text-sm shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
+                    >
+                      <span>✓ Confirm ${grandTotal.toFixed(2)} & Send to Kitchen</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Order Detail & Tax Invoice Modal (Full Docket with Prices & GST) */}
           {selectedOrderForDetail && (() => {
             const ord = selectedOrderForDetail;
@@ -4269,19 +4621,33 @@
                   </div>
 
                   {/* Modal Action Buttons */}
-                  <div className="p-3.5 bg-stone-100 border-t border-stone-200 grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => setSelectedOrderForDetail(null)}
-                      className="w-full bg-stone-300 hover:bg-stone-400 text-stone-800 font-bold py-2.5 rounded-xl text-xs transition-all"
-                    >
-                      Close
-                    </button>
-                    <button
-                      onClick={() => window.print()}
-                      className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:brightness-110 text-white font-black py-2.5 rounded-xl text-xs shadow-lg flex items-center justify-center gap-1.5 transition-all"
-                    >
-                      <span>🖨️ Print Tax Invoice (80mm)</span>
-                    </button>
+                  <div className="p-3.5 bg-stone-100 border-t border-stone-200 space-y-2">
+                    {ord.status === 'pending_approval' && (
+                      <button
+                        onClick={() => {
+                          approveCounterOrder(ord.id, ord.counterPin, 'counter_cash');
+                          setSelectedOrderForDetail(null);
+                        }}
+                        className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:brightness-110 text-white font-black py-3 rounded-xl text-xs shadow-xl flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
+                      >
+                        <span>✓ Confirm Payment (${grandTotal.toFixed(2)} AUD) & Release to Kitchen (PIN #{ord.counterPin})</span>
+                      </button>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setSelectedOrderForDetail(null)}
+                        className="w-full bg-stone-300 hover:bg-stone-400 text-stone-800 font-bold py-2.5 rounded-xl text-xs transition-all"
+                      >
+                        Close
+                      </button>
+                      <button
+                        onClick={() => window.print()}
+                        className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:brightness-110 text-white font-black py-2.5 rounded-xl text-xs shadow-lg flex items-center justify-center gap-1.5 transition-all"
+                      >
+                        <span>🖨️ Print Tax Invoice (80mm)</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
