@@ -498,35 +498,122 @@
     const OrderContextAU = createContext(null);
 
     function OrderProviderAU({ children }) {
-      const [restaurant, setRestaurant] = useState(INITIAL_RESTAURANT_AU);
-      const [categories] = useState(INITIAL_CATEGORIES_AU);
-      const [items, setItems] = useState(INITIAL_ITEMS_AU);
-      const [tables] = useState(INITIAL_TABLES_AU);
-      const [orders, setOrders] = useState(INITIAL_ORDERS_AU);
-      const [serviceCalls, setServiceCalls] = useState([]);
+      const venueId = useMemo(() => {
+        try {
+          const p = new URLSearchParams(window.location.search);
+          const v = p.get('venue');
+          if (v && v.trim()) {
+            return v.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+          }
+        } catch(e) {}
+        return 'the-beaufort'; // Default Australian venue
+      }, []);
+
+      const getStored = (key, fallback) => {
+        try {
+          const raw = localStorage.getItem(`smart_qr_${venueId}_${key}`);
+          if (raw) return JSON.parse(raw);
+        } catch(e) {}
+        return fallback;
+      };
+
+      const setStored = (key, val) => {
+        try {
+          localStorage.setItem(`smart_qr_${venueId}_${key}`, JSON.stringify(val));
+        } catch(e) {}
+      };
+
+      const initialVenueRestaurant = useMemo(() => {
+        if (venueId === 'the-beaufort' || venueId === 'default') {
+          return INITIAL_RESTAURANT_AU;
+        }
+        const formattedName = venueId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        return {
+          id: venueId,
+          name: formattedName,
+          subtitle: "Artisan Australian Dining & Craft Bar",
+          abn: "98 765 432 109",
+          address: "Shop 1, 100 Main Street, Sydney NSW 2000",
+          cardSurchargeRate: 0.015,
+          sundaySurchargeRate: 0.10,
+          isSundayActive: true,
+          wifiName: `${formattedName}-Guest`,
+          wifiPassword: "SmartMenu2026",
+          stripeAccountId: `acct_${venueId}`,
+          stripeDashboardUrl: "https://dashboard.stripe.com/"
+        };
+      }, [venueId]);
+
+      const [restaurant, setRestaurantState] = useState(() => getStored('restaurant', initialVenueRestaurant));
+      const [categories, setCategoriesState] = useState(() => getStored('categories', INITIAL_CATEGORIES_AU));
+      const [items, setItemsState] = useState(() => getStored('items', INITIAL_ITEMS_AU));
+      const [tables, setTablesState] = useState(() => getStored('tables', INITIAL_TABLES_AU));
+      const [orders, setOrdersState] = useState(() => getStored('orders', []));
+      const [serviceCalls, setServiceCallsState] = useState(() => getStored('calls', []));
+
+      const setRestaurant = (updater) => {
+        setRestaurantState(prev => {
+          const next = typeof updater === 'function' ? updater(prev) : updater;
+          setStored('restaurant', next);
+          return next;
+        });
+      };
+
+      const setItems = (updater) => {
+        setItemsState(prev => {
+          const next = typeof updater === 'function' ? updater(prev) : updater;
+          setStored('items', next);
+          return next;
+        });
+      };
+
+      const setTables = (updater) => {
+        setTablesState(prev => {
+          const next = typeof updater === 'function' ? updater(prev) : updater;
+          setStored('tables', next);
+          return next;
+        });
+      };
+
+      const setOrders = (updater) => {
+        setOrdersState(prev => {
+          const next = typeof updater === 'function' ? updater(prev) : updater;
+          setStored('orders', next);
+          return next;
+        });
+      };
+
+      const setServiceCalls = (updater) => {
+        setServiceCallsState(prev => {
+          const next = typeof updater === 'function' ? updater(prev) : updater;
+          setStored('calls', next);
+          return next;
+        });
+      };
+
       const [activeTable, setActiveTableState] = useState(() => {
         const p = new URLSearchParams(window.location.search);
         const urlTable = p.get('table');
         if (urlTable) {
           const parsed = parseInt(urlTable, 10);
           const val = isNaN(parsed) ? urlTable : parsed;
-          try { localStorage.setItem('smart_qr_au_active_table', String(val)); } catch(e) {}
+          try { localStorage.setItem(`smart_qr_${venueId}_active_table`, String(val)); } catch(e) {}
           return val;
         }
         try {
-          const stored = localStorage.getItem('smart_qr_au_active_table');
+          const stored = localStorage.getItem(`smart_qr_${venueId}_active_table`);
           if (stored) {
             const parsed = parseInt(stored, 10);
             return isNaN(parsed) ? stored : parsed;
           }
         } catch(e) {}
-        return 3;
+        return 1;
       });
 
       const setActiveTable = (tbl) => {
         setActiveTableState(tbl);
         try {
-          localStorage.setItem('smart_qr_au_active_table', String(tbl));
+          localStorage.setItem(`smart_qr_${venueId}_active_table`, String(tbl));
         } catch(e) {}
       };
       const [orderType, setOrderType] = useState(() => {
@@ -539,7 +626,7 @@
       const [activeOrderId, setActiveOrderId] = useState(null);
       const [toastMsg, setToastMsg] = useState(null);
 
-      const channel = useMemo(() => typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('smart_qr_au_sync') : null, []);
+      const channel = useMemo(() => typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(`smart_qr_sync_${venueId}`) : null, [venueId]);
 
       useEffect(() => {
         if (!channel) return;
@@ -811,7 +898,7 @@
 
       return (
         <OrderContextAU.Provider value={{
-          restaurant, setRestaurant, updateRestaurantSettings, categories, items, tables, orders, serviceCalls,
+          venueId, restaurant, setRestaurant, updateRestaurantSettings, categories, items, tables, orders, serviceCalls,
           cart, addToCart, removeFromCart, updateCartQuantity, clearCart, toggleCartItemDiningOption,
           submitOrder, sendServiceCall, resolveServiceCall, updateOrderStatus,
           approveCounterOrder, cancelCounterOrder, clearAllOrders,
@@ -2165,7 +2252,7 @@
 
     // --- Kitchen Display (Australia) - With 80mm Thermal Printing ---
     function KitchenDisplayAU() {
-      const { orders, updateOrderStatus, serviceCalls, resolveServiceCall, restaurant, showToast } = useOrderAU();
+      const { venueId, orders, updateOrderStatus, serviceCalls, resolveServiceCall, restaurant, showToast } = useOrderAU();
       const [autoPrint, setAutoPrint] = useState(false);
       const [printOrder, setPrintOrder] = useState(null);
       const pending = serviceCalls.filter(c => c.status === 'pending');
@@ -2202,9 +2289,14 @@
           {/* Header */}
           <div className="bg-[#161311] border border-amber-900/30 p-4 rounded-3xl flex flex-wrap justify-between items-center gap-3 shadow-xl">
             <div>
-              <h2 className="font-black text-white text-lg flex items-center gap-2">
+              <h2 className="font-black text-white text-lg flex items-center gap-2 flex-wrap">
                 <span>👨‍🍳 Kitchen & Bar KDS</span>
-                <span className="text-[10px] bg-stone-800 text-amber-300 px-2 py-0.5 rounded-full border border-amber-900/40">AU 🇦🇺</span>
+                <span className="text-[11px] bg-amber-500/20 text-amber-300 font-bold px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                  {restaurant.name}
+                </span>
+                <span className="text-[10px] bg-stone-800 text-stone-300 font-mono px-2 py-0.5 rounded-md border border-stone-700">
+                  ?venue={venueId}
+                </span>
               </h2>
               <p className="text-xs text-stone-400">Live Kitchen Docket Stream & 80mm Star/Epson CloudPRNT Link</p>
             </div>
@@ -2798,7 +2890,7 @@
 
     // --- Admin (Australia) ---
     function AdminDashboardAU() {
-      const { tables, saveTable, deleteTable, restaurant, updateRestaurantSettings, items, categories, toggleItemStock, saveItem, deleteItem, resetDemoData, orders, approveCounterOrder, cancelCounterOrder, clearAllOrders, showToast } = useOrderAU();
+      const { venueId, tables, saveTable, deleteTable, restaurant, updateRestaurantSettings, items, categories, toggleItemStock, saveItem, deleteItem, resetDemoData, orders, approveCounterOrder, cancelCounterOrder, clearAllOrders, showToast } = useOrderAU();
       const [tab, setTab] = useState('cashier'); // cashier (default), menu, qr, stats, settings
       const [selT, setSelT] = useState(1);
       const [qrUrl, setQrUrl] = useState('');
@@ -2917,14 +3009,18 @@
       const [settingsStripeUrl, setSettingsStripeUrl] = useState(restaurant.stripeDashboardUrl || 'https://dashboard.stripe.com/');
       // Base Domain & QR Custom Link State (AU)
       const [customBaseDomain, setCustomBaseDomain] = useState(() => window.location.origin);
-      const [customQrUrl, setCustomQrUrl] = useState(() => `${window.location.origin}${window.location.pathname}?table=1`);
+      const [customQrUrl, setCustomQrUrl] = useState(() => {
+        const vParam = venueId && venueId !== 'the-beaufort' ? `venue=${encodeURIComponent(venueId)}&` : '';
+        return `${window.location.origin}${window.location.pathname}?${vParam}table=1`;
+      });
 
       const generateDefaultTableLink = (targetNum, baseDom = customBaseDomain) => {
         const origin = (baseDom || '').trim() || window.location.origin;
         const path = window.location.pathname || '';
+        const vParam = venueId && venueId !== 'the-beaufort' ? `venue=${encodeURIComponent(venueId)}&` : '';
         return targetNum === 'takeaway'
-          ? `${origin}${path}?mode=takeaway`
-          : `${origin}${path}?table=${targetNum}`;
+          ? `${origin}${path}?${vParam}mode=takeaway`
+          : `${origin}${path}?${vParam}table=${targetNum}`;
       };
 
       const handleSelectTableForQr = (targetNum) => {
@@ -3110,6 +3206,70 @@
               </button>
               <button onClick={resetDemoData} className="bg-slate-800 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs border border-slate-700">
                 🔄 Reset Menu
+              </button>
+            </div>
+          </div>
+
+          {/* Active Multi-Venue Space & Quick Switcher Card */}
+          <div className="bg-gradient-to-r from-amber-950/80 via-slate-900 to-amber-950/80 border border-amber-500/50 p-4 rounded-3xl flex flex-wrap justify-between items-center gap-3 shadow-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shadow-inner">
+                🏢
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] text-amber-400 font-extrabold uppercase tracking-wider">Multi-Venue Space:</span>
+                  <span className="bg-amber-500 text-stone-950 font-mono font-black text-xs px-2.5 py-0.5 rounded-lg shadow">
+                    ?venue={venueId}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-semibold">(Isolato & Indipendente)</span>
+                </div>
+                <h3 className="text-base font-black text-white">{restaurant.name}</h3>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const input = prompt('Inserisci ID o Nome del Nuovo Locale (es. sydney-harbour-cafe, bondi-bistro, perth-pub):', venueId);
+                  if (input && input.trim()) {
+                    const clean = input.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('venue', clean);
+                    url.searchParams.set('view', 'admin');
+                    window.location.href = url.toString();
+                  }
+                }}
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-stone-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all active:scale-95 cursor-pointer"
+              >
+                <span>➕ Crea / Apri Nuovo Locale</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const link = `${window.location.origin}${window.location.pathname}?venue=${venueId}&table=1`;
+                  navigator.clipboard.writeText(link);
+                  if (showToast) showToast(`📋 Link Tavolo 1 copiato: ${link}`);
+                }}
+                className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-2 rounded-xl text-xs border border-slate-700 transition-all flex items-center gap-1"
+                title="Copia link menu del Tavolo 1 per questo locale"
+              >
+                <span>📱 Copia Link Tavolo 1</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const link = `${window.location.origin}${window.location.pathname}?venue=${venueId}&view=kitchen`;
+                  navigator.clipboard.writeText(link);
+                  if (showToast) showToast(`👨‍🍳 Link Schermo Cucina copiato: ${link}`);
+                }}
+                className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-2 rounded-xl text-xs border border-slate-700 transition-all flex items-center gap-1"
+                title="Copia link per lo schermo KDS della cucina"
+              >
+                <span>👨‍🍳 Copia Link Cucina</span>
               </button>
             </div>
           </div>
