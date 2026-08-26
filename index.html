@@ -1181,7 +1181,19 @@
                         ? 'text-emerald-400 bg-emerald-950/80 border-emerald-800'
                         : 'text-stone-300 bg-stone-900 border-stone-800'
                     }`}>
-                      {activeOrder.status === 'pending_approval' ? '💵 Pay at Counter' : activeOrder.paymentStatus === 'paid' ? '✓ Paid Online' : 'Pay on Collection'}
+                      {activeOrder.status === 'pending_approval'
+                        ? '💵 Pay at Counter'
+                        : activeOrder.paymentStatus === 'paid'
+                        ? (activeOrder.paymentMethod === 'counter_cash'
+                            ? '✓ Paid at Counter (Cash)'
+                            : activeOrder.paymentMethod === 'counter_eftpos'
+                            ? '✓ Paid at Counter (EFTPOS)'
+                            : activeOrder.paymentMethod === 'counter'
+                            ? '✓ Paid at Counter'
+                            : activeOrder.paymentMethod === 'apple_pay'
+                            ? '✓ Paid (Apple Pay)'
+                            : '✓ Paid Online (Card)')
+                        : 'Pay on Collection'}
                     </span>
                   </div>
 
@@ -2449,7 +2461,17 @@
                             <div className="flex justify-between text-[11px] text-stone-400">
                               <span>Customer: <strong className="text-stone-200">{o.customerName || 'Walk-in'}</strong></span>
                               <span className="text-emerald-400 font-bold">
-                                {o.paymentStatus === 'paid' ? '✓ Paid Online' : (takeawayList.length > 0 ? 'Pay on Pickup' : 'Pay at Counter')}
+                                {o.paymentStatus === 'paid'
+                                  ? (o.paymentMethod === 'counter_cash'
+                                      ? '✓ Paid at Counter (Cash)'
+                                      : o.paymentMethod === 'counter_eftpos'
+                                      ? '✓ Paid at Counter (EFTPOS)'
+                                      : o.paymentMethod === 'counter'
+                                      ? '✓ Paid at Counter'
+                                      : o.paymentMethod === 'apple_pay'
+                                      ? '✓ Paid (Apple Pay)'
+                                      : '✓ Paid Online (Card)')
+                                  : (takeawayList.length > 0 ? '⏳ Pay on Pickup' : '⏳ Pay at Counter')}
                               </span>
                             </div>
 
@@ -3870,9 +3892,23 @@
                                   ${finalTotal.toFixed(2)} AUD
                                 </div>
                                 <div className="text-[10px] text-slate-400 flex items-center gap-1 md:justify-end">
-                                  <span>{ord.paymentMethod === 'apple_pay' ? ' Apple Pay' : ord.paymentMethod === 'credit_card' ? '💳 Card' : '💵 Bar Counter'}</span>
+                                  <span>
+                                    {ord.paymentMethod === 'apple_pay'
+                                      ? ' Apple Pay'
+                                      : ord.paymentMethod === 'credit_card'
+                                      ? '💳 Stripe Card'
+                                      : ord.paymentMethod === 'counter_cash'
+                                      ? '💵 Counter Cash'
+                                      : ord.paymentMethod === 'counter_eftpos'
+                                      ? '💳 Counter EFTPOS'
+                                      : '💵 Bar Counter'}
+                                  </span>
                                   <span>•</span>
-                                  <span className="text-emerald-400 font-bold">{ord.paymentStatus === 'paid' ? 'Paid' : 'Pending'}</span>
+                                  <span className={`font-bold ${ord.paymentStatus === 'paid' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                    {ord.paymentStatus === 'paid'
+                                      ? (ord.paymentMethod === 'counter' || ord.paymentMethod === 'counter_cash' || ord.paymentMethod === 'counter_eftpos' ? 'Paid in Cassa' : 'Paid Online')
+                                      : 'Pending'}
+                                  </span>
                                 </div>
                               </div>
 
@@ -4720,7 +4756,17 @@
                       <div className="flex justify-between">
                         <span className="text-stone-600">Payment Status:</span>
                         <strong className={ord.paymentStatus === 'paid' ? 'text-emerald-700' : 'text-amber-700'}>
-                          {ord.paymentStatus === 'paid' ? '✓ PAID' : '⏳ PENDING AT BAR'} ({ord.paymentMethod === 'apple_pay' ? 'Apple Pay' : ord.paymentMethod === 'credit_card' ? 'Credit Card' : 'Counter Cash / EFTPOS'})
+                          {ord.paymentStatus === 'paid'
+                            ? (ord.paymentMethod === 'counter_cash'
+                                ? '✓ PAID AT COUNTER (CASH)'
+                                : ord.paymentMethod === 'counter_eftpos'
+                                ? '✓ PAID AT COUNTER (EFTPOS)'
+                                : ord.paymentMethod === 'counter'
+                                ? '✓ PAID AT COUNTER'
+                                : ord.paymentMethod === 'apple_pay'
+                                ? '✓ PAID ONLINE (APPLE PAY)'
+                                : '✓ PAID ONLINE (STRIPE CARD)')
+                            : '⏳ PENDING PAYMENT AT COUNTER'}
                         </strong>
                       </div>
                     </div>
@@ -4946,7 +4992,17 @@
                     Includes ${gstP.toFixed(2)} GST (10%)
                   </div>
                   <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '4px', fontWeight: 'bold' }}>
-                    PAYMENT: {ord.paymentMethod === 'apple_pay' ? 'APPLE PAY' : ord.paymentMethod === 'credit_card' ? 'CREDIT CARD' : 'BAR COUNTER'} ({ord.paymentStatus === 'paid' ? 'PAID' : 'PENDING'})
+                    PAYMENT: {ord.paymentStatus === 'paid'
+                      ? (ord.paymentMethod === 'counter_cash'
+                          ? 'PAID AT COUNTER (CASH)'
+                          : ord.paymentMethod === 'counter_eftpos'
+                          ? 'PAID AT COUNTER (EFTPOS)'
+                          : ord.paymentMethod === 'counter'
+                          ? 'PAID AT COUNTER'
+                          : ord.paymentMethod === 'apple_pay'
+                          ? 'PAID ONLINE (APPLE PAY)'
+                          : 'PAID ONLINE (STRIPE CARD)')
+                      : 'PENDING COUNTER PAYMENT'}
                   </div>
                   <div style={{ fontSize: '9px', textAlign: 'center', marginTop: '6px' }}>
                     Thank you! See you soon.
