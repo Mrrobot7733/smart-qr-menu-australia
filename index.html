@@ -492,146 +492,7 @@
       { id: "6", number: 6, name: "Bar Stool 6", area: "Public Bar Counter", seats: 2 }
     ];
 
-    const INITIAL_ORDERS_AU = [
-      {
-        id: "ord-au-101",
-        orderNumber: 342,
-        tableNumber: 4,
-        customerName: "Jack & Sarah",
-        orderType: "hybrid",
-        diningOption: "hybrid",
-        items: [
-          {
-            itemId: "au-2",
-            name: "Smoked Aussie Wagyu Burger",
-            price: 24.50,
-            unitPrice: 28.00,
-            totalItemPrice: 56.00,
-            quantity: 2,
-            selectedOptions: { "Meat Temperature": "Medium" },
-            selectedExtras: [{ id: "ex-au-2", name: "Crispy Bacon", price: 3.50 }],
-            notes: "One without pickles, chips extra crispy please",
-            station: "kitchen",
-            diningOption: "dine_in"
-          },
-          {
-            itemId: "au-4",
-            name: "Pacific Ale - Stone & Wood (Craft Tap 4.4%)",
-            price: 10.50,
-            unitPrice: 10.50,
-            totalItemPrice: 21.00,
-            quantity: 2,
-            selectedOptions: { "Size": "Pint (570ml)" },
-            selectedExtras: [],
-            notes: "Served ice cold",
-            station: "bar",
-            diningOption: "dine_in"
-          },
-          {
-            itemId: "au-6",
-            name: "Traditional Pavlova with Passionfruit",
-            price: 13.50,
-            unitPrice: 13.50,
-            totalItemPrice: 13.50,
-            quantity: 1,
-            selectedOptions: {},
-            selectedExtras: [],
-            notes: "Pack in takeaway dessert box with spoon",
-            station: "kitchen",
-            diningOption: "takeaway"
-          }
-        ],
-        subtotal: 90.50,
-        surchargeAmount: 1.36,
-        tipAmount: 5.00,
-        totalAmount: 96.86,
-        paymentMethod: "apple_pay",
-        paymentStatus: "paid",
-        status: "new",
-        takeawayTime: "In 25 minutes",
-        createdAt: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
-        station: "both"
-      },
-      {
-        id: "ord-au-102",
-        orderNumber: 619,
-        tableNumber: 2,
-        customerName: "Liam T.",
-        orderType: "dine_in",
-        diningOption: "dine_in",
-        items: [
-          {
-            itemId: "au-1",
-            name: "Crispy Salt & Pepper Calamari",
-            price: 18.50,
-            unitPrice: 18.50,
-            totalItemPrice: 18.50,
-            quantity: 1,
-            selectedOptions: {},
-            selectedExtras: [],
-            notes: "Extra tartare sauce and fresh lemon",
-            station: "kitchen",
-            diningOption: "dine_in"
-          },
-          {
-            itemId: "au-5",
-            name: "Eucalyptus Smoked Old Fashioned",
-            price: 22.00,
-            unitPrice: 22.00,
-            totalItemPrice: 22.00,
-            quantity: 1,
-            selectedOptions: {},
-            selectedExtras: [],
-            notes: "",
-            station: "bar",
-            diningOption: "dine_in"
-          }
-        ],
-        subtotal: 40.50,
-        surchargeAmount: 0.61,
-        tipAmount: 4.00,
-        totalAmount: 45.11,
-        paymentMethod: "credit_card",
-        paymentStatus: "paid",
-        status: "preparing",
-        createdAt: new Date(Date.now() - 14 * 60 * 1000).toISOString(),
-        station: "both"
-      },
-      {
-        id: "ord-au-103",
-        orderNumber: 147,
-        tableNumber: 0,
-        customerName: "Chloe M.",
-        orderType: "takeaway",
-        diningOption: "takeaway",
-        items: [
-          {
-            itemId: "au-3",
-            name: "Barramundi Fillet (Cone Bay)",
-            price: 32.00,
-            unitPrice: 32.00,
-            totalItemPrice: 32.00,
-            quantity: 1,
-            selectedOptions: { "Cooking": "Grilled" },
-            selectedExtras: [],
-            notes: "Gluten free dressing packed separately",
-            station: "kitchen",
-            diningOption: "takeaway"
-          }
-        ],
-        subtotal: 32.00,
-        surchargeAmount: 0.00,
-        tipAmount: 0.00,
-        totalAmount: 32.00,
-        paymentMethod: "counter",
-        paymentStatus: "pending_counter",
-        status: "pending_approval",
-        counterPin: "4829",
-        takeawayTime: "As soon as possible",
-        createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-        station: "kitchen"
-      }
-    ];
+    const INITIAL_ORDERS_AU = [];
 
     // --- OrderContext State for Australia ---
     const OrderContextAU = createContext(null);
@@ -687,10 +548,12 @@
           if (type === 'NEW_ORDER') { setOrders(p => [payload, ...p]); playSound.kitchenChime(); }
           else if (type === 'ORDER_APPROVED') { setOrders(p => p.map(o => o.id === payload.id ? payload : o)); playSound.kitchenChime(); }
           else if (type === 'STATUS') { setOrders(p => p.map(o => o.id === payload.id ? payload : o)); }
+          else if (type === 'CLEAR_ORDERS') { setOrders([]); setActiveOrderId(null); }
           else if (type === 'CALL') { setServiceCalls(p => [payload, ...p]); playSound.waiterAlert(); }
           else if (type === 'RESOLVE') { setServiceCalls(p => p.map(c => c.id === payload.id ? payload : c)); }
           else if (type === 'ITEMS') { setItems(payload); }
           else if (type === 'TABLES') { setTables(payload); }
+          else if (type === 'RESET_DEMO') { setOrders([]); }
         };
         channel.addEventListener('message', handler);
         return () => channel.removeEventListener('message', handler);
@@ -927,12 +790,20 @@
         if (channel) channel.postMessage({ type: 'SETTINGS', payload: newSettings });
       };
 
+      const clearAllOrders = () => {
+        setOrders([]);
+        setActiveOrderId(null);
+        showToast('🗑️ Tutte le comande sono state cancellate!');
+        if (channel) channel.postMessage({ type: 'CLEAR_ORDERS' });
+      };
+
       const resetDemoData = () => {
         setItems(INITIAL_ITEMS_AU);
         setTables(INITIAL_TABLES_AU);
-        setOrders(INITIAL_ORDERS_AU);
+        setOrders([]);
+        setActiveOrderId(null);
         setServiceCalls([]);
-        showToast('Demo data and tables reset!');
+        showToast('Menu ripristinato e comande azzerate!');
         if (channel) channel.postMessage({ type: 'RESET_DEMO' });
       };
 
@@ -943,7 +814,7 @@
           restaurant, setRestaurant, updateRestaurantSettings, categories, items, tables, orders, serviceCalls,
           cart, addToCart, removeFromCart, updateCartQuantity, clearCart, toggleCartItemDiningOption,
           submitOrder, sendServiceCall, resolveServiceCall, updateOrderStatus,
-          approveCounterOrder, cancelCounterOrder,
+          approveCounterOrder, cancelCounterOrder, clearAllOrders,
           toggleItemStock, saveItem, deleteItem, saveTable, deleteTable, resetDemoData,
           activeTable, setActiveTable, orderType, setOrderType, takeawayTime, setTakeawayTime,
           customerName, setCustomerName,
@@ -2927,7 +2798,7 @@
 
     // --- Admin (Australia) ---
     function AdminDashboardAU() {
-      const { tables, saveTable, deleteTable, restaurant, updateRestaurantSettings, items, categories, toggleItemStock, saveItem, deleteItem, resetDemoData, orders, approveCounterOrder, cancelCounterOrder, showToast } = useOrderAU();
+      const { tables, saveTable, deleteTable, restaurant, updateRestaurantSettings, items, categories, toggleItemStock, saveItem, deleteItem, resetDemoData, orders, approveCounterOrder, cancelCounterOrder, clearAllOrders, showToast } = useOrderAU();
       const [tab, setTab] = useState('cashier'); // cashier (default), menu, qr, stats, settings
       const [selT, setSelT] = useState(1);
       const [qrUrl, setQrUrl] = useState('');
@@ -3221,6 +3092,21 @@
                 className="bg-gradient-to-r from-orange-500 to-amber-500 hover:brightness-110 text-white font-extrabold px-4 py-2 rounded-xl text-xs shadow-lg transition-all"
               >
                 ➕ Add New Dish / Drink
+              </button>
+              <button
+                onClick={() => {
+                  if (orders.length === 0) {
+                    showToast('Nessuna comanda presente');
+                    return;
+                  }
+                  if (confirm('Vuoi cancellare tutte le comande e azzerare la cronologia?')) {
+                    clearAllOrders();
+                  }
+                }}
+                className="bg-slate-800 hover:bg-rose-950 hover:text-rose-300 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs border border-slate-700 transition-all"
+                title="Azzera tutte le comande"
+              >
+                🗑️ Clear Orders ({orders.length})
               </button>
               <button onClick={resetDemoData} className="bg-slate-800 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs border border-slate-700">
                 🔄 Reset Menu
@@ -3824,8 +3710,12 @@
 
                   if (filteredOrders.length === 0) {
                     return (
-                      <div className="p-8 text-center bg-slate-950 rounded-2xl border border-slate-800 text-slate-400 text-xs">
-                        No orders matching your filters.
+                      <div className="p-10 text-center bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
+                        <span className="text-3xl block">🧾</span>
+                        <h4 className="font-black text-white text-sm">No Orders Found</h4>
+                        <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                          When patrons place orders from their phones, their tickets, itemized bills and counter PINs will appear here in real-time.
+                        </p>
                       </div>
                     );
                   }
