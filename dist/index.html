@@ -815,6 +815,16 @@
       const toggleItemStock = (id) => {
         const updated = items.map(i => i.id === id ? { ...i, isAvailable: !i.isAvailable } : i);
         setItems(updated);
+        const it = updated.find(i => i.id === id);
+        showToast(it.isAvailable ? `"${it.name}" marked as In Stock` : `"${it.name}" marked as Sold Out (86)`);
+        if (channel) channel.postMessage({ type: 'ITEMS', payload: updated });
+      };
+
+      const toggleItemVisibility = (id) => {
+        const updated = items.map(i => i.id === id ? { ...i, isVisible: i.isVisible === false ? true : false } : i);
+        setItems(updated);
+        const it = updated.find(i => i.id === id);
+        showToast(it.isVisible !== false ? `"${it.name}" is now visible on menu` : `"${it.name}" hidden from customer menu`);
         if (channel) channel.postMessage({ type: 'ITEMS', payload: updated });
       };
 
@@ -824,7 +834,7 @@
           updated = items.map(i => i.id === item.id ? { ...i, ...item } : i);
           showToast(`Item "${item.name}" updated!`);
         } else {
-          const newItem = { ...item, id: `item-${Date.now()}`, isAvailable: true };
+          const newItem = { ...item, id: `item-${Date.now()}`, isAvailable: item.isAvailable !== false, isVisible: item.isVisible !== false };
           updated = [newItem, ...items];
           showToast(`New item "${item.name}" created!`);
         }
@@ -904,7 +914,7 @@
           cart, addToCart, removeFromCart, updateCartQuantity, clearCart, toggleCartItemDiningOption,
           submitOrder, sendServiceCall, resolveServiceCall, updateOrderStatus,
           approveCounterOrder, cancelCounterOrder, clearAllOrders,
-          toggleItemStock, saveItem, deleteItem, saveTable, deleteTable, resetDemoData,
+          toggleItemStock, toggleItemVisibility, saveItem, deleteItem, saveTable, deleteTable, resetDemoData,
           activeTable, setActiveTable, orderType, setOrderType, takeawayTime, setTakeawayTime,
           customerName, setCustomerName,
           activeOrder, activeOrderId, setActiveOrderId, toastMsg, showToast
@@ -960,23 +970,26 @@
       // Smart Pairing Recommendation (AU)
       const suggestedPairing = useMemo(() => {
         if (!selItem) return null;
+        const visibleItems = items.filter(i => i.isVisible !== false);
         if (selItem.categoryId === 'burgers' || selItem.categoryId === 'classics') {
-          return items.find(i => i.categoryId === 'tap_beer') || items.find(i => i.categoryId === 'bites') || items.find(i => i.id !== selItem.id);
+          return visibleItems.find(i => i.categoryId === 'tap_beer') || visibleItems.find(i => i.categoryId === 'bites') || visibleItems.find(i => i.id !== selItem.id);
         }
         if (selItem.categoryId === 'pizzas' || selItem.categoryId === 'bites') {
-          return items.find(i => i.categoryId === 'tap_beer') || items.find(i => i.categoryId === 'cocktails') || items.find(i => i.id !== selItem.id);
+          return visibleItems.find(i => i.categoryId === 'tap_beer') || visibleItems.find(i => i.categoryId === 'cocktails') || visibleItems.find(i => i.id !== selItem.id);
         }
         if (selItem.categoryId === 'tap_beer' || selItem.categoryId === 'cocktails') {
-          return items.find(i => i.categoryId === 'bites') || items.find(i => i.categoryId === 'burgers') || items.find(i => i.id !== selItem.id);
+          return visibleItems.find(i => i.categoryId === 'bites') || visibleItems.find(i => i.categoryId === 'burgers') || visibleItems.find(i => i.id !== selItem.id);
         }
         if (selItem.categoryId === 'desserts') {
-          return items.find(i => i.categoryId === 'cocktails') || items.find(i => i.categoryId === 'tap_beer') || items.find(i => i.id !== selItem.id);
+          return visibleItems.find(i => i.categoryId === 'cocktails') || visibleItems.find(i => i.categoryId === 'tap_beer') || visibleItems.find(i => i.id !== selItem.id);
         }
-        return items.find(i => i.id !== selItem.id) || null;
+        return visibleItems.find(i => i.id !== selItem.id) || null;
       }, [selItem, items]);
 
       // Filtered dishes
       const filtered = items.filter(it => {
+        // Completely exclude dishes hidden by manager
+        if (it.isVisible === false) return false;
         if (selCat !== 'all' && it.categoryId !== selCat) return false;
         if (search.trim()) {
           const q = search.toLowerCase();
@@ -1387,7 +1400,8 @@
 
                 {/* 👨‍🍳 Chef's Daily Special (Distinct Sapphire / Deep Indigo Palette for High Visual Contrast) */}
                 {(() => {
-                  const special = items.find(i => i.id === 'au-6') || items[0];
+                  const visibleItems = items.filter(i => i.isVisible !== false);
+                  const special = visibleItems.find(i => i.id === 'au-6') || visibleItems[0];
                   if (!special) return null;
                   return (
                     <div
@@ -3099,7 +3113,7 @@
 
     // --- Admin (Australia) ---
     function AdminDashboardAU() {
-      const { venueId, tables, saveTable, deleteTable, restaurant, updateRestaurantSettings, items, categories, toggleItemStock, saveItem, deleteItem, resetDemoData, orders, approveCounterOrder, cancelCounterOrder, clearAllOrders, showToast } = useOrderAU();
+      const { venueId, tables, saveTable, deleteTable, restaurant, updateRestaurantSettings, items, categories, toggleItemStock, toggleItemVisibility, saveItem, deleteItem, resetDemoData, orders, approveCounterOrder, cancelCounterOrder, clearAllOrders, showToast } = useOrderAU();
       const [tab, setTab] = useState('cashier'); // cashier (default), menu, qr, stats, settings
       const [selT, setSelT] = useState(1);
       const [qrUrl, setQrUrl] = useState('');
@@ -3204,6 +3218,8 @@
       const [formStation, setFormStation] = useState('kitchen');
       const [formIsGF, setFormIsGF] = useState(false);
       const [formIsVeg, setFormIsVeg] = useState(false);
+      const [formIsAvailable, setFormIsAvailable] = useState(true);
+      const [formIsVisible, setFormIsVisible] = useState(true);
 
       // Venue & Surcharge Settings State
       const [settingsName, setSettingsName] = useState(restaurant.name);
@@ -3329,6 +3345,8 @@
         setFormStation(item.station || 'kitchen');
         setFormIsGF(!!item.isGF);
         setFormIsVeg(!!item.isVegetarian);
+        setFormIsAvailable(item.isAvailable !== false);
+        setFormIsVisible(item.isVisible !== false);
       };
 
       const openAddModal = () => {
@@ -3342,6 +3360,8 @@
         setFormStation('kitchen');
         setFormIsGF(false);
         setFormIsVeg(false);
+        setFormIsAvailable(true);
+        setFormIsVisible(true);
       };
 
       const openAddTableModal = () => {
@@ -3391,7 +3411,9 @@
           image: formImage,
           station: formStation,
           isGF: formIsGF,
-          isVegetarian: formIsVeg
+          isVegetarian: formIsVeg,
+          isAvailable: formIsAvailable,
+          isVisible: formIsVisible
         };
         saveItem(itemData);
         setEditingItem(null);
@@ -3587,61 +3609,105 @@
 
               {/* Items Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredItems.map(it => (
-                  <div key={it.id} className={`bg-slate-900 border rounded-3xl p-4 flex flex-col justify-between space-y-3 ${it.isAvailable ? 'border-slate-800' : 'border-red-900/50 opacity-70'}`}>
-                    <div>
-                      <div className="flex gap-3 items-start">
-                        <img src={it.image} alt={it.name} className="w-16 h-16 rounded-2xl object-cover bg-slate-950 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-start">
-                            <h4 className="font-bold text-white text-sm truncate">{it.name}</h4>
-                            <span className="font-black text-orange-400 text-sm ml-1">${it.price.toFixed(2)} AUD</span>
+                {filteredItems.map(it => {
+                  const isItemAvailable = it.isAvailable !== false;
+                  const isItemVisible = it.isVisible !== false;
+
+                  return (
+                    <div
+                      key={it.id}
+                      className={`bg-slate-900 border rounded-3xl p-4 flex flex-col justify-between space-y-3 transition-all ${
+                        !isItemVisible
+                          ? 'border-amber-500/50 border-dashed opacity-80 ring-1 ring-amber-500/20'
+                          : (!isItemAvailable ? 'border-red-900/60 opacity-75' : 'border-slate-800')
+                      }`}
+                    >
+                      <div>
+                        <div className="flex gap-3 items-start">
+                          <img src={it.image} alt={it.name} className="w-16 h-16 rounded-2xl object-cover bg-slate-950 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start">
+                              <h4 className="font-bold text-white text-sm truncate">{it.name}</h4>
+                              <span className="font-black text-orange-400 text-sm ml-1">${it.price.toFixed(2)} AUD</span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 line-clamp-2 mt-0.5">{it.description}</p>
                           </div>
-                          <p className="text-[11px] text-slate-400 line-clamp-2 mt-0.5">{it.description}</p>
+                        </div>
+
+                        {/* Badges & Flags */}
+                        <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
+                          {!isItemVisible && (
+                            <span className="text-[9px] bg-amber-950 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-700 animate-pulse">
+                              🙈 Hidden from Menu
+                            </span>
+                          )}
+                          {!isItemAvailable && (
+                            <span className="text-[9px] bg-red-950 text-red-300 font-bold px-2 py-0.5 rounded border border-red-800">
+                              ○ Sold Out (86)
+                            </span>
+                          )}
+                          <span className="text-[9px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded capitalize">
+                            {categories.find(c => c.id === it.categoryId)?.name || it.categoryId}
+                          </span>
+                          <span className="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">
+                            {it.station === 'bar' ? '🍺 Bar' : '👨‍🍳 Kitchen'}
+                          </span>
+                          {it.isGF && <span className="text-[9px] bg-amber-950 text-amber-300 px-1.5 py-0.5 rounded">GF</span>}
+                          {it.isVegetarian && <span className="text-[9px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded">Veg</span>}
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
-                        <span className="text-[9px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded capitalize">
-                          {categories.find(c => c.id === it.categoryId)?.name || it.categoryId}
-                        </span>
-                        <span className="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">
-                          {it.station === 'bar' ? '🍺 Bar' : '👨‍🍳 Kitchen'}
-                        </span>
-                        {it.isGF && <span className="text-[9px] bg-amber-950 text-amber-300 px-1.5 py-0.5 rounded">GF</span>}
-                        {it.isVegetarian && <span className="text-[9px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded">Veg</span>}
+                      {/* Action Controls: In Stock / Sold Out + Visible / Hidden */}
+                      <div className="flex flex-wrap justify-between items-center pt-3 border-t border-slate-800 gap-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => toggleItemStock(it.id)}
+                            className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all cursor-pointer ${
+                              isItemAvailable
+                                ? 'bg-emerald-950 text-emerald-300 border border-emerald-800 hover:bg-emerald-900'
+                                : 'bg-red-950 text-red-300 border border-red-800 hover:bg-red-900'
+                            }`}
+                            title="Toggle In Stock vs Sold Out"
+                          >
+                            {isItemAvailable ? '● In Stock' : '○ Sold Out'}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => toggleItemVisibility(it.id)}
+                            className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all cursor-pointer ${
+                              isItemVisible
+                                ? 'bg-blue-950/80 text-blue-300 border border-blue-800 hover:bg-blue-900'
+                                : 'bg-amber-950 text-amber-300 border border-amber-600 hover:bg-amber-900'
+                            }`}
+                            title="Toggle Visible on Customer Phone Menu vs Completely Hidden"
+                          >
+                            {isItemVisible ? '👁️ Visible' : '🙈 Hidden'}
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => openEditModal(it)}
+                            className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-2.5 py-1.5 rounded-xl text-xs border border-slate-700"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm(`Remove "${it.name}" from the menu?`)) deleteItem(it.id);
+                            }}
+                            className="bg-slate-800 hover:bg-red-950 text-slate-400 hover:text-red-300 p-1.5 rounded-xl text-xs border border-slate-700"
+                            title="Delete Item"
+                          >
+                            🗑️
+                          </button>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Action Controls */}
-                    <div className="flex justify-between items-center pt-3 border-t border-slate-800">
-                      <button
-                        onClick={() => toggleItemStock(it.id)}
-                        className={`px-3 py-1.5 rounded-xl font-bold text-xs ${it.isAvailable ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-red-950 text-red-300 border border-red-800'}`}
-                      >
-                        {it.isAvailable ? '● Available' : '○ Sold Out (86)'}
-                      </button>
-
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => openEditModal(it)}
-                          className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs border border-slate-700"
-                        >
-                          ✏️ Edit
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (confirm(`Remove "${it.name}" from the menu?`)) deleteItem(it.id);
-                          }}
-                          className="bg-slate-800 hover:bg-red-950 text-slate-400 hover:text-red-300 p-1.5 rounded-xl text-xs border border-slate-700"
-                          title="Delete Item"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -4565,6 +4631,43 @@
                         <img src={formImage} alt="Preview" className="w-full h-full object-cover" />
                       </div>
                     )}
+                  </div>
+
+                  {/* Availability & Customer Menu Visibility Controls */}
+                  <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-2.5">
+                    <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider block">Dish Availability & Customer Menu Visibility</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <label className={`flex items-center gap-2 font-bold cursor-pointer p-2.5 rounded-xl border transition-all ${
+                        formIsAvailable
+                          ? 'bg-emerald-950/60 text-emerald-300 border-emerald-700/80'
+                          : 'bg-red-950/60 text-red-300 border-red-800'
+                      }`}>
+                        <input
+                          type="checkbox"
+                          checked={formIsAvailable}
+                          onChange={(e) => setFormIsAvailable(e.target.checked)}
+                          className="w-4 h-4 rounded text-emerald-500 cursor-pointer"
+                        />
+                        <span className="text-xs">{formIsAvailable ? '● In Stock (Available)' : '○ Sold Out (86)'}</span>
+                      </label>
+
+                      <label className={`flex items-center gap-2 font-bold cursor-pointer p-2.5 rounded-xl border transition-all ${
+                        formIsVisible
+                          ? 'bg-blue-950/60 text-blue-300 border-blue-700/80'
+                          : 'bg-amber-950/60 text-amber-300 border-amber-800'
+                      }`}>
+                        <input
+                          type="checkbox"
+                          checked={formIsVisible}
+                          onChange={(e) => setFormIsVisible(e.target.checked)}
+                          className="w-4 h-4 rounded text-blue-500 cursor-pointer"
+                        />
+                        <span className="text-xs">{formIsVisible ? '👁️ Visible on Menu' : '🙈 Hidden from Menu'}</span>
+                      </label>
+                    </div>
+                    <p className="text-[10px] text-slate-400 leading-tight">
+                      💡 Uncheck <strong>"Visible on Menu"</strong> to completely hide this dish from customer smartphones without deleting it.
+                    </p>
                   </div>
 
                   {/* Dietary Checkboxes */}
