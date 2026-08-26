@@ -752,11 +752,11 @@
       const approveCounterOrder = (orderId, pinEntered, paidMethod = 'counter_cash', updatedFields = {}) => {
         const ord = orders.find(o => o.id === orderId || (pinEntered && String(o.counterPin) === String(pinEntered).trim()));
         if (!ord) {
-          showToast('❌ Comanda non trovata o PIN non corrispondente');
+          showToast('❌ Order not found or PIN mismatch');
           return { success: false, error: 'Order not found' };
         }
         if (pinEntered && String(ord.counterPin) !== String(pinEntered).trim()) {
-          showToast('❌ Codice PIN errato!');
+          showToast('❌ Invalid 4-digit PIN!');
           return { success: false, error: 'Invalid PIN' };
         }
         const updated = {
@@ -771,7 +771,7 @@
         if (typeof playSound !== 'undefined' && playSound.kitchenChime) {
           playSound.kitchenChime();
         }
-        showToast(`✓ Comanda #${ord.orderNumber} (PIN ${ord.counterPin}) confermata e inviata in cucina!`);
+        showToast(`✓ Order #${ord.orderNumber} (PIN ${ord.counterPin}) confirmed & sent to kitchen!`);
         if (channel) channel.postMessage({ type: 'ORDER_APPROVED', payload: updated });
         return { success: true, order: updated };
       };
@@ -780,7 +780,7 @@
         const ord = orders.find(o => o.id === orderId);
         const updated = orders.map(o => o.id === orderId ? { ...o, status: 'cancelled', paymentStatus: 'cancelled' } : o);
         setOrders(updated);
-        showToast(`Comanda #${ord ? ord.orderNumber : ''} annullata`);
+        showToast(`Order #${ord ? ord.orderNumber : ''} cancelled`);
         if (channel) channel.postMessage({ type: 'STATUS', payload: { id: orderId, status: 'cancelled' } });
       };
 
@@ -880,7 +880,7 @@
       const clearAllOrders = () => {
         setOrders([]);
         setActiveOrderId(null);
-        showToast('🗑️ Tutte le comande sono state cancellate!');
+        showToast('🗑️ All orders cleared from memory!');
         if (channel) channel.postMessage({ type: 'CLEAR_ORDERS' });
       };
 
@@ -890,7 +890,7 @@
         setOrders([]);
         setActiveOrderId(null);
         setServiceCalls([]);
-        showToast('Menu ripristinato e comande azzerate!');
+        showToast('Menu reset and orders cleared!');
         if (channel) channel.postMessage({ type: 'RESET_DEMO' });
       };
 
@@ -2965,7 +2965,7 @@
         if (e) e.preventDefault();
         const pin = (counterPinInput || '').trim();
         if (!pin) {
-          if (showToast) showToast('Inserisci il PIN a 4 cifre');
+          if (showToast) showToast('Please enter the 4-digit PIN');
           return;
         }
         const found = orders.find(o => o.status === 'pending_approval' && String(o.counterPin) === pin);
@@ -2973,7 +2973,7 @@
           openCounterPaymentModal(found);
           setCounterPinInput('');
         } else {
-          if (showToast) showToast(`❌ Nessuna comanda in attesa con PIN #${pin}`);
+          if (showToast) showToast(`❌ No pending order found with PIN #${pin}`);
         }
       };
 
@@ -3192,15 +3192,15 @@
               <button
                 onClick={() => {
                   if (orders.length === 0) {
-                    showToast('Nessuna comanda presente');
+                    showToast('No active orders');
                     return;
                   }
-                  if (confirm('Vuoi cancellare tutte le comande e azzerare la cronologia?')) {
+                  if (confirm('Clear all orders and history?')) {
                     clearAllOrders();
                   }
                 }}
                 className="bg-slate-800 hover:bg-rose-950 hover:text-rose-300 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs border border-slate-700 transition-all"
-                title="Azzera tutte le comande"
+                title="Clear all orders"
               >
                 🗑️ Clear Orders ({orders.length})
               </button>
@@ -3222,7 +3222,7 @@
                   <span className="bg-amber-500 text-stone-950 font-mono font-black text-xs px-2.5 py-0.5 rounded-lg shadow">
                     ?venue={venueId}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-semibold">(Isolato & Indipendente)</span>
+                  <span className="text-[10px] text-slate-400 font-semibold">(Isolated & Independent)</span>
                 </div>
                 <h3 className="text-base font-black text-white">{restaurant.name}</h3>
               </div>
@@ -3232,7 +3232,7 @@
               <button
                 type="button"
                 onClick={() => {
-                  const input = prompt('Inserisci ID o Nome del Nuovo Locale (es. sydney-harbour-cafe, bondi-bistro, perth-pub):', venueId);
+                  const input = prompt('Enter New Venue ID or Client Name (e.g. sydney-harbour-cafe, bondi-bistro, perth-pub):', venueId);
                   if (input && input.trim()) {
                     const clean = input.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
                     const url = new URL(window.location.href);
@@ -3243,7 +3243,7 @@
                 }}
                 className="bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-stone-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all active:scale-95 cursor-pointer"
               >
-                <span>➕ Crea / Apri Nuovo Locale</span>
+                <span>➕ Create / Open Client Venue</span>
               </button>
 
               <button
@@ -3251,12 +3251,12 @@
                 onClick={() => {
                   const link = `${window.location.origin}${window.location.pathname}?venue=${venueId}&table=1`;
                   navigator.clipboard.writeText(link);
-                  if (showToast) showToast(`📋 Link Tavolo 1 copiato: ${link}`);
+                  if (showToast) showToast(`📋 Table 1 Link Copied: ${link}`);
                 }}
                 className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-2 rounded-xl text-xs border border-slate-700 transition-all flex items-center gap-1"
-                title="Copia link menu del Tavolo 1 per questo locale"
+                title="Copy Table 1 menu link for this venue"
               >
-                <span>📱 Copia Link Tavolo 1</span>
+                <span>📱 Copy Table 1 Link</span>
               </button>
 
               <button
@@ -3264,12 +3264,12 @@
                 onClick={() => {
                   const link = `${window.location.origin}${window.location.pathname}?venue=${venueId}&view=kitchen`;
                   navigator.clipboard.writeText(link);
-                  if (showToast) showToast(`👨‍🍳 Link Schermo Cucina copiato: ${link}`);
+                  if (showToast) showToast(`👨‍🍳 Kitchen Screen Link Copied: ${link}`);
                 }}
                 className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-2 rounded-xl text-xs border border-slate-700 transition-all flex items-center gap-1"
-                title="Copia link per lo schermo KDS della cucina"
+                title="Copy Kitchen KDS screen link"
               >
-                <span>👨‍🍳 Copia Link Cucina</span>
+                <span>👨‍🍳 Copy Kitchen Link</span>
               </button>
             </div>
           </div>
@@ -3956,7 +3956,7 @@
                                   <span>•</span>
                                   <span className={`font-bold ${ord.paymentStatus === 'paid' ? 'text-emerald-400' : 'text-amber-400'}`}>
                                     {ord.paymentStatus === 'paid'
-                                      ? (ord.paymentMethod === 'counter' || ord.paymentMethod === 'counter_cash' || ord.paymentMethod === 'counter_eftpos' ? 'Paid in Cassa' : 'Paid Online')
+                                      ? (ord.paymentMethod === 'counter' || ord.paymentMethod === 'counter_cash' || ord.paymentMethod === 'counter_eftpos' ? 'Paid at Counter' : 'Paid Online')
                                       : 'Pending'}
                                   </span>
                                 </div>
@@ -5118,10 +5118,10 @@
                   title="Click to enter customer 4-digit PIN and verify counter payment"
                 >
                   <span className="text-base">🔢</span>
-                  <span>Sblocca PIN Cassa</span>
+                  <span>Cashier PIN & Pay</span>
                   {pendingCount > 0 && (
                     <span className="bg-stone-950 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-400">
-                      {pendingCount} in attesa
+                      {pendingCount} waiting
                     </span>
                   )}
                 </button>
@@ -5146,7 +5146,7 @@
                         : 'text-stone-400 hover:text-white'
                     }`}
                   >
-                    <span>📱 Menu Cliente</span>
+                    <span>📱 Customer Menu</span>
                   </button>
 
                   <button
@@ -5157,7 +5157,7 @@
                         : 'text-stone-400 hover:text-white'
                     }`}
                   >
-                    <span>👨‍🍳 Cucina KDS</span>
+                    <span>👨‍🍳 Kitchen KDS</span>
                   </button>
 
                   <button
