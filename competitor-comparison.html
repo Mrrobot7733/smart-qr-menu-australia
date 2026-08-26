@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartMenu vs me&u / Mr Yum - Commercial Comparison & Cost Analysis</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Plus Jakarta Sans", "sans-serif"],
+          },
+          colors: {
+            brand: {
+              50: "#fff7ed",
+              500: "#f97316",
+              600: "#ea580c",
+              700: "#c2410c",
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+      body {
+        background-color: white !important;
+        color: #0f172a !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .page-break {
+        page-break-after: always;
+        break-after: page;
+        height: 100vh;
+        max-height: 100vh;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    .page-container {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 16mm 18mm;
+      margin: 0 auto 30px auto;
+      background: white;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.15);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+    }
+
+    @media screen {
+      body {
+        background: #0f172a;
+        padding: 40px 0;
+      }
+    }
+  </style>
+</head>
+<body class="font-sans antialiased text-slate-800">
+
+  <!-- Print floating toolbar -->
+  <div class="no-print fixed top-6 right-6 z-50 flex gap-3">
+    <button onclick="window.print()" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:brightness-110 text-white font-extrabold px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-2 text-sm cursor-pointer transition-all transform hover:scale-105">
+      <span>🖨️ Save as PDF / Print Document</span>
+    </button>
+  </div>
+
+  <!-- ==================== PAGE 1: EXECUTIVE FINANCIAL COMPARISON ==================== -->
+  <div class="page-container page-break">
+    <div>
+      <!-- Header -->
+      <div class="flex justify-between items-start border-b border-slate-200 pb-4">
+        <div>
+          <div class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 text-xs font-black px-3.5 py-1.5 rounded-full mb-2">
+            <span>💰 FINANCIAL ANALYSIS & VENDOR COMPARISON</span>
+          </div>
+          <h1 class="text-3xl font-black text-slate-900 tracking-tight">Stop Paying 3% on Every Coffee & Meal</h1>
+          <p class="text-xs text-slate-500 font-medium">Why Australian Hospitality Venues are Switching from me&u / Mr Yum to Flat-Rate Direct Ordering</p>
+        </div>
+        <div class="text-right">
+          <span class="text-xs font-bold text-slate-400 block uppercase tracking-wider">Market Analysis:</span>
+          <span class="text-sm font-extrabold text-slate-800">Australian Cafés, Pubs & Bistros</span>
+          <span class="text-[11px] text-orange-600 block font-semibold">Perth & Western Australia</span>
+        </div>
+      </div>
+
+      <!-- Highlight Banner -->
+      <div class="mt-5 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white rounded-3xl p-5 border border-slate-800 shadow-lg flex justify-between items-center">
+        <div class="space-y-1 max-w-lg">
+          <span class="text-orange-400 font-extrabold text-[10px] uppercase tracking-widest">The Commission Trap Explained</span>
+          <h2 class="text-lg font-black leading-tight text-white">
+            Traditional QR ordering platforms take 2.5% to 3.5% of your total turnover. That is over $12,000+ AUD every year.
+          </h2>
+          <p class="text-[11px] text-slate-300">
+            SmartMenu gives you the exact same Apple Pay & kitchen printing experience with <strong>0% Commission</strong> and a simple flat fee.
+          </p>
+        </div>
+        <div class="bg-orange-500/20 border border-orange-500/40 p-3.5 rounded-2xl text-center flex-shrink-0">
+          <span class="text-[10px] uppercase font-black text-orange-300 block">Average Annual Savings</span>
+          <span class="text-2xl font-black text-orange-400 block mt-0.5">$12,000+</span>
+          <span class="text-[9px] text-slate-400">Back in your pocket</span>
+        </div>
+      </div>
+
+      <!-- Head-to-Head Comparison Table -->
+      <div class="mt-6 space-y-2">
+        <h3 class="text-xs font-black uppercase tracking-wider text-slate-400">Side-by-Side Feature & Cost Breakdown:</h3>
+        <div class="border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 text-[11px] border-b border-slate-200">
+                <th class="py-3 px-4 font-bold">Feature / Commercial Term</th>
+                <th class="py-3 px-4 font-bold text-red-600 bg-red-50/50">me&u / Mr Yum</th>
+                <th class="py-3 px-4 font-bold text-amber-700 bg-amber-50/50">HungryHungry</th>
+                <th class="py-3 px-4 font-black text-white bg-orange-500 text-center">SmartMenu Direct ⭐</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 text-[11px]">
+              <tr>
+                <td class="py-2.5 px-4 font-bold text-slate-800">Commission on Every Order</td>
+                <td class="py-2.5 px-4 text-red-600 font-bold bg-red-50/30">2.5% – 3.5% per sale</td>
+                <td class="py-2.5 px-4 text-amber-700 font-bold bg-amber-50/30">2.0% – 3.5% per sale</td>
+                <td class="py-2.5 px-4 text-emerald-600 font-black bg-orange-50/40 text-center text-xs">0% (ZERO Commission)</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-4 font-bold text-slate-800">Monthly Subscription Fee</td>
+                <td class="py-2.5 px-4 text-slate-600">$99 – $199 AUD / mo</td>
+                <td class="py-2.5 px-4 text-slate-600">$89 – $149 AUD / mo</td>
+                <td class="py-2.5 px-4 font-bold text-slate-900 bg-orange-50/40 text-center">$99 AUD / mo (Flat)</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-4 font-bold text-slate-800">Diner Surcharge on Customers</td>
+                <td class="py-2.5 px-4 text-red-600 font-semibold">Often adds 3-5% fee to guest</td>
+                <td class="py-2.5 px-4 text-amber-700 font-semibold">Standard diner surcharges</td>
+                <td class="py-2.5 px-4 text-emerald-600 font-bold bg-orange-50/40 text-center">None / Standard 1.5% card pass-through</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-4 font-bold text-slate-800">Apple Pay & Google Pay (1-Touch)</td>
+                <td class="py-2.5 px-4 text-slate-700">Included</td>
+                <td class="py-2.5 px-4 text-slate-700">Included</td>
+                <td class="py-2.5 px-4 font-bold text-emerald-600 bg-orange-50/40 text-center">Included (Native Face ID)</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-4 font-bold text-slate-800">Kitchen & Bar Printer Compatibility</td>
+                <td class="py-2.5 px-4 text-slate-700">Requires specific hardware</td>
+                <td class="py-2.5 px-4 text-slate-700">Requires specific hardware</td>
+                <td class="py-2.5 px-4 font-bold text-emerald-600 bg-orange-50/40 text-center">Universal (Epson, Star, Sunmi, iPads)</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-4 font-bold text-slate-800">Hardware & Printer Costs</td>
+                <td class="py-2.5 px-4 text-red-600 font-semibold">Mandatory beacons ($15-25/table) + locked hardware</td>
+                <td class="py-2.5 px-4 text-amber-700 font-semibold">Proprietary terminal bundles</td>
+                <td class="py-2.5 px-4 text-emerald-600 font-bold bg-orange-50/40 text-center">Use existing printers ($0) or buy new @ $450/unit</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-4 font-bold text-slate-800">Payout Direct to Bank Account</td>
+                <td class="py-2.5 px-4 text-slate-600">Held by 3rd party batch payout</td>
+                <td class="py-2.5 px-4 text-slate-600">Held by 3rd party batch payout</td>
+                <td class="py-2.5 px-4 font-bold text-emerald-600 bg-orange-50/40 text-center">Direct Bank Transfer via Stripe AU</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-4 font-bold text-slate-800">Brand Ownership & Visuals</td>
+                <td class="py-2.5 px-4 text-slate-600">Promotes me&u brand to guest</td>
+                <td class="py-2.5 px-4 text-slate-600">Standard vendor template</td>
+                <td class="py-2.5 px-4 font-bold text-emerald-600 bg-orange-50/40 text-center">100% Your Café Branding & Logo</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Real Financial Scenario Box -->
+      <div class="mt-6 bg-slate-50 border border-slate-200 rounded-3xl p-4.5 space-y-3">
+        <h3 class="font-black text-xs uppercase tracking-wider text-slate-800">
+          💡 Real Venue Calculation: Comparing Monthly Costs on $40,000 AUD in QR Orders
+        </h3>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-red-50 border border-red-200 p-3.5 rounded-2xl space-y-1">
+            <span class="text-xs font-black text-red-700">❌ With me&u / Mr Yum (2.5% Commission):</span>
+            <div class="text-[11px] text-slate-600 space-y-0.5 pt-1">
+              <div class="flex justify-between"><span>Monthly 2.5% Fee:</span><span class="font-bold text-red-600">$1,000 AUD</span></div>
+              <div class="flex justify-between"><span>Platform Subscription:</span><span>$99 AUD</span></div>
+              <div class="flex justify-between font-black text-red-700 pt-1 border-t border-red-200 text-xs">
+                <span>Total Paid Each Month:</span><span>$1,099 AUD / mo</span>
+              </div>
+              <div class="text-[10px] text-red-800 pt-0.5">Yearly cost to venue: <strong>$13,188 AUD</strong></div>
+            </div>
+          </div>
+
+          <div class="bg-emerald-50 border-2 border-emerald-500 p-3.5 rounded-2xl space-y-1 shadow-sm">
+            <span class="text-xs font-black text-emerald-800">🟢 With SmartMenu Direct (0% Commission):</span>
+            <div class="text-[11px] text-slate-700 space-y-0.5 pt-1">
+              <div class="flex justify-between"><span>Commission Fee (0%):</span><span class="font-bold text-emerald-600">$0.00 AUD</span></div>
+              <div class="flex justify-between"><span>Platform Subscription:</span><span>$99 AUD</span></div>
+              <div class="flex justify-between font-black text-emerald-800 pt-1 border-t border-emerald-300 text-xs">
+                <span>Total Paid Each Month:</span><span>$99 AUD / mo</span>
+              </div>
+              <div class="text-[10px] text-emerald-800 font-extrabold pt-0.5">Yearly cost to venue: <strong>$1,188 AUD</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="border-t border-slate-200 pt-3 flex justify-between items-center text-[10px] text-slate-400 font-medium">
+      <span>SmartMenu Australia • Competitor & Financial Analysis</span>
+      <span>Page 1 of 2</span>
+      <span>Confidential</span>
+    </div>
+  </div>
+
+
+  <!-- ==================== PAGE 2: VENUE ROI SCENARIOS & ACTION PLAN ==================== -->
+  <div class="page-container">
+    <div>
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+        <div>
+          <span class="text-xs font-black text-orange-600 uppercase tracking-wider">Annual Dollar Savings</span>
+          <h2 class="text-2xl font-black text-slate-900">How Much Will Your Venue Save Every Year?</h2>
+        </div>
+        <span class="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 font-black px-3 py-1 rounded-full">
+          100% Retained Revenue
+        </span>
+      </div>
+
+      <!-- 3 Venue Tiers Matrix -->
+      <div class="mt-5 grid grid-cols-3 gap-3.5">
+        <!-- Tier 1 -->
+        <div class="bg-slate-50 border border-slate-200 rounded-3xl p-4.5 space-y-3 text-center">
+          <div>
+            <span class="text-[10px] font-black uppercase text-slate-400">Small Café / Espresso Bar</span>
+            <h4 class="text-sm font-extrabold text-slate-900 mt-0.5">$25,000 / mo in orders</h4>
+          </div>
+
+          <div class="p-3 bg-white rounded-2xl border border-slate-200 space-y-1">
+            <span class="text-[10px] text-slate-500 block">Annual me&u Fees:</span>
+            <span class="text-base font-bold text-red-600 line-through">$8,700 AUD</span>
+            <span class="text-[10px] text-slate-500 block pt-1">Annual SmartMenu Cost:</span>
+            <span class="text-base font-black text-emerald-600">$1,188 AUD</span>
+          </div>
+
+          <div class="bg-emerald-100/80 p-2.5 rounded-xl text-emerald-800 text-xs font-black">
+            💰 You Save: $7,512 AUD / year
+          </div>
+        </div>
+
+        <!-- Tier 2 (Highlighted) -->
+        <div class="bg-orange-50/50 border-2 border-orange-500 rounded-3xl p-4.5 space-y-3 text-center shadow-md relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[8px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-widest shadow">
+            TYPICAL AUSSIE PUB / BISTRO ⭐
+          </div>
+          <div>
+            <span class="text-[10px] font-black uppercase text-orange-700">Medium Café / Craft Bar</span>
+            <h4 class="text-sm font-extrabold text-slate-900 mt-0.5">$50,000 / mo in orders</h4>
+          </div>
+
+          <div class="p-3 bg-white rounded-2xl border border-orange-200 space-y-1">
+            <span class="text-[10px] text-slate-500 block">Annual me&u Fees:</span>
+            <span class="text-base font-bold text-red-600 line-through">$16,200 AUD</span>
+            <span class="text-[10px] text-slate-500 block pt-1">Annual SmartMenu Cost:</span>
+            <span class="text-base font-black text-emerald-600">$1,188 AUD</span>
+          </div>
+
+          <div class="bg-emerald-500 text-white p-2.5 rounded-xl text-xs font-black shadow">
+            💰 You Save: $15,012 AUD / year
+          </div>
+        </div>
+
+        <!-- Tier 3 -->
+        <div class="bg-slate-50 border border-slate-200 rounded-3xl p-4.5 space-y-3 text-center">
+          <div>
+            <span class="text-[10px] font-black uppercase text-slate-400">Busy Waterfront / Multi-Zone</span>
+            <h4 class="text-sm font-extrabold text-slate-900 mt-0.5">$80,000 / mo in orders</h4>
+          </div>
+
+          <div class="p-3 bg-white rounded-2xl border border-slate-200 space-y-1">
+            <span class="text-[10px] text-slate-500 block">Annual me&u Fees:</span>
+            <span class="text-base font-bold text-red-600 line-through">$25,200 AUD</span>
+            <span class="text-[10px] text-slate-500 block pt-1">Annual SmartMenu Cost:</span>
+            <span class="text-base font-black text-emerald-600">$1,188 AUD</span>
+          </div>
+
+          <div class="bg-emerald-100/80 p-2.5 rounded-xl text-emerald-800 text-xs font-black">
+            💰 You Save: $24,012 AUD / year
+          </div>
+        </div>
+      </div>
+
+      <!-- Hardware Policy Note -->
+      <div class="mt-4 bg-slate-100 border border-slate-300 rounded-2xl p-3.5 flex justify-between items-center text-xs">
+        <div class="space-y-0.5">
+          <span class="font-black text-slate-900 block text-[11px]">🖨️ Open Hardware Policy (No Forced Equipment Lock-in):</span>
+          <p class="text-[10px] text-slate-600">
+            <strong>Use Your Existing Equipment:</strong> We connect to your current Epson / Star Micronics printers and kitchen iPads at $0 extra hardware fee.<br>
+            <strong>New Thermal Printers (If Needed):</strong> Supplied and pre-configured at transparent cost (<strong>$450 AUD / unit</strong>). Hardware is billed separately.
+          </p>
+        </div>
+        <span class="text-[9px] bg-slate-200 text-slate-700 font-extrabold px-2.5 py-1 rounded-lg flex-shrink-0 ml-3">Billed Separately</span>
+      </div>
+
+      <!-- Why Direct Ordering Wins -->
+      <div class="mt-4 grid grid-cols-2 gap-3.5">
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-1">
+          <h4 class="font-extrabold text-slate-900 text-xs flex items-center gap-1.5">
+            <span>🛡️</span> <span>Direct Bank Payouts via Stripe AU</span>
+          </h4>
+          <p class="text-[11px] text-slate-600 leading-snug">
+            Your money never sits in an aggregator account. Every order processes through your venue Stripe account and settles directly into your Australian bank account on a rolling basis.
+          </p>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-1">
+          <h4 class="font-extrabold text-slate-900 text-xs flex items-center gap-1.5">
+            <span>📱</span> <span>Zero Diner Resistance or App Downloads</span>
+          </h4>
+          <p class="text-[11px] text-slate-600 leading-snug">
+            Customers do not have to create an account, enter email spam lists, or pay surprise 4% tech surcharges. They scan and pay seamlessly with Apple Pay in 10 seconds.
+          </p>
+        </div>
+      </div>
+
+      <!-- 14-Day Free Live Table Trial Banner -->
+      <div class="mt-5 bg-gradient-to-r from-orange-500 to-amber-500 rounded-3xl p-5 text-white flex justify-between items-center shadow-xl">
+        <div class="space-y-1">
+          <span class="text-[10px] uppercase font-black tracking-wider text-orange-100">Zero-Risk Pilot Program</span>
+          <h3 class="text-base font-black text-white">Test It Live on 5 Tables for 14 Days Free</h3>
+          <p class="text-[11px] text-orange-100">
+            We will set up your digital menu and provide sample wooden QR badges. See how much your team and guests love it before committing a single dollar.
+          </p>
+        </div>
+        <div class="text-right flex-shrink-0 pl-4 border-l border-orange-400/50">
+          <span class="text-[10px] font-bold text-orange-100 block">Direct Contact:</span>
+          <span class="text-sm font-black text-white block">Marco Panichi</span>
+          <span class="text-[10px] text-orange-100">Perth / Western Australia</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="border-t border-slate-200 pt-3 flex justify-between items-center text-[10px] text-slate-400 font-medium">
+      <span>SmartMenu Australia • Competitor & Financial Analysis</span>
+      <span>Page 2 of 2</span>
+      <span>Confidential & Prepared for Hospitality Partners</span>
+    </div>
+  </div>
+
+</body>
+</html>

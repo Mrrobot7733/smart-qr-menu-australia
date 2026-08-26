@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartMenu Australia - Master Software as a Service (SaaS) Agreement</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Plus Jakarta Sans", "sans-serif"],
+          },
+          colors: {
+            brand: {
+              50: "#fff7ed",
+              500: "#f97316",
+              600: "#ea580c",
+              700: "#c2410c",
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+      body {
+        background-color: white !important;
+        color: #0f172a !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .page-break {
+        page-break-after: always;
+        break-after: page;
+        height: 100vh;
+        max-height: 100vh;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    .page-container {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 16mm 18mm;
+      margin: 0 auto 30px auto;
+      background: white;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.15);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    @media screen {
+      body {
+        background: #0f172a;
+        padding: 40px 0;
+      }
+    }
+
+    .contract-heading {
+      font-size: 12px;
+      font-weight: 800;
+      color: #0f172a;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 3px;
+      margin-top: 10px;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased text-slate-800">
+
+  <!-- Print floating toolbar -->
+  <div class="no-print fixed top-6 right-6 z-50 flex gap-3">
+    <button onclick="window.print()" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:brightness-110 text-white font-extrabold px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-2 text-sm cursor-pointer transition-all transform hover:scale-105">
+      <span>🖨️ Save as PDF / Print Agreement</span>
+    </button>
+  </div>
+
+  <!-- ==================== PAGE 1: SCHEDULE & COMMERCIAL TERMS ==================== -->
+  <div class="page-container page-break">
+    <div>
+      <!-- Header -->
+      <div class="flex justify-between items-start border-b-2 border-slate-900 pb-3">
+        <div>
+          <span class="text-[10px] bg-slate-900 text-white font-black px-2.5 py-0.5 rounded tracking-wider uppercase">COMMERCIAL AGREEMENT</span>
+          <h1 class="text-2xl font-black text-slate-900 mt-1">Master Software as a Service (SaaS) Agreement</h1>
+          <p class="text-xs text-slate-500 font-semibold">Hospitality QR Order, Pay & Kitchen Workflow Technology</p>
+        </div>
+        <div class="text-right text-[10px] text-slate-500">
+          <span>Jurisdiction: <strong>Western Australia (WA)</strong></span><br>
+          <span>Governed by: <strong>Australian Law & ACL</strong></span>
+        </div>
+      </div>
+
+      <!-- Schedule Box (The Deal Specifics) -->
+      <div class="mt-4 bg-slate-50 border-2 border-slate-300 rounded-2xl p-4 space-y-3">
+        <h2 class="text-xs font-black uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1">Schedule 1: Commercial Particulars</h2>
+        
+        <div class="grid grid-cols-2 gap-3 text-[11px]">
+          <div class="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
+            <span class="font-bold text-slate-400 block text-[9px] uppercase">Service Provider ("Provider")</span>
+            <div class="font-extrabold text-slate-900">Marco Panichi (Trading as SmartMenu Australia)</div>
+            <div class="text-slate-600 text-[10px]">ABN: [Insert Your ABN Here]</div>
+            <div class="text-slate-600 text-[10px]">Email: contact@smartmenu.com.au</div>
+          </div>
+
+          <div class="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
+            <span class="font-bold text-slate-400 block text-[9px] uppercase">Client / Venue ("Client")</span>
+            <div class="font-extrabold text-slate-900">[Client Business Name / Entity Pty Ltd]</div>
+            <div class="text-slate-600 text-[10px]">Trading As: [Venue Name, e.g. The Beaufort]</div>
+            <div class="text-slate-600 text-[10px]">ABN: [Client ABN] • Venue Address: [Venue Address]</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2.5 text-[10px]">
+          <div class="bg-white p-2.5 rounded-xl border border-slate-200">
+            <span class="text-slate-400 font-bold block uppercase text-[8px]">Initial Setup & Launch Fee</span>
+            <span class="text-sm font-black text-slate-900 block mt-0.5">$1,650.00 AUD <span class="text-[9px] font-normal text-slate-500">+ GST</span></span>
+            <span class="text-[9px] text-slate-500">One-time upon signing</span>
+          </div>
+
+          <div class="bg-white p-2.5 rounded-xl border border-orange-300 bg-orange-50/30">
+            <span class="text-orange-700 font-bold block uppercase text-[8px]">Monthly Subscription Fee</span>
+            <span class="text-sm font-black text-orange-600 block mt-0.5">$99.00 AUD <span class="text-[9px] font-normal text-slate-500">/ mo + GST</span></span>
+            <span class="text-[9px] text-slate-600">Includes up to $25k/mo volume</span>
+          </div>
+
+          <div class="bg-white p-2.5 rounded-xl border border-slate-200">
+            <span class="text-slate-400 font-bold block uppercase text-[8px]">Initial Term & Notice</span>
+            <span class="text-sm font-black text-slate-900 block mt-0.5">12 Months</span>
+            <span class="text-[9px] text-slate-500">30-day written notice thereafter</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Terms Summary -->
+      <div class="mt-4 space-y-2 text-[10.5px] text-slate-700">
+        <h3 class="contract-heading">1. Provision of Services</h3>
+        <p>
+          1.1 The Provider grants the Client a non-exclusive, non-transferable license to access and use the SmartMenu digital ordering, payment processing (Apple Pay / Google Pay / EFTPOS via Stripe), and kitchen workflow software (the "Service") for the venue specified above.
+        </p>
+
+        <h3 class="contract-heading">2. Hardware & Thermal Printer Terms (Explicit Disclaimer)</h3>
+        <p>
+          2.1 <strong>Hardware Exclusions:</strong> The Client acknowledges that physical hardware (including but not limited to thermal receipt printers, kitchen display tablets, router equipment, and acrylic/wooden stands) is <strong>NOT</strong> provided free of charge under this Agreement.<br>
+          2.2 <strong>Bring Your Own Hardware (BYOD):</strong> The Service is designed to integrate with the Client existing supported Epson/Star Micronics thermal printers and Android/iOS tablets at $0 additional hardware charge.<br>
+          2.3 <strong>Hardware Purchases:</strong> Any new pre-configured hardware requested by the Client (e.g. Star CloudPRNT thermal printers at <strong>$450.00 AUD + GST per unit</strong>) will be invoiced separately and must be paid prior to hardware dispatch.
+        </p>
+
+        <h3 class="contract-heading">3. Payments & Merchant Gateway</h3>
+        <p>
+          3.1 The Client will establish and maintain its own Merchant Account (e.g., Stripe Australia). 100% of customer order funds settle directly into the Client designated Australian bank account. The Provider is not a payment facilitator or financial custodian and holds no customer funds.
+        </p>
+
+        <h3 class="contract-heading">4. Fees, Volume Tiers & Price Structure Evolution</h3>
+        <p>
+          4.1 <strong>Fixed Rate Guarantee:</strong> The agreed Monthly Subscription Fee ($99.00 AUD/mo) is guaranteed and locked for the duration of the Initial 12-Month Term.<br>
+          4.2 <strong>Baseline Volume Cap:</strong> The introductory flat monthly fee applies to venues processing up to <strong>$25,000.00 AUD in Gross Monthly Order Volume ("GMV")</strong> through the platform per calendar month.<br>
+          4.3 <strong>High-Volume Tiers & Fee Adjustments (Right to Introduce Volume Fees):</strong> Following the expiration of the Initial Term, or in the event the Client GMV exceeds $25,000.00 AUD/month on a continuous basis, the Provider reserves the right, upon providing <strong>thirty (30) days written notice</strong>, to:
+        </p>
+        <ul class="list-disc pl-5 space-y-0.5 text-slate-700 text-[10px]">
+          <li>Transition the venue to the appropriate Volume Tier (e.g., Pro Tier at $149.00 AUD/mo for up to $60k/mo GMV); or</li>
+          <li>Apply a nominal technology volume fee (not to exceed <strong>0.75%</strong>) exclusively on the incremental GMV exceeding the baseline $25,000.00 AUD threshold.</li>
+        </ul>
+        <p class="text-[10px] text-slate-500 italic mt-0.5">
+          In compliance with Australian Consumer & Commercial Law, if the Client does not agree to a notified fee adjustment, the Client may terminate this Agreement without penalty prior to the effective date of the change.
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer Page 1 -->
+    <div class="border-t border-slate-200 pt-2 flex justify-between items-center text-[9px] text-slate-400">
+      <span>SmartMenu Australia • Master SaaS Service Agreement</span>
+      <span>Page 1 of 2</span>
+      <span>Client Initials: _______ / Provider Initials: _______</span>
+    </div>
+  </div>
+
+
+  <!-- ==================== PAGE 2: LEGAL TERMS & EXECUTION ==================== -->
+  <div class="page-container">
+    <div>
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+        <span class="text-xs font-black text-slate-900 uppercase tracking-wider">Standard Commercial Terms (Continued)</span>
+        <span class="text-[10px] text-slate-400">Agreement Ref: SM-AU-2026</span>
+      </div>
+
+      <!-- Legal Clauses Continued -->
+      <div class="mt-3 space-y-2 text-[10px] text-slate-700 leading-relaxed">
+        <h3 class="contract-heading">5. Term, Renewal & Termination</h3>
+        <p>
+          5.1 <strong>Term:</strong> This Agreement commences on the Commencement Date and continues for the Initial Term of twelve (12) months. Thereafter, it automatically renews on a month-to-month basis.<br>
+          5.2 <strong>Termination for Convenience:</strong> Following the Initial Term, either party may terminate this Agreement by providing thirty (30) days prior written notice.<br>
+          5.3 <strong>Termination for Cause:</strong> Either party may terminate immediately if the other party commits a material breach of this Agreement that remains uncured for fourteen (14) days following written notice.
+        </p>
+
+        <h3 class="contract-heading">6. Intellectual Property & Data Ownership</h3>
+        <p>
+          6.1 <strong>Software IP:</strong> The Provider retains all worldwide right, title, copyright, and intellectual property in the SmartMenu software, source code, designs, algorithms, and documentation.<br>
+          6.2 <strong>Client Data:</strong> The Client owns all rights to its customer lists, menu data, trademarks, trade names, and branding assets. The Provider will never sell or monetize Client customer data to third parties.
+        </p>
+
+        <h3 class="contract-heading">7. Service Availability, Uptime & Maintenance</h3>
+        <p>
+          7.1 The Provider will use commercially reasonable efforts to maintain a 99.5% service availability uptime, excluding scheduled maintenance or telecommunications outages outside the Provider direct control.
+        </p>
+
+        <h3 class="contract-heading">8. Limitation of Liability & Indemnity</h3>
+        <p>
+          8.1 To the maximum extent permitted by the <em>Competition and Consumer Act 2010 (Cth)</em> (Australian Consumer Law), the Provider aggregate total liability arising out of or related to this Agreement is strictly limited to the total fees paid by the Client to the Provider in the three (3) months preceding the incident.<br>
+          8.2 Neither party shall be liable for indirect, incidental, special, or consequential loss of profits, loss of data, or business interruption.
+        </p>
+
+        <h3 class="contract-heading">9. Australian Goods & Services Tax (GST) & Governing Law</h3>
+        <p>
+          9.1 All fees quoted are in Australian Dollars (AUD) and are exclusive of GST unless expressly specified. GST will be added to invoices in accordance with Australian taxation legislation.<br>
+          9.2 <strong>Governing Law:</strong> This Agreement is governed by the laws of <strong>Western Australia (WA)</strong>, and the parties submit to the non-exclusive jurisdiction of the courts of Western Australia.
+        </p>
+      </div>
+
+      <!-- Execution / Signature Block -->
+      <div class="mt-5 bg-slate-50 border-2 border-slate-300 rounded-2xl p-4 space-y-3">
+        <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1">
+          Execution & Acceptance
+        </h3>
+        <p class="text-[10px] text-slate-600">
+          By signing below, the authorized representatives of the parties agree to be bound by all terms and conditions of this Agreement as of the Commencement Date.
+        </p>
+
+        <div class="grid grid-cols-2 gap-6 pt-2 text-[10px]">
+          <!-- Provider Signature -->
+          <div class="space-y-2 bg-white p-3 rounded-xl border border-slate-200">
+            <span class="font-black text-slate-900 block text-[10px] uppercase text-orange-600">Signed for & on behalf of the Provider:</span>
+            <div><span class="text-slate-400">Name:</span> <strong class="text-slate-800">Marco Panichi</strong></div>
+            <div><span class="text-slate-400">Title:</span> <span class="text-slate-800">Principal / Managing Director</span></div>
+            <div class="pt-4 pb-1 border-b border-slate-300"><span class="text-slate-400">Signature:</span> ___________________________</div>
+            <div><span class="text-slate-400">Date:</span> ____ / ____ / 2026</div>
+          </div>
+
+          <!-- Client Signature -->
+          <div class="space-y-2 bg-white p-3 rounded-xl border border-slate-200">
+            <span class="font-black text-slate-900 block text-[10px] uppercase text-slate-900">Signed for & on behalf of the Client:</span>
+            <div><span class="text-slate-400">Entity Name:</span> <strong class="text-slate-800">[Client Business Name]</strong></div>
+            <div><span class="text-slate-400">Authorized Name:</span> ___________________________</div>
+            <div><span class="text-slate-400">Title / Position:</span> ___________________________</div>
+            <div class="pt-2 pb-1 border-b border-slate-300"><span class="text-slate-400">Signature:</span> ___________________________</div>
+            <div><span class="text-slate-400">Date:</span> ____ / ____ / 2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Page 2 -->
+    <div class="border-t border-slate-200 pt-2 flex justify-between items-center text-[9px] text-slate-400">
+      <span>SmartMenu Australia • Master SaaS Service Agreement</span>
+      <span>Page 2 of 2</span>
+      <span>Legally Binding Commercial Contract</span>
+    </div>
+  </div>
+
+</body>
+</html>

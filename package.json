@@ -1,0 +1,17 @@
+{
+  "name": "smart-qr-menu-australia",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 5174",
+    "deploy:cloudflare": "npx wrangler pages deploy . --project-name smartmenu-australia --branch main",
+    "deploy": "npm run deploy:cloudflare"
+  },
+  "dependencies": {
+    "stripe": "^17.5.0"
+  },
+  "devDependencies": {
+    "wrangler": "^3.109.0"
+  }
+}
