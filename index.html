@@ -799,7 +799,7 @@
         return newOrder;
       };
 
-      const approveCounterOrder = (orderId, pinEntered, paidMethod = 'counter_cash') => {
+      const approveCounterOrder = (orderId, pinEntered, paidMethod = 'counter_cash', updatedFields = {}) => {
         const ord = orders.find(o => o.id === orderId || (pinEntered && String(o.counterPin) === String(pinEntered).trim()));
         if (!ord) {
           showToast('❌ Comanda non trovata o PIN non corrispondente');
@@ -811,6 +811,7 @@
         }
         const updated = {
           ...ord,
+          ...updatedFields,
           status: 'new',
           paymentStatus: 'paid',
           paymentMethod: paidMethod || ord.paymentMethod || 'counter',
@@ -820,7 +821,7 @@
         if (typeof playSound !== 'undefined' && playSound.kitchenChime) {
           playSound.kitchenChime();
         }
-        showToast(`✓ Comanda #${ord.orderNumber} (PIN ${ord.counterPin}) incassata e inviata in cucina!`);
+        showToast(`✓ Comanda #${ord.orderNumber} (PIN ${ord.counterPin}) confermata e inviata in cucina!`);
         if (channel) channel.postMessage({ type: 'ORDER_APPROVED', payload: updated });
         return { success: true, order: updated };
       };
@@ -2908,6 +2909,54 @@
       const [counterPinInput, setCounterPinInput] = useState('');
       const [counterPaymentOrder, setCounterPaymentOrder] = useState(null);
       const [counterPaymentMethod, setCounterPaymentMethod] = useState('counter_cash');
+      const [editingCounterItems, setEditingCounterItems] = useState([]);
+      const [counterDiscountPercent, setCounterDiscountPercent] = useState(0);
+
+      const openCounterPaymentModal = (ord) => {
+        setCounterPaymentOrder(ord);
+        setEditingCounterItems(ord.items ? ord.items.map(i => ({ ...i })) : []);
+        setCounterDiscountPercent(0);
+        setCounterPaymentMethod('counter_cash');
+      };
+
+      const handleUpdateCounterItemQty = (index, delta) => {
+        setEditingCounterItems(prev => {
+          const next = [...prev];
+          const cur = next[index];
+          const nextQty = (cur.quantity || 1) + delta;
+          if (nextQty <= 0) {
+            return prev.filter((_, i) => i !== index);
+          }
+          next[index] = {
+            ...cur,
+            quantity: nextQty,
+            totalItemPrice: (cur.unitPrice || cur.price) * nextQty
+          };
+          return next;
+        });
+      };
+
+      const handleRemoveCounterItem = (index) => {
+        setEditingCounterItems(prev => prev.filter((_, i) => i !== index));
+      };
+
+      const handleAddDishToCounterOrder = (itemId) => {
+        if (!itemId) return;
+        const found = items.find(i => i.id === itemId);
+        if (!found) return;
+        const newItem = {
+          itemId: found.id,
+          name: found.name,
+          unitPrice: found.price,
+          price: found.price,
+          totalItemPrice: found.price,
+          quantity: 1,
+          station: found.station || 'kitchen',
+          diningOption: counterPaymentOrder?.orderType === 'takeaway' ? 'takeaway' : 'dine_in'
+        };
+        setEditingCounterItems(prev => [...prev, newItem]);
+        if (showToast) showToast(`+ Added: ${found.name} ($${found.price.toFixed(2)})`);
+      };
 
       const handleVerifyPinSubmit = (e) => {
         if (e) e.preventDefault();
@@ -2918,7 +2967,7 @@
         }
         const found = orders.find(o => o.status === 'pending_approval' && String(o.counterPin) === pin);
         if (found) {
-          setCounterPaymentOrder(found);
+          openCounterPaymentModal(found);
           setCounterPinInput('');
         } else {
           if (showToast) showToast(`❌ Nessuna comanda in attesa con PIN #${pin}`);
@@ -3646,7 +3695,7 @@
                           <button
                             key={pOrd.id}
                             type="button"
-                            onClick={() => setCounterPaymentOrder(pOrd)}
+                            onClick={() => openCounterPaymentModal(pOrd)}
                             className="bg-amber-950 hover:bg-amber-900 border border-amber-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg transition-all active:scale-95"
                           >
                             <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-1.5 py-0.5 rounded font-mono">
@@ -4281,16 +4330,19 @@
             </div>
           )}
 
-          {/* Modal: Cashier Counter Verification & Payment Confirmation */}
+          {/* Modal: Cashier Counter Verification, Item Editing & Payment Confirmation */}
           {counterPaymentOrder && (() => {
             const pOrd = counterPaymentOrder;
-            const dineInItems = pOrd.items?.filter(i => i.diningOption === 'dine_in') || [];
-            const takeawayItems = pOrd.items?.filter(i => i.diningOption === 'takeaway') || [];
+            const dineInItems = (editingCounterItems || []).filter(i => i.diningOption === 'dine_in');
+            const takeawayItems = (editingCounterItems || []).filter(i => i.diningOption === 'takeaway');
             const isHybrid = dineInItems.length > 0 && takeawayItems.length > 0;
             const isTakeawayOnly = pOrd.orderType === 'takeaway' || (dineInItems.length === 0 && takeawayItems.length > 0);
-            const totalDishes = pOrd.items?.reduce((s, i) => s + i.quantity, 0) || 0;
-            const subtotalCalc = pOrd.items?.reduce((s, i) => s + (i.totalItemPrice || (i.price * i.quantity)), 0) || 0;
-            const grandTotal = pOrd.totalAmount || (subtotalCalc + (pOrd.surchargeAmount || 0) + (pOrd.tipAmount || 0));
+            const totalDishes = (editingCounterItems || []).reduce((s, i) => s + (i.quantity || 1), 0);
+            const currentSubtotal = (editingCounterItems || []).reduce((s, i) => s + (i.totalItemPrice || ((i.unitPrice || i.price) * (i.quantity || 1))), 0);
+            const discountAmt = (currentSubtotal * (counterDiscountPercent || 0)) / 100;
+            const discountedSubtotal = Math.max(0, currentSubtotal - discountAmt);
+            const grandTotal = discountedSubtotal + (pOrd.surchargeAmount || 0) + (pOrd.tipAmount || 0);
+            const gstAmt = grandTotal / 11;
 
             return (
               <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto no-print">
@@ -4304,12 +4356,12 @@
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="font-black text-white text-base">Cashier Bill & Payment Unlock</h3>
+                          <h3 className="font-black text-white text-base">Cashier Bill Review & Order Edit</h3>
                           <span className="bg-amber-500 text-stone-950 font-mono font-black text-xs px-2 py-0.5 rounded-lg shadow">
                             PIN #{pOrd.counterPin}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-400">Order #{pOrd.orderNumber} • Table #{pOrd.tableNumber}</p>
+                        <p className="text-[11px] text-slate-400">Order #{pOrd.orderNumber} • Table #{pOrd.tableNumber} • (Modify dishes below if requested by guest)</p>
                       </div>
                     </div>
                     <button
@@ -4340,21 +4392,118 @@
                     )}
                   </div>
 
-                  {/* Itemized Dish List */}
-                  <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-2 max-h-48 overflow-y-auto">
+                  {/* Interactive Itemized Dish List (Editable by Manager) */}
+                  <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-2.5 max-h-56 overflow-y-auto">
                     <div className="text-[11px] font-black text-slate-400 uppercase tracking-wider flex justify-between border-b border-slate-800 pb-1">
-                      <span>Items ({totalDishes})</span>
-                      <span>Price</span>
+                      <span>Ordered Dishes & Items ({totalDishes})</span>
+                      <span>Total</span>
                     </div>
-                    {pOrd.items?.map((it, idx) => (
-                      <div key={idx} className="flex justify-between items-start text-xs border-b border-slate-900/60 pb-1.5 last:border-0">
-                        <div>
-                          <span className="font-bold text-white">{it.quantity}x {it.name}</span>
-                          {it.notes && <p className="text-[10px] text-amber-400">Note: {it.notes}</p>}
-                        </div>
-                        <span className="font-mono text-slate-300 font-bold">${(it.totalItemPrice || (it.price * it.quantity)).toFixed(2)}</span>
+
+                    {editingCounterItems.length === 0 ? (
+                      <div className="text-center py-4 text-slate-500 font-semibold">
+                        No items on this bill. Add an item below!
                       </div>
-                    ))}
+                    ) : (
+                      editingCounterItems.map((it, idx) => {
+                        const itemPrice = (it.unitPrice || it.price);
+                        const lineTotal = itemPrice * (it.quantity || 1);
+
+                        return (
+                          <div key={idx} className="bg-slate-900/90 border border-slate-800/80 p-2.5 rounded-xl flex items-center justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-white text-xs truncate">{it.name}</span>
+                                <span className="text-[10px] text-slate-400 font-mono">(${itemPrice.toFixed(2)} ea)</span>
+                              </div>
+                              {it.notes && <p className="text-[10px] text-amber-400 truncate">Note: {it.notes}</p>}
+                            </div>
+
+                            {/* Quantity Controls & Delete */}
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <div className="flex items-center gap-1 bg-slate-950 border border-slate-700 rounded-lg p-0.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateCounterItemQty(idx, -1)}
+                                  className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center text-xs active:scale-95"
+                                  title="Decrease quantity"
+                                >
+                                  -
+                                </button>
+                                <span className="w-5 text-center font-mono font-black text-amber-300 text-xs">
+                                  {it.quantity || 1}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateCounterItemQty(idx, 1)}
+                                  className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center text-xs active:scale-95"
+                                  title="Increase quantity"
+                                >
+                                  +
+                                </button>
+                              </div>
+
+                              <span className="font-mono text-white font-bold text-xs min-w-[50px] text-right">
+                                ${lineTotal.toFixed(2)}
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveCounterItem(idx)}
+                                className="w-6 h-6 rounded bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 flex items-center justify-center text-[10px] active:scale-95"
+                                title="Remove item"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* ➕ Add Extra Dish / Drink from Menu */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+                      ➕ Add Item to Bill (Staff Override):
+                    </label>
+                    <select
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleAddDishToCounterOrder(e.target.value);
+                          e.target.value = '';
+                        }
+                      }}
+                      defaultValue=""
+                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-amber-500"
+                    >
+                      <option value="" disabled>➕ Select a dish, craft beer, or dessert to add...</option>
+                      {items.filter(i => i.isAvailable !== false).map(it => (
+                        <option key={it.id} value={it.id}>
+                          {it.name} — ${it.price.toFixed(2)} AUD ({it.station === 'bar' ? '🍸 Bar' : '🍳 Kitchen'})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Manager Discount Selector */}
+                  <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex flex-wrap justify-between items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-300">Manager Discount / Promo:</span>
+                    <div className="flex gap-1">
+                      {[0, 5, 10, 15, 20].map(pct => (
+                        <button
+                          key={pct}
+                          type="button"
+                          onClick={() => setCounterDiscountPercent(pct)}
+                          className={`px-2 py-1 rounded-lg font-bold text-[10px] transition-all ${
+                            counterDiscountPercent === pct
+                              ? 'bg-amber-500 text-stone-950 font-black shadow'
+                              : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-white'
+                          }`}
+                        >
+                          {pct === 0 ? '0% (None)' : `-${pct}%`}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Bill Split Alert if requested */}
@@ -4365,7 +4514,7 @@
                         <span>Bill split requested ({pOrd.splitCount} people):</span>
                       </span>
                       <span className="font-black font-mono text-purple-300 text-sm">
-                        ${pOrd.splitShareAmount} AUD ea
+                        ${(grandTotal / pOrd.splitCount).toFixed(2)} AUD ea
                       </span>
                     </div>
                   )}
@@ -4402,13 +4551,25 @@
                   </div>
 
                   {/* Grand Total Bar */}
-                  <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 flex justify-between items-center">
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total To Collect:</span>
-                      <span className="text-[10px] text-slate-500">Includes ${(grandTotal / 11).toFixed(2)} GST</span>
+                  <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 space-y-1.5">
+                    <div className="flex justify-between text-slate-400 text-[11px]">
+                      <span>Items Subtotal:</span>
+                      <span className="font-mono font-bold text-slate-200">${currentSubtotal.toFixed(2)} AUD</span>
                     </div>
-                    <div className="text-2xl font-black font-mono text-amber-300">
-                      ${grandTotal.toFixed(2)} AUD
+                    {discountAmt > 0 && (
+                      <div className="flex justify-between text-emerald-400 text-[11px] font-bold">
+                        <span>Discount ({counterDiscountPercent}%):</span>
+                        <span className="font-mono">-${discountAmt.toFixed(2)} AUD</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-baseline pt-1 border-t border-slate-800">
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">FINAL TOTAL TO COLLECT:</span>
+                        <span className="text-[10px] text-slate-500">Includes ${gstAmt.toFixed(2)} GST (10%)</span>
+                      </div>
+                      <div className="text-2xl font-black font-mono text-amber-300">
+                        ${grandTotal.toFixed(2)} AUD
+                      </div>
                     </div>
                   </div>
 
@@ -4428,11 +4589,19 @@
                     </button>
                     <button
                       type="button"
+                      disabled={editingCounterItems.length === 0}
                       onClick={() => {
-                        approveCounterOrder(pOrd.id, pOrd.counterPin, counterPaymentMethod);
+                        approveCounterOrder(pOrd.id, pOrd.counterPin, counterPaymentMethod, {
+                          items: editingCounterItems,
+                          subtotal: currentSubtotal,
+                          discountAmount: discountAmt,
+                          totalAmount: grandTotal,
+                          gstAmount: Number(gstAmt.toFixed(2)),
+                          splitShareAmount: pOrd.splitCount > 1 ? (grandTotal / pOrd.splitCount).toFixed(2) : grandTotal
+                        });
                         setCounterPaymentOrder(null);
                       }}
-                      className="sm:col-span-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:brightness-110 text-stone-950 font-black py-3 rounded-2xl text-sm shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
+                      className="sm:col-span-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:brightness-110 disabled:opacity-50 text-stone-950 font-black py-3 rounded-2xl text-sm shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
                     >
                       <span>✓ Confirm ${grandTotal.toFixed(2)} & Send to Kitchen</span>
                     </button>
