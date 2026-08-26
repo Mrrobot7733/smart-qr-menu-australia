@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartMenu Australia - 30s Live Demo Video & Commercial</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #0c0a09;
+      color: #f5f5f4;
+    }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Phone Mockup Frame */
+    .phone-frame {
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 40px rgba(245, 158, 11, 0.15);
+      border: 8px solid #292524;
+      border-radius: 44px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Thermal Docket Animation */
+    @keyframes printSlide {
+      0% { transform: translateY(-100%); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    .docket-print {
+      animation: printSlide 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-[#0a0807] text-stone-100 overflow-x-hidden selection:bg-amber-500 selection:text-stone-950">
+
+  <!-- Top Header Navigation -->
+  <header class="w-full bg-[#14100e]/90 backdrop-blur-md border-b border-stone-800 sticky top-0 z-50 px-4 py-3">
+    <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-stone-950 font-black shadow-lg">
+          <i data-lucide="sparkles" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h1 class="font-black text-sm sm:text-base text-white tracking-wide flex items-center gap-2">
+            <span>SmartMenu Australia</span>
+            <span class="bg-amber-500/20 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-500/40 uppercase">
+              Live Promo Spot
+            </span>
+          </h1>
+          <p class="text-[11px] text-stone-400">30-Second Commercial & Interactive Video Showcase</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <a href="index.html" class="bg-stone-800 hover:bg-stone-700 text-stone-200 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-stone-700">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+          <span>Open Live App</span>
+        </a>
+        <button id="btnToggleVoice" class="bg-amber-950 hover:bg-amber-900 border border-amber-500/50 text-amber-300 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow">
+          <i data-lucide="volume-2" class="w-3.5 h-3.5" id="voiceIcon"></i>
+          <span id="voiceLabel">Voiceover: ON (AU English)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Video Stage -->
+  <main class="max-w-6xl mx-auto w-full px-4 py-6 flex-1 flex flex-col items-center justify-center">
+
+    <!-- Cinema Video Player Container -->
+    <div class="w-full max-w-4xl bg-gradient-to-b from-[#181310] via-[#120f0d] to-[#0c0a09] border-2 border-amber-500/40 rounded-3xl p-4 sm:p-6 shadow-2xl space-y-5 relative">
+      
+      <!-- Video Toolbar Top -->
+      <div class="flex flex-wrap justify-between items-center gap-3 border-b border-stone-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></span>
+          <span class="font-extrabold text-xs text-white uppercase tracking-wider">
+            🎬 Video Spot: <span id="sceneTitle" class="text-amber-400">Scene 1 • Scan Table QR</span>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2 font-mono text-xs text-amber-300 font-bold bg-black/60 px-3 py-1 rounded-xl border border-stone-800">
+          <span id="timeElapsed">00:00</span> / <span>00:32</span>
+        </div>
+      </div>
+
+      <!-- Video Screen Area -->
+      <div id="videoContainer" class="relative w-full aspect-[16/10] sm:aspect-[16/9] bg-[#070605] rounded-2xl overflow-hidden border border-stone-800 flex items-center justify-center p-2 sm:p-4 shadow-inner">
+        
+        <!-- Animated Background Ambient Glow -->
+        <div class="absolute inset-0 bg-gradient-to-tr from-amber-500/10 via-transparent to-orange-500/10 pointer-events-none"></div>
+
+        <!-- SCENE 1: Table Arrival & Camera QR Scan -->
+        <div id="scene1" class="scene-panel w-full h-full flex flex-col items-center justify-center text-center p-4 space-y-4 animate-in fade-in">
+          <div class="relative bg-gradient-to-br from-[#261e18] to-[#14100e] p-6 rounded-3xl border-2 border-amber-500/60 shadow-2xl max-w-sm w-full space-y-3">
+            <div class="inline-flex items-center gap-1.5 bg-amber-500 text-stone-950 font-black text-[10px] px-3 py-0.5 rounded-full uppercase shadow">
+              <span>📍 Melbourne Cafe • Table #4</span>
+            </div>
+            <h3 class="text-lg font-black text-white">SmartMenu Table Standee</h3>
+            
+            <!-- Simulated QR Standee -->
+            <div class="bg-white p-4 rounded-2xl w-40 h-40 mx-auto shadow-inner flex flex-col items-center justify-center border-4 border-black relative overflow-hidden group">
+              <div class="w-full h-full bg-stone-900 rounded-lg flex items-center justify-center text-white text-center p-2 font-mono text-[10px]">
+                <div class="space-y-1">
+                  <span class="text-2xl">📱</span>
+                  <div class="font-black text-amber-400">SCAN TO ORDER</div>
+                  <div class="text-[8px] text-stone-300">No App Needed</div>
+                </div>
+              </div>
+              <!-- Camera Scanning Laser Line -->
+              <div class="absolute inset-x-0 h-1 bg-amber-400 shadow-[0_0_12px_#f59e0b] animate-bounce"></div>
+            </div>
+
+            <p class="text-xs text-amber-200 font-bold">
+              ✨ Point Camera • Instant Browser Menu (0s Wait)
+            </p>
+          </div>
+        </div>
+
+        <!-- SCENE 2: Customer Mobile Menu & Item Customisation -->
+        <div id="scene2" class="scene-panel hidden w-full h-full flex items-center justify-center animate-in fade-in">
+          <div class="phone-frame w-72 h-[430px] bg-[#120f0d] flex flex-col justify-between text-left p-3 text-xs">
+            <!-- Simulated Mobile Header -->
+            <div class="bg-[#1c1714] p-2.5 rounded-2xl border border-stone-800 flex justify-between items-center shadow">
+              <div class="flex items-center gap-1.5">
+                <span class="text-base">☕</span>
+                <div>
+                  <h4 class="font-black text-white text-[11px] leading-none">Demo Bar & Bistro</h4>
+                  <span class="text-[9px] text-amber-400 font-bold">🍽️ Table #4</span>
+                </div>
+              </div>
+              <span class="bg-emerald-500/20 text-emerald-300 text-[9px] font-black px-2 py-0.5 rounded-full border border-emerald-500/40">
+                Live Menu
+              </span>
+            </div>
+
+            <!-- Simulated Dish Card -->
+            <div id="simDishCard" class="bg-[#1c1815] border-2 border-amber-500/80 rounded-2xl p-3 space-y-2 shadow-lg scale-95 transition-transform">
+              <div class="flex gap-2 items-start">
+                <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80" alt="Burger" class="w-14 h-14 rounded-xl object-cover border border-amber-500/40 flex-shrink-0" />
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between items-start">
+                    <h5 class="font-black text-white text-xs">Aussie Wagyu Burger</h5>
+                    <span class="font-black text-amber-400 text-xs font-mono">$26.00</span>
+                  </div>
+                  <p class="text-[9px] text-stone-400 line-clamp-2">200g Wagyu, Swiss cheese, beetroot, chips.</p>
+                </div>
+              </div>
+
+              <!-- Selected Options Preview -->
+              <div class="bg-black/50 p-1.5 rounded-lg text-[9px] space-y-0.5 text-stone-300 font-mono">
+                <div>▶ Patty: <strong class="text-amber-300">Medium Rare</strong></div>
+                <div class="text-emerald-400 font-bold">+ Extra Garlic Aioli ($2.00)</div>
+              </div>
+
+              <div class="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black py-1.5 rounded-xl text-[10px] flex items-center justify-center gap-1 shadow">
+                <span>🛒 Added to Table #4 Order ($28.00 AUD)</span>
+              </div>
+            </div>
+
+            <!-- Mobile Bottom Bar -->
+            <div class="bg-stone-900/90 p-2 rounded-xl flex justify-between items-center text-[10px] border border-stone-800">
+              <span class="text-stone-300 font-bold">🛒 1 Item in Cart</span>
+              <span class="font-black text-amber-400 font-mono">$28.00 AUD</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCENE 3: Instant Pay & 4-Digit PIN -->
+        <div id="scene3" class="scene-panel hidden w-full h-full flex items-center justify-center animate-in fade-in">
+          <div class="phone-frame w-72 h-[430px] bg-[#120f0d] flex flex-col justify-between text-left p-3.5 text-xs space-y-2">
+            <div class="text-center pt-2">
+              <span class="text-[10px] font-black uppercase text-amber-400 tracking-wider">Fast Checkout</span>
+              <h4 class="text-sm font-black text-white">Choose How to Pay</h4>
+            </div>
+
+            <!-- 4-Digit PIN Card Preview -->
+            <div class="bg-gradient-to-br from-[#2b190d] to-[#18100a] border-2 border-amber-500 p-3.5 rounded-2xl text-center space-y-1.5 shadow-xl">
+              <span class="bg-amber-500 text-stone-950 font-black text-[9px] px-2 py-0.5 rounded-full uppercase">
+                🔢 Show PIN at Counter / Bar
+              </span>
+              <div class="text-4xl font-black text-amber-300 font-mono tracking-widest my-1 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]">
+                #4829
+              </div>
+              <p class="text-[9px] text-stone-300 leading-tight">
+                Cashier confirms payment & unlocks order to kitchen in 1 second!
+              </p>
+            </div>
+
+            <!-- Apple Pay / Card Option -->
+            <div class="space-y-1.5">
+              <div class="w-full bg-white text-black font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 shadow">
+                <span> Pay</span> <span>$28.00 AUD</span>
+              </div>
+              <div class="text-center text-[9px] text-stone-400">
+                🔒 100% ATO Compliant GST Tax Receipt Included
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCENE 4: Direct Kitchen Thermal Printer Docket -->
+        <div id="scene4" class="scene-panel hidden w-full h-full flex flex-col items-center justify-center animate-in fade-in">
+          <div class="relative bg-[#1c1815] border-2 border-amber-500/80 rounded-3xl p-4 sm:p-5 max-w-sm w-full shadow-2xl text-center space-y-3">
+            <div class="flex justify-between items-center border-b border-stone-800 pb-2">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                <span class="font-black text-xs text-white uppercase">👨‍🍳 Kitchen Thermal Printer</span>
+              </div>
+              <span class="text-[10px] font-mono text-amber-400 font-bold">Epson 80mm • Auto-Print</span>
+            </div>
+
+            <!-- Animated 80mm Paper Docket -->
+            <div class="docket-print bg-white text-stone-950 p-4 rounded-xl shadow-2xl font-mono text-left text-[11px] leading-snug border border-stone-300 space-y-1.5">
+              <div class="text-center font-black text-sm border-b-2 border-black pb-1">
+                *** KITCHEN ORDER DOCKET ***
+              </div>
+              <div class="flex justify-between font-bold text-xs pt-1">
+                <span>TABLE: #4</span>
+                <span>ORDER: #342</span>
+              </div>
+              <div class="text-[10px] text-stone-700">Time: Just Now (12:45 PM)</div>
+              <div class="border-b border-dashed border-stone-400 my-1"></div>
+              
+              <!-- Food item with notes -->
+              <div class="space-y-0.5">
+                <div class="font-black text-xs">1x AUSSIE WAGYU BURGER</div>
+                <div class="text-[10px] pl-2 font-bold">▶ Patty: Medium Rare</div>
+                <div class="text-[10px] pl-2 font-bold text-emerald-800">+ Extra Garlic Aioli</div>
+                <div class="bg-amber-100 p-1 rounded font-black text-[9px] text-amber-950 border border-amber-400 mt-1">
+                  ⚠️ NOTE: Extra crunchy chips please!
+                </div>
+              </div>
+              <div class="border-b-2 border-black pt-1"></div>
+              <div class="text-center font-black text-[9px] pt-0.5">*** PRINTED INSTANTLY - READY TO COOK ***</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCENE 5: ATO Tax Invoice & Google Review Booster -->
+        <div id="scene5" class="scene-panel hidden w-full h-full flex items-center justify-center animate-in fade-in">
+          <div class="phone-frame w-72 h-[430px] bg-[#120f0d] flex flex-col justify-between text-left p-3.5 text-xs space-y-2">
+            
+            <div class="bg-gradient-to-r from-emerald-950 to-[#102419] border border-emerald-500/70 p-2.5 rounded-2xl text-center space-y-1 shadow">
+              <span class="text-emerald-300 font-black text-xs block">✓ Order Served & Enjoyed!</span>
+              <span class="text-[9px] text-stone-300">Table #4 • Order #342</span>
+            </div>
+
+            <!-- Tax Invoice Download Box -->
+            <div class="bg-[#1c1815] border border-amber-500/50 p-2.5 rounded-2xl space-y-1.5 shadow">
+              <div class="flex justify-between items-center text-[10px]">
+                <span class="font-black text-white">Official Tax Invoice</span>
+                <span class="text-amber-400 font-mono font-bold">ABN: 51 824 753 556</span>
+              </div>
+              <div class="text-[9px] text-stone-400">Total: $28.00 AUD (Includes $2.55 GST)</div>
+              <div class="w-full bg-[#2a221c] text-amber-300 font-bold py-1 rounded-xl text-[10px] border border-amber-500/40 flex items-center justify-center gap-1 shadow">
+                <span>🧾 View & Download Tax Invoice (PDF)</span>
+              </div>
+            </div>
+
+            <!-- Google Review Booster Card -->
+            <div class="bg-gradient-to-br from-[#241c16] to-[#16120f] border border-amber-500/60 p-2.5 rounded-2xl text-center space-y-1 shadow-lg">
+              <span class="text-[9px] font-black text-amber-400 uppercase">⭐ Rate Your Experience</span>
+              <div class="text-amber-400 text-lg tracking-widest">★★★★★</div>
+              <p class="text-[9px] text-stone-300">"Amazing food & zero wait time with QR ordering!"</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCENE 6: Outro & Call to Action -->
+        <div id="scene6" class="scene-panel hidden w-full h-full flex flex-col items-center justify-center text-center p-4 space-y-4 animate-in fade-in">
+          <div class="w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 flex items-center justify-center text-stone-950 font-black shadow-2xl text-2xl">
+            🚀
+          </div>
+
+          <div class="space-y-1 max-w-md">
+            <h3 class="text-xl sm:text-2xl font-black text-white">
+              Upgrade Your Venue with SmartMenu
+            </h3>
+            <p class="text-xs text-stone-300">
+              Faster Table Turns • +25% Higher Spend • Zero Hardware Costs
+            </p>
+          </div>
+
+          <div class="bg-amber-950/70 border border-amber-500/60 px-5 py-2.5 rounded-2xl text-amber-300 font-black text-xs sm:text-sm shadow-xl font-mono">
+            🇦🇺 100% Tailored for Australian Hospitality
+          </div>
+
+          <div class="pt-2">
+            <a href="index.html" class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-stone-950 font-black px-6 py-3 rounded-2xl text-xs sm:text-sm shadow-2xl hover:scale-105 transition-all">
+              <span>📱 Launch Live Demo Now</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Subtitles & Dynamic Voiceover Banner -->
+      <div class="bg-[#161210] border border-amber-900/40 p-3 rounded-2xl text-center space-y-1 shadow-md min-h-[56px] flex flex-col justify-center">
+        <span class="text-[10px] font-black text-amber-400 uppercase tracking-widest">VOICEOVER / SUBTITLES</span>
+        <p id="subtitlesText" class="text-xs sm:text-sm text-white font-bold leading-snug">
+          "Welcome to SmartMenu. Watch how a patron orders and pays in seconds."
+        </p>
+      </div>
+
+      <!-- Video Controls Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+        <div class="flex items-center gap-2">
+          <button id="btnPlayPause" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-stone-950 font-black px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-lg active:scale-95 transition-all cursor-pointer">
+            <i data-lucide="play" class="w-4 h-4" id="playIcon"></i>
+            <span id="playLabel">Play Video</span>
+          </button>
+          
+          <button id="btnRestart" class="bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-stone-700 active:scale-95 transition-all cursor-pointer">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Restart</span>
+          </button>
+        </div>
+
+        <!-- Scene Pills Scrubber -->
+        <div class="flex items-center gap-1 overflow-x-auto py-1">
+          <button data-scene="1" class="scene-tab bg-amber-500 text-stone-950 font-black px-2.5 py-1 rounded-lg text-[10px]">1. Scan</button>
+          <button data-scene="2" class="scene-tab bg-stone-800 text-stone-400 font-bold px-2.5 py-1 rounded-lg text-[10px]">2. Menu</button>
+          <button data-scene="3" class="scene-tab bg-stone-800 text-stone-400 font-bold px-2.5 py-1 rounded-lg text-[10px]">3. Pay / PIN</button>
+          <button data-scene="4" class="scene-tab bg-stone-800 text-stone-400 font-bold px-2.5 py-1 rounded-lg text-[10px]">4. Printer</button>
+          <button data-scene="5" class="scene-tab bg-stone-800 text-stone-400 font-bold px-2.5 py-1 rounded-lg text-[10px]">5. Invoice</button>
+          <button data-scene="6" class="scene-tab bg-stone-800 text-stone-400 font-bold px-2.5 py-1 rounded-lg text-[10px]">6. CTA</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Client Pitch Feature Highlights -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl w-full mt-6">
+      <div class="bg-[#14100e] border border-stone-800 p-4 rounded-2xl space-y-1.5 shadow">
+        <span class="text-lg">⚡</span>
+        <h4 class="font-black text-white text-xs">Zero Hardware Investment</h4>
+        <p class="text-[11px] text-stone-400">Works on customers' existing smartphones and standard 80mm thermal printers.</p>
+      </div>
+
+      <div class="bg-[#14100e] border border-stone-800 p-4 rounded-2xl space-y-1.5 shadow">
+        <span class="text-lg">🇦🇺</span>
+        <h4 class="font-black text-white text-xs">100% ATO Compliant</h4>
+        <p class="text-[11px] text-stone-400">ABN validation, exact 10% GST breakdown and one-click CSV export for Xero.</p>
+      </div>
+
+      <div class="bg-[#14100e] border border-stone-800 p-4 rounded-2xl space-y-1.5 shadow">
+        <span class="text-lg">📈</span>
+        <h4 class="font-black text-white text-xs">+25% Average Order Value</h4>
+        <p class="text-[11px] text-stone-400">Smart pairing suggestions and appetizing high-resolution photos increase sales.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full border-t border-stone-800/80 py-4 text-center text-xs text-stone-500">
+    SmartMenu Australia • Smart QR Menu & Kitchen Printing System • Melbourne & Sydney
+  </footer>
+
+  <!-- Interactive Demo Logic & Voiceover Engine -->
+  <script>
+    lucide.createIcons();
+
+    // Scenes Timeline Definition
+    const SCENES = [
+      {
+        id: 1,
+        title: "Scene 1 • Scan Table QR",
+        duration: 5.5,
+        subtitles: "1. Patrons simply scan the tabletop QR code with their phone camera. No app download required.",
+        voiceText: "Patrons simply scan the tabletop QR code with their phone camera. No app download required."
+      },
+      {
+        id: 2,
+        title: "Scene 2 • Interactive Visual Menu",
+        duration: 6.5,
+        subtitles: "2. They browse a mouth-watering visual menu with instant dietary filters and customize their order.",
+        voiceText: "They browse a mouth-watering visual menu with instant dietary filters and customize their order."
+      },
+      {
+        id: 3,
+        title: "Scene 3 • Fast Pay & 4-Digit PIN",
+        duration: 6.0,
+        subtitles: "3. Fast payment at table via Apple Pay, or show a 4-digit PIN at the counter to settle with cash or EFTPOS.",
+        voiceText: "Fast payment at table via Apple Pay, or show a 4-digit PIN at the counter to settle with cash or EFTPOS."
+      },
+      {
+        id: 4,
+        title: "Scene 4 • Direct Kitchen Printing",
+        duration: 5.5,
+        subtitles: "4. The kitchen thermal printer prints the docket automatically in real-time. Zero delays, zero errors.",
+        voiceText: "The kitchen thermal printer prints the docket automatically in real-time. Zero delays, zero errors."
+      },
+      {
+        id: 5,
+        title: "Scene 5 • ATO Invoice & 5-Star Reviews",
+        duration: 5.0,
+        subtitles: "5. Patrons download compliant ATO Tax Invoices and boost your 5-star Google reputation.",
+        voiceText: "Patrons download compliant ATO Tax Invoices and boost your 5-star Google reputation."
+      },
+      {
+        id: 6,
+        title: "Scene 6 • SmartMenu Australia",
+        duration: 4.5,
+        subtitles: "🚀 Upgrade your venue today with SmartMenu Australia. Turn tables faster and boost profits.",
+        voiceText: "Upgrade your venue today with SmartMenu Australia. Turn tables faster and boost profits."
+      }
+    ];
+
+    let currentSceneIdx = 0;
+    let isPlaying = false;
+    let sceneTimer = null;
+    let timeInterval = null;
+    let secondsElapsed = 0;
+    let voiceEnabled = true;
+
+    // Web Audio Synthesizer (Zero-delay Chimes)
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioClass) audioCtx = new AudioClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    const soundEffects = {
+      tap: () => {
+        try {
+          const ctx = getAudioContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(800, now);
+          osc.frequency.exponentialRampToValueAtTime(400, now + 0.08);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(now); osc.stop(now + 0.08);
+        } catch(e) {}
+      },
+      ding: () => {
+        try {
+          const ctx = getAudioContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(1046.50, now); // C6
+          gain.gain.setValueAtTime(0.4, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(now); osc.stop(now + 0.6);
+        } catch(e) {}
+      },
+      printerBuzz: () => {
+        try {
+          const ctx = getAudioContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(320, now);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(now); osc.stop(now + 0.4);
+        } catch(e) {}
+      }
+    };
+
+    // Voiceover Speech Engine (AU / US English)
+    function speakText(text) {
+      if (!voiceEnabled || !window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.05;
+      utterance.pitch = 1.0;
+      
+      const voices = window.speechSynthesis.getVoices();
+      const auVoice = voices.find(v => v.lang === 'en-AU' || v.name.includes('Australia') || v.lang === 'en-GB' || v.lang.startsWith('en'));
+      if (auVoice) utterance.voice = auVoice;
+      
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Scene Navigation
+    function showScene(idx) {
+      currentSceneIdx = idx;
+      const scene = SCENES[idx];
+      if (!scene) return;
+
+      // Update UI panels
+      for (let i = 1; i <= 6; i++) {
+        const p = document.getElementById(`scene${i}`);
+        if (p) {
+          if (i === scene.id) p.classList.remove('hidden');
+          else p.classList.add('hidden');
+        }
+      }
+
+      // Update Header & Subtitles
+      document.getElementById('sceneTitle').textContent = scene.title;
+      document.getElementById('subtitlesText').textContent = scene.subtitles;
+
+      // Update Scrubber Pills
+      document.querySelectorAll('.scene-tab').forEach((tab, i) => {
+        if (i === idx) {
+          tab.className = "scene-tab bg-amber-500 text-stone-950 font-black px-2.5 py-1 rounded-lg text-[10px] shadow";
+        } else {
+          tab.className = "scene-tab bg-stone-800 text-stone-400 font-bold px-2.5 py-1 rounded-lg text-[10px]";
+        }
+      });
+
+      // Trigger Sounds & Voice
+      if (scene.id === 1) soundEffects.tap();
+      if (scene.id === 2) soundEffects.tap();
+      if (scene.id === 3) soundEffects.ding();
+      if (scene.id === 4) soundEffects.printerBuzz();
+      if (scene.id === 5) {
+        soundEffects.ding();
+        if (typeof confetti === 'function') confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+      }
+      if (scene.id === 6) {
+        if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 80, origin: { y: 0.5 } });
+      }
+
+      speakText(scene.voiceText);
+    }
+
+    function playNextScene() {
+      if (!isPlaying) return;
+      if (currentSceneIdx >= SCENES.length - 1) {
+        pauseVideo();
+        showScene(5);
+        return;
+      }
+      const nextIdx = currentSceneIdx + 1;
+      showScene(nextIdx);
+      const curScene = SCENES[nextIdx];
+      sceneTimer = setTimeout(playNextScene, curScene.duration * 1000);
+    }
+
+    function playVideo() {
+      isPlaying = true;
+      getAudioContext();
+      document.getElementById('playLabel').textContent = "Pause";
+      document.getElementById('playIcon').setAttribute('data-lucide', 'pause');
+      lucide.createIcons();
+
+      const curScene = SCENES[currentSceneIdx];
+      speakText(curScene.voiceText);
+
+      clearTimeout(sceneTimer);
+      sceneTimer = setTimeout(playNextScene, curScene.duration * 1000);
+
+      clearInterval(timeInterval);
+      timeInterval = setInterval(() => {
+        secondsElapsed++;
+        const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+        const secs = String(secondsElapsed % 60).padStart(2, '0');
+        document.getElementById('timeElapsed').textContent = `${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function pauseVideo() {
+      isPlaying = false;
+      clearTimeout(sceneTimer);
+      clearInterval(timeInterval);
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      document.getElementById('playLabel').textContent = "Play Video";
+      document.getElementById('playIcon').setAttribute('data-lucide', 'play');
+      lucide.createIcons();
+    }
+
+    function restartVideo() {
+      pauseVideo();
+      secondsElapsed = 0;
+      document.getElementById('timeElapsed').textContent = "00:00";
+      showScene(0);
+      playVideo();
+    }
+
+    // Event Listeners
+    document.getElementById('btnPlayPause').addEventListener('click', () => {
+      if (isPlaying) pauseVideo();
+      else playVideo();
+    });
+
+    document.getElementById('btnRestart').addEventListener('click', restartVideo);
+
+    document.querySelectorAll('.scene-tab').forEach((btn, idx) => {
+      btn.addEventListener('click', () => {
+        pauseVideo();
+        showScene(idx);
+      });
+    });
+
+    document.getElementById('btnToggleVoice').addEventListener('click', () => {
+      voiceEnabled = !voiceEnabled;
+      const label = document.getElementById('voiceLabel');
+      const icon = document.getElementById('voiceIcon');
+      if (voiceEnabled) {
+        label.textContent = "Voiceover: ON (AU English)";
+        icon.setAttribute('data-lucide', 'volume-2');
+        speakText(SCENES[currentSceneIdx].voiceText);
+      } else {
+        label.textContent = "Voiceover: OFF";
+        icon.setAttribute('data-lucide', 'volume-x');
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+      }
+      lucide.createIcons();
+    });
+
+    // Initialize Scene 1
+    showScene(0);
+  </script>
+</body>
+</html>
