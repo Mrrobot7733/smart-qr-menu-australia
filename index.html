@@ -53,6 +53,116 @@
     ::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.4); border-radius: 9999px; }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* --- Light Theme Engine (Clean Australian Day Cafe Aesthetic) --- */
+    .theme-light {
+      background-color: #f8f6f2 !important;
+      color: #1c1917 !important;
+    }
+    .theme-light nav {
+      background-color: #ffffff !important;
+      border-color: #e7e5e4 !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    }
+    .theme-light .bg-\[\#0e0c0a\],
+    .theme-light .bg-\[\#070605\],
+    .theme-light .bg-\[\#0c0a09\],
+    .theme-light .bg-stone-950,
+    .theme-light .bg-slate-950 {
+      background-color: #f8f6f2 !important;
+      color: #1c1917 !important;
+    }
+    .theme-light .bg-\[\#161311\],
+    .theme-light .bg-\[\#14110f\],
+    .theme-light .bg-\[\#181411\],
+    .theme-light .bg-\[\#1c1815\],
+    .theme-light .bg-\[\#100e0c\],
+    .theme-light .bg-\[\#1e1916\],
+    .theme-light .bg-\[\#241d18\],
+    .theme-light .bg-\[\#261e18\],
+    .theme-light .bg-\[\#1c1714\],
+    .theme-light .bg-stone-900,
+    .theme-light .bg-slate-900 {
+      background-color: #ffffff !important;
+      color: #1c1917 !important;
+      border-color: #e7e5e4 !important;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03) !important;
+    }
+    .theme-light .bg-stone-800,
+    .theme-light .bg-slate-800 {
+      background-color: #f3f0ea !important;
+      color: #1c1917 !important;
+      border-color: #e7e5e4 !important;
+    }
+    .theme-light .text-white,
+    .theme-light .text-stone-100,
+    .theme-light .text-stone-200 {
+      color: #1c1917 !important;
+    }
+    .theme-light .text-stone-300,
+    .theme-light .text-stone-400,
+    .theme-light .text-slate-300,
+    .theme-light .text-slate-400 {
+      color: #57534e !important;
+    }
+    .theme-light .border-stone-800,
+    .theme-light .border-stone-700,
+    .theme-light .border-slate-800,
+    .theme-light .border-slate-700 {
+      border-color: #e7e5e4 !important;
+    }
+    .theme-light input:not([type="checkbox"]):not([type="radio"]),
+    .theme-light select,
+    .theme-light textarea {
+      background-color: #ffffff !important;
+      color: #1c1917 !important;
+      border-color: #d6d3d1 !important;
+    }
+    .theme-light input::placeholder,
+    .theme-light textarea::placeholder {
+      color: #a8a29e !important;
+    }
+    .theme-light .bg-black\/60,
+    .theme-light .bg-black\/50,
+    .theme-light .bg-black\/40,
+    .theme-light .bg-black\/80 {
+      background-color: #f5f3ee !important;
+      color: #1c1917 !important;
+    }
+    .theme-light .text-amber-300,
+    .theme-light .text-amber-400,
+    .theme-light .text-orange-400 {
+      color: #b45309 !important;
+    }
+    .theme-light .bg-amber-950,
+    .theme-light .bg-amber-950\/60,
+    .theme-light .bg-amber-950\/70,
+    .theme-light .bg-amber-950\/80,
+    .theme-light .bg-amber-950\/90 {
+      background-color: #fef3c7 !important;
+      color: #92400e !important;
+      border-color: #fde68a !important;
+    }
+    .theme-light .bg-emerald-950,
+    .theme-light .bg-emerald-950\/80 {
+      background-color: #d1fae5 !important;
+      color: #065f46 !important;
+      border-color: #a7f3d0 !important;
+    }
+    .theme-light .bg-red-950,
+    .theme-light .bg-red-950\/80,
+    .theme-light .bg-rose-950\/80 {
+      background-color: #fee2e2 !important;
+      color: #991b1b !important;
+      border-color: #fecaca !important;
+    }
+    .theme-light .bg-blue-950,
+    .theme-light .bg-blue-950\/80 {
+      background-color: #dbeafe !important;
+      color: #1e40af !important;
+      border-color: #bfdbfe !important;
+    }
+
     @media screen {
       .print-only { display: none !important; }
     }
@@ -628,6 +738,31 @@
       const [activeOrderId, setActiveOrderId] = useState(null);
       const [toastMsg, setToastMsg] = useState(null);
 
+      // Visual Theme (Light Day Cafe vs Dark Night Lounge)
+      const [theme, setThemeState] = useState(() => {
+        const p = new URLSearchParams(window.location.search);
+        const urlTheme = p.get('theme');
+        if (urlTheme === 'light' || urlTheme === 'dark') return urlTheme;
+        try {
+          const stored = localStorage.getItem('smart_qr_theme_au');
+          if (stored === 'light' || stored === 'dark') return stored;
+        } catch(e) {}
+        return 'light'; // Default to pristine light theme
+      });
+
+      const setTheme = (t) => {
+        const val = t === 'dark' ? 'dark' : 'light';
+        setThemeState(val);
+        try { localStorage.setItem('smart_qr_theme_au', val); } catch(e) {}
+        if (channel) channel.postMessage({ type: 'THEME', payload: val });
+      };
+
+      const toggleTheme = () => {
+        const next = theme === 'light' ? 'dark' : 'light';
+        setTheme(next);
+        showToast(next === 'light' ? '☀️ Light Day Theme active' : '🌙 Dark Theme active');
+      };
+
       const channel = useMemo(() => typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(`smart_qr_sync_${venueId}`) : null, [venueId]);
 
       useEffect(() => {
@@ -642,6 +777,7 @@
           else if (type === 'RESOLVE') { setServiceCalls(p => p.map(c => c.id === payload.id ? payload : c)); }
           else if (type === 'ITEMS') { setItems(payload); }
           else if (type === 'TABLES') { setTables(payload); }
+          else if (type === 'THEME') { setThemeState(payload); }
           else if (type === 'RESET_DEMO') { setOrders([]); }
         };
         channel.addEventListener('message', handler);
@@ -920,6 +1056,7 @@
           toggleItemStock, toggleItemVisibility, saveItem, deleteItem, saveTable, deleteTable, resetDemoData,
           activeTable, setActiveTable, orderType, setOrderType, takeawayTime, setTakeawayTime,
           customerName, setCustomerName,
+          theme, setTheme, toggleTheme,
           activeOrder, activeOrderId, setActiveOrderId, toastMsg, showToast
         }}>
           {children}
@@ -941,7 +1078,7 @@
         customerName, setCustomerName, orderType, setOrderType, takeawayTime, setTakeawayTime,
         addToCart, removeFromCart, updateCartQuantity,
         toggleCartItemDiningOption, submitOrder, sendServiceCall, orders,
-        cancelCounterOrder, setActiveOrderId
+        cancelCounterOrder, setActiveOrderId, theme, toggleTheme
       } = useOrderAU();
 
       const currentTable = useMemo(() => {
@@ -1074,6 +1211,20 @@
                     🔔
                   </button>
                 )}
+
+                {/* ☀️ / 🌙 Quick Theme Toggle */}
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className={`p-1.5 rounded-xl text-xs font-bold border transition-all active:scale-95 shadow-sm ${
+                    theme === 'light'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300'
+                      : 'bg-[#201b17] text-amber-300 border-stone-800'
+                  }`}
+                  title="Toggle Light / Dark Mode"
+                >
+                  {theme === 'light' ? '☀️' : '🌙'}
+                </button>
 
                 {/* Compact Dining Mode Switcher */}
                 <div className="bg-[#1c1815] border border-stone-800 p-0.5 rounded-xl flex items-center text-[11px] font-bold">
@@ -3132,7 +3283,7 @@
 
     // --- Admin (Australia) ---
     function AdminDashboardAU() {
-      const { venueId, tables, saveTable, deleteTable, restaurant, updateRestaurantSettings, items, categories, toggleItemStock, toggleItemVisibility, saveItem, deleteItem, resetDemoData, orders, approveCounterOrder, cancelCounterOrder, clearAllOrders, showToast } = useOrderAU();
+      const { venueId, tables, saveTable, deleteTable, restaurant, updateRestaurantSettings, items, categories, toggleItemStock, toggleItemVisibility, saveItem, deleteItem, resetDemoData, orders, approveCounterOrder, cancelCounterOrder, clearAllOrders, showToast, theme, setTheme, toggleTheme } = useOrderAU();
       const [tab, setTab] = useState('cashier'); // cashier (default), menu, qr, stats, settings
       const [selT, setSelT] = useState(1);
       const [qrUrl, setQrUrl] = useState('');
@@ -4348,6 +4499,62 @@
               </div>
 
               <form onSubmit={handleSaveSettings} className="space-y-5 text-xs">
+                {/* Visual Theme Selection (Light vs Dark) */}
+                <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-3">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-extrabold text-amber-400 text-sm flex items-center gap-2">
+                      <span>🎨</span> <span>Venue Visual Theme Preset</span>
+                    </h4>
+                    <span className="text-[10px] font-mono text-slate-400">Current: <strong>{theme === 'light' ? '☀️ Light Mode' : '🌙 Dark Mode'}</strong></span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-400">Choose the color theme best suited for your venue's atmosphere and lighting conditions:</p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setTheme('light')}
+                      className={`p-3.5 rounded-2xl border text-left flex items-start gap-3 transition-all cursor-pointer ${
+                        theme === 'light'
+                          ? 'bg-amber-500/10 border-amber-500 ring-2 ring-amber-500/30'
+                          : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      <span className="text-2xl">☀️</span>
+                      <div>
+                        <div className="font-black text-sm text-white flex items-center gap-1.5">
+                          <span>Clean Day Cafe (Light Theme)</span>
+                          {theme === 'light' && <span className="bg-amber-500 text-stone-950 text-[9px] font-black px-1.5 py-0.2 rounded">ACTIVE</span>}
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          Pristine off-white background, warm latte accents, crisp high-contrast dark text. Perfect for sunny Australian cafes and brunch spots.
+                        </p>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setTheme('dark')}
+                      className={`p-3.5 rounded-2xl border text-left flex items-start gap-3 transition-all cursor-pointer ${
+                        theme === 'dark'
+                          ? 'bg-amber-500/10 border-amber-500 ring-2 ring-amber-500/30'
+                          : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      <span className="text-2xl">🌙</span>
+                      <div>
+                        <div className="font-black text-sm text-white flex items-center gap-1.5">
+                          <span>Night Lounge & Pub (Dark Theme)</span>
+                          {theme === 'dark' && <span className="bg-amber-500 text-stone-950 text-[9px] font-black px-1.5 py-0.2 rounded">ACTIVE</span>}
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          Deep obsidian background, neon amber highlights, sleek OLED contrast. Ideal for bars, taprooms, and evening dining.
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Surcharges Section */}
                 <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-4">
                   <h4 className="font-extrabold text-orange-400 text-sm flex items-center gap-2">
@@ -5460,7 +5667,7 @@
     }
 
     function AppContent() {
-      const { orders } = useOrderAU();
+      const { orders, theme, toggleTheme } = useOrderAU();
       const pendingCount = orders.filter(o => o.status === 'pending_approval').length;
       const [role, setRole] = useState(() => {
         const p = new URLSearchParams(window.location.search);
@@ -5488,26 +5695,40 @@
       };
 
       return (
-        <div className="min-h-screen bg-[#0e0c0a] text-stone-100 flex flex-col font-sans">
+        <div className={`min-h-screen ${theme === 'light' ? 'theme-light bg-[#f8f6f2] text-stone-900' : 'theme-dark bg-[#0e0c0a] text-stone-100'} flex flex-col font-sans transition-colors duration-200`}>
           {/* Top Navigation Bar */}
-          <nav className="bg-[#161311] border-b border-amber-900/30 px-3 sm:px-4 py-2.5 sticky top-0 z-50 shadow-lg">
+          <nav className={`px-3 sm:px-4 py-2.5 sticky top-0 z-50 shadow-md border-b transition-colors ${theme === 'light' ? 'bg-white/95 border-stone-200 text-stone-900' : 'bg-[#161311] border-amber-900/30 text-white'}`}>
             <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
               <div className="flex items-center gap-2">
-                <span className="font-black text-sm text-white flex items-center gap-1.5">
+                <span className="font-black text-sm flex items-center gap-1.5">
                   <span>🇦🇺</span>
-                  <span><span className="text-amber-500">SmartMenu</span> Australia ($ AUD)</span>
+                  <span><span className="text-amber-500 font-extrabold">SmartMenu</span> Australia ($ AUD)</span>
                 </span>
               </div>
 
               {/* Top View Selector & Cashier PIN Quick Button */}
               <div className="flex flex-wrap items-center gap-2">
+                {/* ☀️ / 🌙 Theme Toggle Button */}
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all shadow-sm border cursor-pointer active:scale-95 ${
+                    theme === 'light'
+                      ? 'bg-amber-100 hover:bg-amber-200 text-amber-950 border-amber-300'
+                      : 'bg-stone-800 hover:bg-stone-700 text-amber-300 border-stone-700'
+                  }`}
+                  title="Switch between Clean Light Cafe Theme & Night Lounge Dark Theme"
+                >
+                  <span>{theme === 'light' ? '☀️ Light Mode' : '🌙 Dark Mode'}</span>
+                </button>
+
                 {/* 🔢 Dedicated Cashier PIN Pay Button (Always Visible) */}
                 <button
                   onClick={handleOpenCashierPin}
                   className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow active:scale-95 cursor-pointer border ${
                     pendingCount > 0
                       ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 border-amber-300 animate-pulse ring-2 ring-amber-500/50'
-                      : 'bg-amber-950/70 hover:bg-amber-900 text-amber-300 border-amber-500/50'
+                      : (theme === 'light' ? 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300' : 'bg-amber-950/70 hover:bg-amber-900 text-amber-300 border-amber-500/50')
                   }`}
                   title="Click to enter customer 4-digit PIN and verify counter payment"
                 >
@@ -5520,13 +5741,13 @@
                   )}
                 </button>
 
-                <div className="flex items-center gap-1 bg-[#100e0c] p-1 rounded-2xl border border-stone-800">
+                <div className={`flex items-center gap-1 p-1 rounded-2xl border transition-colors ${theme === 'light' ? 'bg-stone-100 border-stone-200' : 'bg-[#100e0c] border-stone-800'}`}>
                   <button
                     onClick={() => setRole('admin')}
                     className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${
                       role === 'admin'
                         ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg'
-                        : 'text-stone-300 hover:text-white bg-[#1e1916] hover:bg-[#28221e]'
+                        : (theme === 'light' ? 'text-stone-700 hover:text-black hover:bg-stone-200' : 'text-stone-300 hover:text-white bg-[#1e1916] hover:bg-[#28221e]')
                     }`}
                   >
                     <span>⚙️ Admin Panel</span>
@@ -5537,7 +5758,7 @@
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                       role === 'customer'
                         ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg font-black'
-                        : 'text-stone-400 hover:text-white'
+                        : (theme === 'light' ? 'text-stone-600 hover:text-black' : 'text-stone-400 hover:text-white')
                     }`}
                   >
                     <span>📱 Customer Menu</span>
@@ -5548,7 +5769,7 @@
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                       role === 'kitchen'
                         ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg font-black'
-                        : 'text-stone-400 hover:text-white'
+                        : (theme === 'light' ? 'text-stone-600 hover:text-black' : 'text-stone-400 hover:text-white')
                     }`}
                   >
                     <span>👨‍🍳 Kitchen KDS</span>
@@ -5556,7 +5777,7 @@
 
                   <a
                     href="promo.html"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 hover:text-white border border-amber-500/40 hover:bg-amber-500/30 shadow-sm"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-500 hover:text-amber-600 border border-amber-500/40 hover:bg-amber-500/30 shadow-sm"
                     title="Watch 30-Second Commercial & Interactive Video Demo"
                   >
                     <span>🎬 Video Spot</span>
@@ -5567,7 +5788,7 @@
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                       role === 'simulator'
                         ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg font-black'
-                        : 'text-stone-400 hover:text-white'
+                        : (theme === 'light' ? 'text-stone-600 hover:text-black' : 'text-stone-400 hover:text-white')
                     }`}
                   >
                     <span>⚡ Dual Screen</span>
