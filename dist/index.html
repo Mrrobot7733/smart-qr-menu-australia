@@ -3279,6 +3279,45 @@
         });
       };
 
+      const exportCsvReport = () => {
+        if (!orders.length) {
+          if (showToast) showToast("No orders available to export!");
+          return;
+        }
+        const headers = ["Order Number", "Date", "Time", "Customer", "Table / Service", "Status", "Payment Method", "Items Subtotal (AUD)", "Surcharge (AUD)", "Tip (AUD)", "Total Amount (AUD)", "GST 10% Included (AUD)", "Items Breakdown"];
+        const rows = orders.map(o => {
+          const subtotalCalc = o.items?.reduce((s, i) => s + (i.totalItemPrice || (i.price * i.quantity)), 0) || 0;
+          const gstCalc = o.gstAmount !== undefined ? o.gstAmount : Number((o.totalAmount / 11).toFixed(2));
+          const itemsStr = o.items?.map(i => `${i.quantity}x ${i.name}`).join(' | ') || '';
+          const d = o.createdAt ? new Date(o.createdAt) : new Date();
+          return [
+            `#${o.orderNumber}`,
+            d.toLocaleDateString('en-AU'),
+            d.toLocaleTimeString('en-AU'),
+            `"${(o.customerName || 'Guest').replace(/"/g, '""')}"`,
+            `"${(o.orderType === 'takeaway' ? 'Takeaway' : `Table ${o.tableNumber}`).replace(/"/g, '""')}"`,
+            o.status,
+            o.paymentMethod || 'counter',
+            subtotalCalc.toFixed(2),
+            (o.surchargeAmount || 0).toFixed(2),
+            (o.tipAmount || 0).toFixed(2),
+            (o.totalAmount || 0).toFixed(2),
+            gstCalc.toFixed(2),
+            `"${itemsStr.replace(/"/g, '""')}"`
+          ].join(',');
+        });
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `smart_qr_sales_bas_report_${venueId || 'demo'}_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        if (showToast) showToast("✓ BAS / Sales Report exported to CSV!");
+      };
+
       const openEditModal = (item) => {
         setEditingItem(item);
         setIsAddingNew(false);
@@ -3957,6 +3996,16 @@
                       Click any order to view the <strong>itemized bill with full prices, options, extras, GST (10%), card surcharges and printable tax receipt</strong>.
                     </p>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={exportCsvReport}
+                    className="bg-[#1c1815] hover:bg-[#28221e] border border-amber-500/60 text-amber-300 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-2 shadow transition-all active:scale-95 cursor-pointer"
+                    title="Export Sales & GST Breakdown CSV for ATO BAS & Accountant"
+                  >
+                    <span>📥</span>
+                    <span>Export BAS & GST Report (CSV)</span>
+                  </button>
                 </div>
 
                 {/* 🔢 Quick Cashier PIN Unlock Bar */}
