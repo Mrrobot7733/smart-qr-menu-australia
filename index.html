@@ -1202,53 +1202,44 @@
                       Customer: <strong className="text-white text-xs">{activeOrder.customerName || 'Guest'}</strong>
                     </p>
                     <p className="text-[10px] text-stone-400 max-w-xs mx-auto pt-1 leading-snug">
-                      {activeOrder.status === 'ready'
-                        ? '🔔 YOUR ORDER IS READY! Collect it at the bar by calling Order #' + activeOrder.orderNumber
-                        : activeOrder.status === 'pending_approval'
+                      {activeOrder.status === 'pending_approval'
                         ? '⏳ Waiting for cashier confirmation with PIN #' + activeOrder.counterPin
-                        : '💡 Keep this number handy. The bar and kitchen will call Order #' + activeOrder.orderNumber + ' as soon as ready.'}
+                        : '💡 Keep this number handy. The staff will call or bring Order #' + activeOrder.orderNumber + ' to your table.'}
                     </p>
                   </div>
 
-                  {/* Visual Progress Stepper */}
-                  <div className="space-y-4 pt-1">
-                    {(activeOrder.status === 'pending_approval' ? [
-                      { k: 'pending_approval', label: `1. Pay at Counter (PIN #${activeOrder.counterPin})`, desc: 'Show PIN to cashier/bar staff to confirm payment and unlock order' },
-                      { k: 'preparing', label: '2. Kitchen & Bar Preparation', desc: 'Chefs & bartenders start crafting your food once paid' },
-                      { k: 'ready', label: '3. Ready for Service', desc: 'Heading to Table ' + activeOrder.tableNumber },
-                      { k: 'delivered', label: '4. Served at Table', desc: 'Enjoy your meal!' }
-                    ] : [
-                      { k: 'new', label: 'Order Sent & Received', desc: 'Received at the kitchen & bar printers' },
-                      { k: 'preparing', label: 'In Kitchen / Bar Preparation', desc: 'Chefs & bartenders are crafting your food & drinks' },
-                      { k: 'ready', label: 'Ready for Service', desc: 'Your order is hot and heading to Table ' + activeOrder.tableNumber },
-                      { k: 'delivered', label: 'Served at Table', desc: 'Enjoy your meal! Need anything else? Just scan again.' }
-                    ]).map((st, i) => {
-                      const cur = activeOrder.status === 'pending_approval'
-                        ? 0
-                        : (['new', 'preparing', 'ready', 'delivered'].indexOf(activeOrder.status) >= 0 ? ['new', 'preparing', 'ready', 'delivered'].indexOf(activeOrder.status) : 0);
-                      const isDone = activeOrder.status !== 'pending_approval' && (i <= cur);
-                      const isCurrent = (activeOrder.status === 'pending_approval' && i === 0) || (activeOrder.status !== 'pending_approval' && i === cur);
-
-                      return (
-                        <div key={st.k} className="flex items-start gap-3.5">
-                          <div className={`w-8 h-8 rounded-2xl flex items-center justify-center text-xs font-black flex-shrink-0 transition-all ${
-                            isCurrent
-                              ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 ring-4 ring-amber-500/20 shadow-lg scale-110'
-                              : isDone
-                              ? 'bg-emerald-500 text-white shadow'
-                              : 'bg-stone-900 text-stone-600'
-                          }`}>
-                            {isDone && !isCurrent ? '✓' : i + 1}
-                          </div>
-                          <div className="flex-1">
-                            <h4 className={`font-bold text-xs ${isCurrent ? 'text-amber-400 font-extrabold' : isDone ? 'text-white' : 'text-stone-500'}`}>
-                              {st.label}
-                            </h4>
-                            <p className="text-[11px] text-stone-400 leading-tight mt-0.5">{st.desc}</p>
-                          </div>
+                  {/* Clean Live Status Banner (Printer-first workflow) */}
+                  <div className="space-y-3 pt-1">
+                    {activeOrder.status === 'pending_approval' ? (
+                      <div className="bg-gradient-to-r from-amber-950/80 via-[#26180e] to-amber-950/80 border border-amber-500/80 rounded-2xl p-4 text-center space-y-2 shadow-lg">
+                        <div className="text-amber-300 font-black text-sm flex items-center justify-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+                          <span>⏳ Awaiting Cashier Payment Confirmation</span>
                         </div>
-                      );
-                    })}
+                        <p className="text-xs text-stone-300 max-w-sm mx-auto">
+                          Show PIN <strong className="text-amber-300 font-mono font-black text-sm">#{activeOrder.counterPin}</strong> at the register. Once paid, your ticket prints immediately in the kitchen & bar.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="bg-gradient-to-r from-emerald-950/80 via-[#102419] to-emerald-950/80 border border-emerald-500/80 rounded-2xl p-4 text-center space-y-2.5 shadow-lg">
+                        <div className="text-emerald-300 font-black text-sm flex items-center justify-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                          <span>✓ Order Confirmed & Printed in Kitchen</span>
+                        </div>
+                        <p className="text-xs text-stone-200 max-w-sm mx-auto leading-relaxed">
+                          Your order docket has been printed in the kitchen & bar. Chefs are preparing your dishes fresh.
+                        </p>
+                        <div className="inline-flex items-center gap-2 bg-black/60 border border-emerald-500/40 px-3.5 py-1.5 rounded-xl text-xs text-amber-300 font-bold shadow-inner">
+                          <span>⏱️ Estimated Preparation:</span>
+                          <span className="text-white font-black">{activeOrder.takeawayTime || '~15-20 min'}</span>
+                        </div>
+                        <p className="text-[11px] text-stone-400">
+                          {activeOrder.orderType === 'takeaway'
+                            ? `Please listen for Call Order #${activeOrder.orderNumber} at the pickup counter.`
+                            : `Your items will be brought directly to Table #${activeOrder.tableNumber}.`}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Items Ordered List */}
@@ -2364,223 +2355,227 @@
             </div>
           )}
 
-          {/* 3 Columns: New, In Preparation, Ready */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { st: 'new', title: '🔴 New Orders (Pending)', color: 'border-rose-900/40 bg-rose-950/10' },
-              { st: 'preparing', title: '👨‍🍳 In Preparation (Cooking/Pouring)', color: 'border-amber-900/40 bg-amber-950/10' },
-              { st: 'ready', title: '🍽️ Ready to Serve at Table', color: 'border-emerald-900/40 bg-emerald-950/10' }
-            ].map(col => {
-              const list = orders.filter(o => o.status === col.st && o.status !== 'pending_approval');
+          {/* Live Kitchen & Bar Docket Stream */}
+          <div className="bg-[#14110f]/80 border border-amber-900/40 rounded-3xl p-4 sm:p-5 space-y-4 shadow-xl">
+            <div className="flex flex-wrap justify-between items-center border-b border-stone-800 pb-3 gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></span>
+                <h3 className="font-black text-sm uppercase tracking-wider text-white">
+                  📋 Live Kitchen & Bar Docket Feed
+                </h3>
+                <span className="bg-amber-500 text-stone-950 text-xs font-black px-2.5 py-0.5 rounded-full shadow">
+                  {orders.filter(o => o.status !== 'pending_approval' && o.status !== 'delivered' && o.status !== 'cancelled').length} Active
+                </span>
+              </div>
+              <p className="text-xs text-stone-400">
+                Tickets print automatically to thermal printer. Tap <strong className="text-amber-400">Re-Print Docket</strong> or <strong className="text-emerald-400">Clear / Done</strong> when finished.
+              </p>
+            </div>
+
+            {(() => {
+              const activeList = orders.filter(o => o.status !== 'pending_approval' && o.status !== 'delivered' && o.status !== 'cancelled');
+
+              if (activeList.length === 0) {
+                return (
+                  <div className="text-center py-16 px-4 space-y-3 bg-[#181412] border border-dashed border-stone-800 rounded-2xl">
+                    <span className="text-4xl block">✅</span>
+                    <h4 className="font-black text-white text-base">All Kitchen Tickets Printed & Clear</h4>
+                    <p className="text-xs text-stone-400 max-w-md mx-auto">
+                      New orders from table QR codes and cashier PIN approvals will arrive here and trigger automatic thermal docket printing in real-time.
+                    </p>
+                  </div>
+                );
+              }
+
               return (
-                <div key={col.st} className={`bg-[#14110f]/80 border rounded-3xl p-3.5 space-y-3 min-h-[450px] flex flex-col justify-between ${col.color}`}>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center border-b border-stone-800 pb-2">
-                      <h3 className="font-black text-xs uppercase tracking-wider text-stone-300">{col.title}</h3>
-                      <span className="bg-stone-800 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-900/30">{list.length}</span>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {activeList.map(o => {
+                    const dineInList = o.items?.filter(i => i.diningOption === 'dine_in') || [];
+                    const takeawayList = o.items?.filter(i => i.diningOption === 'takeaway') || [];
+                    const isHybrid = dineInList.length > 0 && takeawayList.length > 0;
 
-                    {list.length === 0 ? (
-                      <div className="text-center py-12 text-stone-600 text-xs font-semibold">
-                        No orders in this station
-                      </div>
-                    ) : (
-                      list.map(o => {
-                        const dineInList = o.items?.filter(i => i.diningOption === 'dine_in') || [];
-                        const takeawayList = o.items?.filter(i => i.diningOption === 'takeaway') || [];
-                        const isHybrid = dineInList.length > 0 && takeawayList.length > 0;
-
-                        return (
-                          <div key={o.id} className={`bg-[#1c1815] border rounded-2xl p-3.5 space-y-2.5 text-xs shadow-lg transition-all ${
-                            isHybrid ? 'border-amber-500/50' : (o.orderType === 'takeaway' || !dineInList.length ? 'border-emerald-500/40' : 'border-amber-900/20 hover:border-amber-500/40')
-                          }`}>
-                            <div className="flex justify-between items-center font-black">
-                              <div className="flex items-center gap-2">
-                                {isHybrid ? (
-                                  <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-500 text-stone-950 px-2.5 py-0.5 rounded-lg text-xs font-black flex items-center gap-1 shadow">
-                                    <span>🍽️ Table {o.tableNumber} + 🛍️ Takeaway</span>
-                                  </span>
-                                ) : (o.orderType === 'takeaway' || !dineInList.length) ? (
-                                  <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-stone-950 px-2.5 py-0.5 rounded-lg text-xs font-black flex items-center gap-1 shadow">
-                                    <span>🛍️</span> <span>TAKEAWAY</span>
-                                  </span>
-                                ) : (
-                                  <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 px-2.5 py-0.5 rounded-lg text-xs font-black">
-                                    Table {o.tableNumber}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-black text-amber-300 font-mono tracking-wider bg-amber-950/80 border border-amber-700/80 px-2.5 py-0.5 rounded-lg shadow">
-                                  #{o.orderNumber}
+                    return (
+                      <div key={o.id} className={`bg-[#1c1815] border rounded-2xl p-4 space-y-3 text-xs shadow-xl transition-all flex flex-col justify-between ${
+                        isHybrid ? 'border-amber-500/60 ring-1 ring-amber-500/20' : (o.orderType === 'takeaway' || !dineInList.length ? 'border-emerald-500/50' : 'border-amber-900/40 hover:border-amber-500/50')
+                      }`}>
+                        <div className="space-y-2.5">
+                          <div className="flex justify-between items-center font-black">
+                            <div className="flex items-center gap-2">
+                              {isHybrid ? (
+                                <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-500 text-stone-950 px-2.5 py-0.5 rounded-lg text-xs font-black flex items-center gap-1 shadow">
+                                  <span>🍽️ Table {o.tableNumber} + 🛍️ Takeaway</span>
                                 </span>
-                                <span className="text-[10px] text-stone-400 font-mono">
-                                  {o.createdAt ? new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                              ) : (o.orderType === 'takeaway' || !dineInList.length) ? (
+                                <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-stone-950 px-2.5 py-0.5 rounded-lg text-xs font-black flex items-center gap-1 shadow">
+                                  <span>🛍️</span> <span>TAKEAWAY</span>
                                 </span>
-                              </div>
+                              ) : (
+                                <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 px-2.5 py-0.5 rounded-lg text-xs font-black shadow">
+                                  🍽️ Table {o.tableNumber}
+                                </span>
+                              )}
                             </div>
-
-                            {/* Guest Name & Payment Status */}
-                            <div className="flex justify-between text-[11px] text-stone-400">
-                              <span>Customer: <strong className="text-stone-200">{o.customerName || 'Walk-in'}</strong></span>
-                              <span className="text-emerald-400 font-bold">
-                                {o.paymentStatus === 'paid'
-                                  ? (o.paymentMethod === 'counter_cash'
-                                      ? '✓ Paid at Counter (Cash)'
-                                      : o.paymentMethod === 'counter_eftpos'
-                                      ? '✓ Paid at Counter (EFTPOS)'
-                                      : o.paymentMethod === 'counter'
-                                      ? '✓ Paid at Counter'
-                                      : o.paymentMethod === 'apple_pay'
-                                      ? '✓ Paid (Apple Pay)'
-                                      : '✓ Paid Online (Card)')
-                                  : (takeawayList.length > 0 ? '⏳ Pay on Pickup' : '⏳ Pay at Counter')}
+                            <div className="flex items-center gap-2">
+                              <span className="text-base font-black text-amber-300 font-mono tracking-wider bg-amber-950/90 border border-amber-700/80 px-2.5 py-0.5 rounded-lg shadow">
+                                #{o.orderNumber}
+                              </span>
+                              <span className="text-[10px] text-stone-400 font-mono">
+                                {o.createdAt ? new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                               </span>
                             </div>
+                          </div>
 
-                            {/* Takeaway Pickup Time & Audible Call Banner */}
-                            {takeawayList.length > 0 && (
-                              <div className="bg-[#120f0d] p-2.5 rounded-xl border border-emerald-900/40 text-[11px] space-y-1 text-emerald-300">
-                                <div className="flex justify-between items-center">
-                                  <span>📢 Call at Bar: <strong className="text-amber-300 font-mono text-xs font-black">ORDER #{o.orderNumber}</strong></span>
-                                  <span className="text-stone-300">🕒 {o.takeawayTime || 'As soon as possible'}</span>
-                                </div>
-                                <div className="text-[10px] text-stone-400">📦 Pack takeaway items in containers / bag</div>
+                          {/* Guest Name & Payment Status */}
+                          <div className="flex justify-between text-[11px] text-stone-400">
+                            <span>Customer: <strong className="text-stone-200">{o.customerName || 'Walk-in'}</strong></span>
+                            <span className="text-emerald-400 font-bold">
+                              {o.paymentStatus === 'paid'
+                                ? (o.paymentMethod === 'counter_cash'
+                                    ? '✓ Paid at Counter (Cash)'
+                                    : o.paymentMethod === 'counter_eftpos'
+                                    ? '✓ Paid at Counter (EFTPOS)'
+                                    : o.paymentMethod === 'counter'
+                                    ? '✓ Paid at Counter'
+                                    : o.paymentMethod === 'apple_pay'
+                                    ? '✓ Paid (Apple Pay)'
+                                    : '✓ Paid Online (Card)')
+                                : (takeawayList.length > 0 ? '⏳ Pay on Pickup' : '⏳ Pay at Counter')}
+                            </span>
+                          </div>
+
+                          {/* Takeaway Pickup Time & Audible Call Banner */}
+                          {takeawayList.length > 0 && (
+                            <div className="bg-[#120f0d] p-2.5 rounded-xl border border-emerald-900/40 text-[11px] space-y-1 text-emerald-300">
+                              <div className="flex justify-between items-center">
+                                <span>📢 Call at Bar: <strong className="text-amber-300 font-mono text-xs font-black">ORDER #{o.orderNumber}</strong></span>
+                                <span className="text-stone-300">🕒 {o.takeawayTime || 'As soon as possible'}</span>
+                              </div>
+                              <div className="text-[10px] text-stone-400">📦 Pack takeaway items in containers / bag</div>
+                            </div>
+                          )}
+
+                          {/* Ordered Items List Grouped by Destination */}
+                          <div className="space-y-2.5 pt-1.5 border-t border-stone-800/80">
+                            {dineInList.length > 0 && (
+                              <div className="space-y-1.5">
+                                {isHybrid && (
+                                  <div className="text-[10px] font-black text-amber-400 uppercase tracking-wider bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-800/60 flex items-center justify-between">
+                                    <span>🍽️ Table Service (Table #{o.tableNumber})</span>
+                                    <span className="text-[9px] font-normal text-amber-300">Dine-In</span>
+                                  </div>
+                                )}
+                                {dineInList.map((it, i) => (
+                                  <div key={i} className="bg-[#120f0d] p-2.5 rounded-xl border border-stone-800/90 space-y-1">
+                                    <div className="flex items-start gap-2">
+                                      <span className="text-sm font-black text-amber-400 bg-stone-900 border border-amber-500/50 px-2 py-0.5 rounded-lg font-mono flex-shrink-0">
+                                        {it.quantity}x
+                                      </span>
+                                      <div className="flex-1 min-w-0">
+                                        <h4 className="font-black text-white text-xs sm:text-sm uppercase tracking-wide">
+                                          {it.name}
+                                        </h4>
+                                        {it.selectedOptions && Object.entries(it.selectedOptions).map(([k, v]) => (
+                                          <div key={k} className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5 mt-0.5 pl-1">
+                                            <span className="text-amber-500">▶</span>
+                                            <span className="text-stone-400">{k}:</span>
+                                            <span className="text-amber-200 font-black underline decoration-amber-500/60">{v}</span>
+                                          </div>
+                                        ))}
+                                        {it.selectedExtras?.map((ex, exi) => (
+                                          <div key={exi} className="text-[11px] font-bold text-emerald-300 flex items-center gap-1.5 mt-0.5 pl-1">
+                                            <span className="text-emerald-400 font-black">+ EXTRA:</span>
+                                            <span className="text-emerald-200 font-extrabold">{ex.name}</span>
+                                          </div>
+                                        ))}
+                                        {it.notes && (
+                                          <div className="mt-1.5 p-1.5 rounded-lg bg-amber-500/15 border border-amber-500/70 text-amber-200 font-black text-[11px] flex items-start gap-1.5 shadow-sm">
+                                            <span className="text-xs leading-none">⚠️</span>
+                                            <span className="leading-tight"><strong className="text-amber-300 uppercase tracking-wider">NOTE/ALLERGY:</strong> {it.notes}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             )}
 
-                            {/* Ordered Items List Grouped by Destination - KITCHEN PRODUCTION VIEW (NO PRICES) */}
-                            <div className="space-y-2.5 pt-1.5 border-t border-stone-800/80">
-                              {dineInList.length > 0 && (
-                                <div className="space-y-1.5">
-                                  {isHybrid && (
-                                    <div className="text-[10px] font-black text-amber-400 uppercase tracking-wider bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-800/60 flex items-center justify-between">
-                                      <span>🍽️ Table Service (Table #{o.tableNumber})</span>
-                                      <span className="text-[9px] font-normal text-amber-300">Dine-In</span>
-                                    </div>
-                                  )}
-                                  {dineInList.map((it, i) => (
-                                    <div key={i} className="bg-[#120f0d] p-2.5 rounded-xl border border-stone-800/90 space-y-1">
-                                      <div className="flex items-start gap-2">
-                                        <span className="text-sm font-black text-amber-400 bg-stone-900 border border-amber-500/50 px-2 py-0.5 rounded-lg font-mono flex-shrink-0">
-                                          {it.quantity}x
-                                        </span>
-                                        <div className="flex-1 min-w-0">
+                            {takeawayList.length > 0 && (
+                              <div className="space-y-1.5 pt-1">
+                                {isHybrid && (
+                                  <div className="text-[10px] font-black text-emerald-400 uppercase tracking-wider bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-800/60 flex justify-between items-center">
+                                    <span>🛍️ Takeaway / Packaging</span>
+                                    <span className="text-[9px] font-normal text-emerald-300">📦 Pack</span>
+                                  </div>
+                                )}
+                                {takeawayList.map((it, i) => (
+                                  <div key={i} className="bg-[#120f0d] p-2.5 rounded-xl border border-emerald-900/50 space-y-1">
+                                    <div className="flex items-start gap-2">
+                                      <span className="text-sm font-black text-emerald-400 bg-stone-900 border border-emerald-500/50 px-2 py-0.5 rounded-lg font-mono flex-shrink-0">
+                                        {it.quantity}x
+                                      </span>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-start">
                                           <h4 className="font-black text-white text-xs sm:text-sm uppercase tracking-wide">
                                             {it.name}
                                           </h4>
-
-                                          {/* Options / Variations Selected */}
-                                          {it.selectedOptions && Object.entries(it.selectedOptions).map(([k, v]) => (
-                                            <div key={k} className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5 mt-0.5 pl-1">
-                                              <span className="text-amber-500">▶</span>
-                                              <span className="text-stone-400">{k}:</span>
-                                              <span className="text-amber-200 font-black underline decoration-amber-500/60">{v}</span>
-                                            </div>
-                                          ))}
-
-                                          {/* Extras & Add-ons */}
-                                          {it.selectedExtras?.map((ex, exi) => (
-                                            <div key={exi} className="text-[11px] font-bold text-emerald-300 flex items-center gap-1.5 mt-0.5 pl-1">
-                                              <span className="text-emerald-400 font-black">+ EXTRA:</span>
-                                              <span className="text-emerald-200 font-extrabold">{ex.name}</span>
-                                            </div>
-                                          ))}
-
-                                          {/* Special Notes & Allergy Alert Box */}
-                                          {it.notes && (
-                                            <div className="mt-1.5 p-1.5 rounded-lg bg-amber-500/15 border border-amber-500/70 text-amber-200 font-black text-[11px] flex items-start gap-1.5 shadow-sm">
-                                              <span className="text-xs leading-none">⚠️</span>
-                                              <span className="leading-tight"><strong className="text-amber-300 uppercase tracking-wider">NOTE/ALLERGY:</strong> {it.notes}</span>
-                                            </div>
-                                          )}
+                                          <span className="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700/60 px-1.5 py-0.5 rounded font-black uppercase">
+                                            Takeaway
+                                          </span>
                                         </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-
-                              {takeawayList.length > 0 && (
-                                <div className="space-y-1.5 pt-1">
-                                  {isHybrid && (
-                                    <div className="text-[10px] font-black text-emerald-400 uppercase tracking-wider bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-800/60 flex justify-between items-center">
-                                      <span>🛍️ Takeaway / Packaging</span>
-                                      <span className="text-[9px] font-normal text-emerald-300">📦 Pack</span>
-                                    </div>
-                                  )}
-                                  {takeawayList.map((it, i) => (
-                                    <div key={i} className="bg-[#120f0d] p-2.5 rounded-xl border border-emerald-900/50 space-y-1">
-                                      <div className="flex items-start gap-2">
-                                        <span className="text-sm font-black text-emerald-400 bg-stone-900 border border-emerald-500/50 px-2 py-0.5 rounded-lg font-mono flex-shrink-0">
-                                          {it.quantity}x
-                                        </span>
-                                        <div className="flex-1 min-w-0">
-                                          <div className="flex justify-between items-start">
-                                            <h4 className="font-black text-white text-xs sm:text-sm uppercase tracking-wide">
-                                              {it.name}
-                                            </h4>
-                                            <span className="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700/60 px-1.5 py-0.5 rounded font-black uppercase">
-                                              Takeaway
-                                            </span>
+                                        {it.selectedOptions && Object.entries(it.selectedOptions).map(([k, v]) => (
+                                          <div key={k} className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5 mt-0.5 pl-1">
+                                            <span className="text-amber-500">▶</span>
+                                            <span className="text-stone-400">{k}:</span>
+                                            <span className="text-amber-200 font-black underline decoration-amber-500/60">{v}</span>
                                           </div>
-
-                                          {/* Options / Variations Selected */}
-                                          {it.selectedOptions && Object.entries(it.selectedOptions).map(([k, v]) => (
-                                            <div key={k} className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5 mt-0.5 pl-1">
-                                              <span className="text-amber-500">▶</span>
-                                              <span className="text-stone-400">{k}:</span>
-                                              <span className="text-amber-200 font-black underline decoration-amber-500/60">{v}</span>
-                                            </div>
-                                          ))}
-
-                                          {/* Extras & Add-ons */}
-                                          {it.selectedExtras?.map((ex, exi) => (
-                                            <div key={exi} className="text-[11px] font-bold text-emerald-300 flex items-center gap-1.5 mt-0.5 pl-1">
-                                              <span className="text-emerald-400 font-black">+ EXTRA:</span>
-                                              <span className="text-emerald-200 font-extrabold">{ex.name}</span>
-                                            </div>
-                                          ))}
-
-                                          {/* Special Notes & Allergy Alert Box */}
-                                          {it.notes && (
-                                            <div className="mt-1.5 p-1.5 rounded-lg bg-amber-500/15 border border-amber-500/70 text-amber-200 font-black text-[11px] flex items-start gap-1.5 shadow-sm">
-                                              <span className="text-xs leading-none">⚠️</span>
-                                              <span className="leading-tight"><strong className="text-amber-300 uppercase tracking-wider">NOTE/ALLERGY:</strong> {it.notes}</span>
-                                            </div>
-                                          )}
-                                        </div>
+                                        ))}
+                                        {it.selectedExtras?.map((ex, exi) => (
+                                          <div key={exi} className="text-[11px] font-bold text-emerald-300 flex items-center gap-1.5 mt-0.5 pl-1">
+                                            <span className="text-emerald-400 font-black">+ EXTRA:</span>
+                                            <span className="text-emerald-200 font-extrabold">{ex.name}</span>
+                                          </div>
+                                        ))}
+                                        {it.notes && (
+                                          <div className="mt-1.5 p-1.5 rounded-lg bg-amber-500/15 border border-amber-500/70 text-amber-200 font-black text-[11px] flex items-start gap-1.5 shadow-sm">
+                                            <span className="text-xs leading-none">⚠️</span>
+                                            <span className="leading-tight"><strong className="text-amber-300 uppercase tracking-wider">NOTE/ALLERGY:</strong> {it.notes}</span>
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Action Buttons: Advance & Print */}
-                            <div className="pt-2 border-t border-stone-800 grid grid-cols-2 gap-2">
-                              <button
-                                onClick={() => handlePrintDocket(o)}
-                                className="bg-[#26201b] hover:bg-[#322a24] border border-amber-900/30 text-amber-300 font-bold py-2 rounded-xl text-[11px] flex items-center justify-center gap-1 transition-all active:scale-95 shadow"
-                              >
-                                <span>🖨️ Print Docket</span>
-                              </button>
-
-                              <button
-                                onClick={() => updateOrderStatus(o.id, col.st === 'new' ? 'preparing' : col.st === 'preparing' ? 'ready' : 'delivered')}
-                                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-stone-950 font-black py-2 rounded-xl text-[11px] flex items-center justify-center gap-1 shadow transition-all active:scale-95"
-                              >
-                                <span>{col.st === 'new' ? 'Start Prep →' : col.st === 'preparing' ? 'Ready for Pickup →' : 'Served ✓'}</span>
-                              </button>
-                            </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        );
-                      })
-                    )}
-                  </div>
+                        </div>
+
+                        {/* Action Buttons: Print & Clear */}
+                        <div className="pt-3 border-t border-stone-800 grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => handlePrintDocket(o)}
+                            className="bg-[#26201b] hover:bg-[#322a24] border border-amber-900/30 text-amber-300 font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow"
+                          >
+                            <span>🖨️ Re-Print Docket</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              updateOrderStatus(o.id, 'delivered');
+                              if (showToast) showToast(`✓ Ticket #${o.orderNumber} cleared`);
+                            }}
+                            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 text-white font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow transition-all active:scale-95"
+                          >
+                            <span>✓ Clear / Done</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               );
-            })}
+            })()}
           </div>
 
           {/* 🧾 Realistic 80mm Thermal Receipt On-Screen Preview Modal - KITCHEN PRODUCTION DOCKET (NO PRICES) */}
@@ -3918,14 +3913,12 @@
                                   </span>
 
                                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                    ord.status === 'pending_approval' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse' :
                                     ord.status === 'delivered' ? 'bg-slate-800 text-slate-300' :
-                                    ord.status === 'ready' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
-                                    ord.status === 'preparing' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
-                                    'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                                    'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                                   }`}>
-                                    {ord.status === 'delivered' ? '✓ Served' :
-                                     ord.status === 'ready' ? '🔔 Ready' :
-                                     ord.status === 'preparing' ? '⏳ Cooking' : '⚡ New'}
+                                    {ord.status === 'pending_approval' ? '⏳ Awaiting PIN' :
+                                     ord.status === 'delivered' ? '✓ Completed' : '🖨️ Sent to Kitchen'}
                                   </span>
                                 </div>
 
