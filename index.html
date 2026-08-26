@@ -2353,12 +2353,22 @@
             </div>
           </div>
 
-          {/* Pending Counter Payment Notice for Kitchen */}
+          {/* Pending Counter Orders Alert (Notice to Chefs that orders are on hold) */}
           {pendingCounterOrders.length > 0 && (
-            <div className="bg-[#1e1814] border border-amber-500/50 p-3 rounded-2xl flex flex-wrap justify-between items-center text-xs text-amber-300 gap-2">
+            <div
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('switch-app-role', { detail: 'admin' }));
+                setTimeout(() => {
+                  window.dispatchEvent(new CustomEvent('switch-admin-tab', { detail: 'cashier' }));
+                }, 50);
+              }}
+              className="bg-amber-950/70 hover:bg-amber-900/80 border border-amber-500/80 p-3 rounded-2xl flex flex-wrap justify-between items-center text-xs text-amber-200 shadow-lg cursor-pointer transition-all active:scale-98 group"
+              title="Click to switch to Cashier and enter PIN"
+            >
               <span className="flex items-center gap-2">
-                <span>⏳</span>
+                <span className="text-base">⏳</span>
                 <span><strong>{pendingCounterOrders.length} order(s) awaiting cashier counter payment</strong> (Kitchen tickets hold until PIN confirmed).</span>
+                <span className="text-[10px] text-amber-400 underline font-bold group-hover:text-white">👉 Click to Open PIN Cashier</span>
               </span>
               <span className="text-[10px] bg-amber-950/80 border border-amber-700 text-amber-300 font-mono px-2 py-0.5 rounded">
                 Pending PINs: {pendingCounterOrders.map(p => `#${p.counterPin}`).join(', ')}
@@ -2896,7 +2906,7 @@
     // --- Admin (Australia) ---
     function AdminDashboardAU() {
       const { tables, saveTable, deleteTable, restaurant, updateRestaurantSettings, items, categories, toggleItemStock, saveItem, deleteItem, resetDemoData, orders, approveCounterOrder, cancelCounterOrder, showToast } = useOrderAU();
-      const [tab, setTab] = useState('menu'); // menu, qr, stats, settings
+      const [tab, setTab] = useState('cashier'); // cashier (default), menu, qr, stats, settings
       const [selT, setSelT] = useState(1);
       const [qrUrl, setQrUrl] = useState('');
       const [editingItem, setEditingItem] = useState(null);
@@ -2911,6 +2921,14 @@
       const [counterPaymentMethod, setCounterPaymentMethod] = useState('counter_cash');
       const [editingCounterItems, setEditingCounterItems] = useState([]);
       const [counterDiscountPercent, setCounterDiscountPercent] = useState(0);
+
+      useEffect(() => {
+        const handler = (e) => {
+          if (e.detail) setTab(e.detail);
+        };
+        window.addEventListener('switch-admin-tab', handler);
+        return () => window.removeEventListener('switch-admin-tab', handler);
+      }, []);
 
       const openCounterPaymentModal = (ord) => {
         setCounterPaymentOrder(ord);
@@ -3190,16 +3208,31 @@
 
           {/* Tab Switcher */}
           <div className="flex flex-wrap gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 max-w-fit text-xs font-black">
-            <button onClick={() => setTab('menu')} className={`px-4 py-2 rounded-xl ${tab === 'menu' ? 'bg-orange-500 text-white' : 'text-slate-400'}`}>
+            <button
+              onClick={() => setTab('cashier')}
+              className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all cursor-pointer ${
+                tab === 'cashier'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black shadow-lg'
+                  : (orders.filter(o => o.status === 'pending_approval').length > 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse font-bold' : 'text-slate-400 hover:text-white')
+              }`}
+            >
+              <span>🔢 Cashier PIN & Orders</span>
+              {orders.filter(o => o.status === 'pending_approval').length > 0 && (
+                <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                  {orders.filter(o => o.status === 'pending_approval').length}
+                </span>
+              )}
+            </button>
+            <button onClick={() => setTab('menu')} className={`px-4 py-2 rounded-xl ${tab === 'menu' ? 'bg-orange-500 text-white font-black' : 'text-slate-400 hover:text-white'}`}>
               📋 Menu & Prices ({items.length})
             </button>
-            <button onClick={() => setTab('qr')} className={`px-4 py-2 rounded-xl ${tab === 'qr' ? 'bg-orange-500 text-white' : 'text-slate-400'}`}>
+            <button onClick={() => setTab('qr')} className={`px-4 py-2 rounded-xl ${tab === 'qr' ? 'bg-orange-500 text-white font-black' : 'text-slate-400 hover:text-white'}`}>
               🖨️ Tables & QR Codes
             </button>
-            <button onClick={() => setTab('stats')} className={`px-4 py-2 rounded-xl ${tab === 'stats' ? 'bg-orange-500 text-white' : 'text-slate-400'}`}>
+            <button onClick={() => setTab('stats')} className={`px-4 py-2 rounded-xl ${tab === 'stats' ? 'bg-orange-500 text-white font-black' : 'text-slate-400 hover:text-white'}`}>
               📈 Sales & Reports
             </button>
-            <button onClick={() => setTab('settings')} className={`px-4 py-2 rounded-xl ${tab === 'settings' ? 'bg-orange-500 text-white' : 'text-slate-400'}`}>
+            <button onClick={() => setTab('settings')} className={`px-4 py-2 rounded-xl ${tab === 'settings' ? 'bg-orange-500 text-white font-black' : 'text-slate-400 hover:text-white'}`}>
               ⚙️ Surcharges & Settings
             </button>
           </div>
@@ -3590,8 +3623,8 @@
             );
           })()}
 
-          {/* View: Stats & Orders Report */}
-          {tab === 'stats' && (
+          {/* View: Cashier PIN & Sales/Orders Report */}
+          {(tab === 'cashier' || tab === 'stats') && (
             <div className="space-y-6">
               {/* Summary Stats Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -4926,7 +4959,9 @@
       );
     }
 
-    function App() {
+    function AppContent() {
+      const { orders } = useOrderAU();
+      const pendingCount = orders.filter(o => o.status === 'pending_approval').length;
       const [role, setRole] = useState(() => {
         const p = new URLSearchParams(window.location.search);
         const v = p.get('view');
@@ -4937,81 +4972,128 @@
         return 'admin'; // Default directly to admin panel for easy access
       });
 
-      return (
-        <OrderProviderAU>
-          <div className="min-h-screen bg-[#0e0c0a] text-stone-100 flex flex-col font-sans">
-            {/* Top Navigation Bar */}
-            <nav className="bg-[#161311] border-b border-amber-900/30 px-4 py-3 sticky top-0 z-50 shadow-lg">
-              <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-black text-sm text-white">🇦🇺 <span className="text-amber-500">SmartMenu</span> Australia ($ AUD)</span>
-                </div>
+      useEffect(() => {
+        const handleSwitchRole = (e) => {
+          if (e.detail) setRole(e.detail);
+        };
+        window.addEventListener('switch-app-role', handleSwitchRole);
+        return () => window.removeEventListener('switch-app-role', handleSwitchRole);
+      }, []);
 
-                <div className="flex items-center gap-1.5 bg-[#100e0c] p-1.5 rounded-2xl border border-stone-800">
+      const handleOpenCashierPin = () => {
+        setRole('admin');
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('switch-admin-tab', { detail: 'cashier' }));
+        }, 50);
+      };
+
+      return (
+        <div className="min-h-screen bg-[#0e0c0a] text-stone-100 flex flex-col font-sans">
+          {/* Top Navigation Bar */}
+          <nav className="bg-[#161311] border-b border-amber-900/30 px-3 sm:px-4 py-2.5 sticky top-0 z-50 shadow-lg">
+            <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="font-black text-sm text-white flex items-center gap-1.5">
+                  <span>🇦🇺</span>
+                  <span><span className="text-amber-500">SmartMenu</span> Australia ($ AUD)</span>
+                </span>
+              </div>
+
+              {/* Top View Selector & Cashier PIN Quick Button */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* 🔢 Dedicated Cashier PIN Pay Button (Always Visible) */}
+                <button
+                  onClick={handleOpenCashierPin}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow active:scale-95 cursor-pointer border ${
+                    pendingCount > 0
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 border-amber-300 animate-pulse ring-2 ring-amber-500/50'
+                      : 'bg-amber-950/70 hover:bg-amber-900 text-amber-300 border-amber-500/50'
+                  }`}
+                  title="Click to enter customer 4-digit PIN and verify counter payment"
+                >
+                  <span className="text-base">🔢</span>
+                  <span>Sblocca PIN Cassa</span>
+                  {pendingCount > 0 && (
+                    <span className="bg-stone-950 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-400">
+                      {pendingCount} in attesa
+                    </span>
+                  )}
+                </button>
+
+                <div className="flex items-center gap-1 bg-[#100e0c] p-1 rounded-2xl border border-stone-800">
                   <button
                     onClick={() => setRole('admin')}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${
                       role === 'admin'
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg shadow-amber-950/50 scale-105'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg'
                         : 'text-stone-300 hover:text-white bg-[#1e1916] hover:bg-[#28221e]'
                     }`}
                   >
-                    <span>⚙️ Admin Panel (Menu & Prices)</span>
+                    <span>⚙️ Admin Panel</span>
                   </button>
 
                   <button
                     onClick={() => setRole('customer')}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                       role === 'customer'
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg font-black'
                         : 'text-stone-400 hover:text-white'
                     }`}
                   >
-                    <span>📱 Customer Menu</span>
+                    <span>📱 Menu Cliente</span>
                   </button>
 
                   <button
                     onClick={() => setRole('kitchen')}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                       role === 'kitchen'
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg font-black'
                         : 'text-stone-400 hover:text-white'
                     }`}
                   >
-                    <span>👨‍🍳 Kitchen & Bar KDS</span>
+                    <span>👨‍🍳 Cucina KDS</span>
                   </button>
 
                   <button
                     onClick={() => setRole('simulator')}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                       role === 'simulator'
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg font-black'
                         : 'text-stone-400 hover:text-white'
                     }`}
                   >
-                    <span>⚡ Live Dual Screen</span>
+                    <span>⚡ Dual Screen</span>
                   </button>
                 </div>
               </div>
-            </nav>
-            <div className="flex-1">
-              {role === 'customer' && <CustomerViewAU />}
-              {role === 'kitchen' && <KitchenDisplayAU />}
-              {role === 'admin' && <AdminDashboardAU />}
-              {role === 'simulator' && (
-                <div className="p-4 grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-                  <div className="xl:col-span-5 flex flex-col items-center">
-                    <span className="text-xs font-bold text-slate-400 mb-2">📱 Customer Phone (Australia $ AUD)</span>
-                    <div className="w-full max-w-[390px] h-[780px] bg-slate-950 border-[5px] border-slate-800 rounded-[40px] shadow-2xl overflow-y-auto hide-scrollbar"><CustomerViewAU /></div>
-                  </div>
-                  <div className="xl:col-span-7 flex flex-col">
-                    <span className="text-xs font-bold text-slate-400 mb-2">👨‍🍳 Kitchen & Bar Display (KDS)</span>
-                    <div className="bg-slate-900/60 border border-slate-800 rounded-3xl min-h-[780px]"><KitchenDisplayAU /></div>
-                  </div>
-                </div>
-              )}
             </div>
+          </nav>
+
+          <div className="flex-1">
+            {role === 'customer' && <CustomerViewAU />}
+            {role === 'kitchen' && <KitchenDisplayAU />}
+            {role === 'admin' && <AdminDashboardAU />}
+            {role === 'simulator' && (
+              <div className="p-4 grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+                <div className="xl:col-span-5 flex flex-col items-center">
+                  <span className="text-xs font-bold text-slate-400 mb-2">📱 Customer Phone (Australia $ AUD)</span>
+                  <div className="w-full max-w-[390px] h-[780px] bg-slate-950 border-[5px] border-slate-800 rounded-[40px] shadow-2xl overflow-y-auto hide-scrollbar"><CustomerViewAU /></div>
+                </div>
+                <div className="xl:col-span-7 flex flex-col">
+                  <span className="text-xs font-bold text-slate-400 mb-2">👨‍🍳 Kitchen & Bar Display (KDS)</span>
+                  <div className="bg-slate-900/60 border border-slate-800 rounded-3xl min-h-[780px]"><KitchenDisplayAU /></div>
+                </div>
+              </div>
+            )}
           </div>
+        </div>
+      );
+    }
+
+    function App() {
+      return (
+        <OrderProviderAU>
+          <AppContent />
         </OrderProviderAU>
       );
     }
