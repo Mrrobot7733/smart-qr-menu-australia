@@ -782,7 +782,10 @@
         const ord = orders.find(o => o.id === orderId);
         const updated = orders.map(o => o.id === orderId ? { ...o, status: 'cancelled', paymentStatus: 'cancelled' } : o);
         setOrders(updated);
-        showToast(`Order #${ord ? ord.orderNumber : ''} cancelled`);
+        if (activeOrderId === orderId) {
+          setActiveOrderId(null);
+        }
+        showToast(`Order #${ord ? ord.orderNumber : ''} cancelled and voided`);
         if (channel) channel.postMessage({ type: 'STATUS', payload: { id: orderId, status: 'cancelled' } });
       };
 
@@ -937,7 +940,8 @@
         categories, items, cart, activeOrder, activeTable, setActiveTable, tables, restaurant,
         customerName, setCustomerName, orderType, setOrderType, takeawayTime, setTakeawayTime,
         addToCart, removeFromCart, updateCartQuantity,
-        toggleCartItemDiningOption, submitOrder, sendServiceCall, orders
+        toggleCartItemDiningOption, submitOrder, sendServiceCall, orders,
+        cancelCounterOrder, setActiveOrderId
       } = useOrderAU();
 
       const currentTable = useMemo(() => {
@@ -1203,6 +1207,21 @@
                       <p className="text-[11px] text-stone-300 max-w-sm mx-auto leading-relaxed pt-1">
                         👉 <strong>Please show PIN #{activeOrder.counterPin} to the staff.</strong> Your order will be sent to the kitchen & bar printers immediately once payment is confirmed.
                       </p>
+
+                      <div className="pt-1.5 border-t border-amber-500/20 text-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm('Cancel this pending order and return to the menu?')) {
+                              cancelCounterOrder(activeOrder.id);
+                              setActiveOrderId(null);
+                            }
+                          }}
+                          className="text-stone-400 hover:text-red-400 text-xs font-semibold underline transition-all cursor-pointer py-1"
+                        >
+                          ✕ Cancel this pending order
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -3151,7 +3170,14 @@
           const cur = next[index];
           const nextQty = (cur.quantity || 1) + delta;
           if (nextQty <= 0) {
-            return prev.filter((_, i) => i !== index);
+            const filtered = prev.filter((_, i) => i !== index);
+            if (filtered.length === 0 && counterPaymentOrder) {
+              cancelCounterOrder(counterPaymentOrder.id);
+              setCounterPaymentOrder(null);
+              showToast(`Order #${counterPaymentOrder.orderNumber} was voided because all items were removed`);
+              return [];
+            }
+            return filtered;
           }
           next[index] = {
             ...cur,
@@ -3163,7 +3189,16 @@
       };
 
       const handleRemoveCounterItem = (index) => {
-        setEditingCounterItems(prev => prev.filter((_, i) => i !== index));
+        setEditingCounterItems(prev => {
+          const filtered = prev.filter((_, i) => i !== index);
+          if (filtered.length === 0 && counterPaymentOrder) {
+            cancelCounterOrder(counterPaymentOrder.id);
+            setCounterPaymentOrder(null);
+            showToast(`Order #${counterPaymentOrder.orderNumber} was voided because all items were removed`);
+            return [];
+          }
+          return filtered;
+        });
       };
 
       const handleAddDishToCounterOrder = (itemId) => {
