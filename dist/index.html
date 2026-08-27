@@ -1618,7 +1618,7 @@
                   </div>
                 )}
 
-                {/* 👨‍🍳 Chef's Daily Special (High-Contrast Theme-Aware Card) */}
+                {/* 👨‍🍳 Chef's Daily Special (Distinct Ruby Crimson / Sunset Palette) */}
                 {(() => {
                   const visibleItems = items.filter(i => i.isVisible !== false);
                   const special = visibleItems.find(i => i.id === 'au-6') || visibleItems[0];
@@ -1626,37 +1626,39 @@
                   return (
                     <div
                       onClick={() => openItemDetail(special)}
-                      className={`border-2 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-md cursor-pointer active:scale-[0.99] transition-all ${
+                      className={`border-2 rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-3 shadow-lg cursor-pointer active:scale-[0.99] transition-all ${
                         theme === 'light'
-                          ? 'bg-gradient-to-r from-amber-100/90 via-orange-50 to-amber-100/90 border-amber-400 text-stone-950 hover:border-amber-500'
-                          : 'bg-gradient-to-r from-[#1f1712] via-[#2d1e16] to-[#1f1712] border-amber-500/70 text-white hover:border-amber-400'
+                          ? 'bg-gradient-to-r from-rose-100/90 via-red-50 to-amber-100/80 border-rose-400 text-stone-950 hover:border-rose-500 shadow-rose-950/5'
+                          : 'bg-gradient-to-r from-[#2a1016] via-[#1c0d11] to-[#2a1016] border-rose-500/80 text-white hover:border-rose-400 shadow-rose-950/30'
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <img
                           src={special.image}
                           alt={special.name}
-                          className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border-2 border-amber-400/60 shadow bg-black/10"
+                          className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover flex-shrink-0 border-2 shadow-md ${
+                            theme === 'light' ? 'border-rose-400 bg-white' : 'border-rose-500/70 bg-black/40'
+                          }`}
                         />
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] uppercase font-black tracking-wider bg-amber-500 text-stone-950 px-2 py-0.5 rounded-full shadow-xs border border-amber-600/30">
+                            <span className="text-[10px] uppercase font-black tracking-wider bg-rose-600 text-white px-2.5 py-0.5 rounded-full shadow-xs border border-rose-700/50">
                               👨‍🍳 Chef's Recommendation
                             </span>
                           </div>
-                          <h3 className={`font-black text-xs sm:text-sm truncate mt-1 ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
+                          <h3 className={`font-black text-sm sm:text-base truncate mt-1 ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
                             {special.name}
                           </h3>
-                          <p className={`text-xs truncate leading-snug font-medium ${theme === 'light' ? 'text-stone-700' : 'text-amber-100/80'}`}>
+                          <p className={`text-xs truncate leading-snug font-medium ${theme === 'light' ? 'text-stone-700' : 'text-rose-100/80'}`}>
                             {special.description}
                           </p>
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0 pl-1">
-                        <span className={`text-sm sm:text-base font-black block font-mono ${theme === 'light' ? 'text-amber-900' : 'text-amber-300'}`}>
+                        <span className={`text-sm sm:text-base font-black block font-mono ${theme === 'light' ? 'text-rose-700' : 'text-rose-300'}`}>
                           ${special.price.toFixed(2)} AUD
                         </span>
-                        <span className="text-[11px] text-stone-950 bg-amber-400 hover:bg-amber-300 font-black px-3 py-1 rounded-xl shadow inline-block mt-0.5 border border-amber-500/50">
+                        <span className="text-xs text-white bg-gradient-to-r from-rose-600 to-red-600 hover:brightness-110 font-black px-3.5 py-1.5 rounded-xl shadow-md inline-block mt-0.5 border border-rose-700/60">
                           + Add
                         </span>
                       </div>
@@ -1949,26 +1951,34 @@
 
                 {/* ✨ Smart Pairing / Recommended Add-on */}
                 {suggestedPairing && (
-                  <div className="bg-gradient-to-r from-amber-950/60 to-orange-950/40 border border-amber-500/40 p-3.5 rounded-2xl space-y-2.5 shadow-lg">
+                  <div className={`p-3.5 rounded-2xl space-y-2.5 shadow-md border-2 transition-all ${
+                    theme === 'light'
+                      ? 'bg-gradient-to-r from-rose-50 via-orange-50/60 to-rose-50 border-rose-300 text-stone-950 shadow-rose-950/5'
+                      : 'bg-gradient-to-r from-[#241014] via-[#1a0f12] to-[#241014] border-rose-500/60 text-white shadow-xl'
+                  }`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-amber-400 text-[11px] font-black tracking-wider uppercase flex items-center gap-1.5">
+                      <span className={`text-[11px] font-black tracking-wider uppercase flex items-center gap-1.5 ${theme === 'light' ? 'text-rose-700' : 'text-rose-400'}`}>
                         <span>✨ Chef's Recommended Pairing</span>
                       </span>
-                      <span className="text-[10px] text-amber-300/80 font-medium">Pairs Perfectly</span>
+                      <span className={`text-[10px] font-bold ${theme === 'light' ? 'text-stone-600' : 'text-rose-200/80'}`}>Pairs Perfectly</span>
                     </div>
 
-                    <div className="flex items-center gap-3 bg-[#14100d]/90 p-2.5 rounded-xl border border-amber-900/30">
+                    <div className={`flex items-center gap-3 p-2.5 rounded-xl border-2 ${
+                      theme === 'light' ? 'bg-white border-rose-200' : 'bg-[#14100d] border-stone-800'
+                    }`}>
                       <img
                         src={suggestedPairing.image || "https://images.unsplash.com/photo-1575037614876-c38a4d44f5b8?auto=format&fit=crop&w=800&q=80"}
                         alt={suggestedPairing.name}
                         onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1575037614876-c38a4d44f5b8?auto=format&fit=crop&w=800&q=80"; }}
-                        className="w-16 h-16 rounded-xl object-cover flex-shrink-0 shadow-md border border-amber-500/30 bg-black/50"
+                        className={`w-16 h-16 rounded-xl object-cover flex-shrink-0 shadow-sm border-2 ${
+                          theme === 'light' ? 'border-rose-300' : 'border-rose-500/40 bg-black/50'
+                        }`}
                       />
                       <div className="flex-1 min-w-0 pr-1">
-                        <p className="font-bold text-white text-xs sm:text-sm truncate leading-snug">{suggestedPairing.name}</p>
-                        <p className="text-xs text-stone-300 line-clamp-1 mt-0.5">{suggestedPairing.description || "Selected to complement this dish"}</p>
+                        <p className={`font-black text-xs sm:text-sm truncate leading-snug ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>{suggestedPairing.name}</p>
+                        <p className={`text-xs line-clamp-1 mt-0.5 font-medium ${theme === 'light' ? 'text-stone-600' : 'text-stone-300'}`}>{suggestedPairing.description || "Selected to complement this dish"}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-amber-400 font-black text-xs sm:text-sm font-mono">
+                          <span className={`font-black text-xs sm:text-sm font-mono ${theme === 'light' ? 'text-rose-700' : 'text-rose-300'}`}>
                             +${suggestedPairing.price.toFixed(2)} AUD
                           </span>
                         </div>
@@ -1979,7 +1989,7 @@
                           addToCart(suggestedPairing, 1, {}, [], '', itemDiningOption);
                           showToast(`✨ Added to order: ${suggestedPairing.name}`);
                         }}
-                        className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black px-3 py-2 rounded-xl text-xs whitespace-nowrap transition-all active:scale-95 flex-shrink-0 shadow-lg flex items-center gap-1 cursor-pointer"
+                        className="bg-gradient-to-r from-rose-600 to-red-600 hover:brightness-110 text-white font-black px-3.5 py-2 rounded-xl text-xs whitespace-nowrap transition-all active:scale-95 flex-shrink-0 shadow-md flex items-center gap-1 cursor-pointer border border-rose-700/60"
                       >
                         <span>+ Add</span>
                       </button>
