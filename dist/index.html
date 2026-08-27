@@ -7711,13 +7711,43 @@
       };
 
       const getBaseUrl = () => {
-        return window.location.origin;
+        if (typeof window !== 'undefined' && window.location) {
+          const origin = window.location.origin;
+          if (origin && origin !== 'null') {
+            const pathname = window.location.pathname.replace(/\/+$/, '').replace(/\/index\.html$/, '');
+            return `${origin}${pathname}`;
+          }
+        }
+        return '';
       };
 
-      const getCustomerUrl = (slug) => `${getBaseUrl()}/menu/?venue=${encodeURIComponent(slug)}&table=1`;
-      const getKitchenUrl = (slug) => `${getBaseUrl()}/?venue=${encodeURIComponent(slug)}&view=kitchen`;
-      const getAdminUrl = (slug) => `${getBaseUrl()}/?venue=${encodeURIComponent(slug)}&view=admin`;
-      const getMasterAdminUrl = (slug) => `${getBaseUrl()}/?venue=${encodeURIComponent(slug)}&view=admin&master_token=${MASTER_PIN}`;
+      const getCustomerUrl = (slug) => {
+        const base = getBaseUrl();
+        return base ? `${base}/menu/?venue=${encodeURIComponent(slug)}&table=1` : `menu/?venue=${encodeURIComponent(slug)}&table=1`;
+      };
+      const getKitchenUrl = (slug) => {
+        const base = getBaseUrl();
+        return base ? `${base}/?venue=${encodeURIComponent(slug)}&view=kitchen` : `?venue=${encodeURIComponent(slug)}&view=kitchen`;
+      };
+      const getAdminUrl = (slug) => {
+        const base = getBaseUrl();
+        return base ? `${base}/?venue=${encodeURIComponent(slug)}&view=admin` : `?venue=${encodeURIComponent(slug)}&view=admin`;
+      };
+      const getMasterAdminUrl = (slug) => {
+        const base = getBaseUrl();
+        return base ? `${base}/?venue=${encodeURIComponent(slug)}&view=admin&master_token=${MASTER_PIN}` : `?venue=${encodeURIComponent(slug)}&view=admin&master_token=${MASTER_PIN}`;
+      };
+
+      const handleEnterAdminAsMaster = (venueSlug) => {
+        try {
+          sessionStorage.setItem(`smartmenu_admin_auth_${venueSlug}`, 'true');
+        } catch (e) {}
+        window.location.href = `?venue=${encodeURIComponent(venueSlug)}&view=admin&master_token=${MASTER_PIN}`;
+      };
+
+      const handleNavigateTo = (url) => {
+        window.location.href = url;
+      };
 
       const copyToClipboard = (text, label) => {
         navigator.clipboard.writeText(text).then(() => {
@@ -8107,18 +8137,17 @@
                         >
                           📋 Copy
                         </button>
-                        <a
-                          href={custUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border ${
+                        <button
+                          type="button"
+                          onClick={() => handleNavigateTo(custUrl)}
+                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border cursor-pointer ${
                             isLight
                               ? 'bg-white hover:bg-stone-100 text-stone-900 border-stone-300'
                               : 'bg-stone-800 hover:bg-stone-700 text-stone-200 border-stone-700'
                           }`}
                         >
                           ↗ Open
-                        </a>
+                        </button>
                       </div>
                     </div>
 
@@ -8145,18 +8174,17 @@
                         >
                           📋 Copy
                         </button>
-                        <a
-                          href={kitchUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border ${
+                        <button
+                          type="button"
+                          onClick={() => handleNavigateTo(kitchUrl)}
+                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border cursor-pointer ${
                             isLight
                               ? 'bg-white hover:bg-stone-100 text-stone-900 border-stone-300'
                               : 'bg-stone-800 hover:bg-stone-700 text-stone-200 border-stone-700'
                           }`}
                         >
                           ↗ Open
-                        </a>
+                        </button>
                       </div>
                     </div>
 
@@ -8183,18 +8211,17 @@
                         >
                           📋 Copy
                         </button>
-                        <a
-                          href={adminUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border ${
+                        <button
+                          type="button"
+                          onClick={() => handleNavigateTo(adminUrl)}
+                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border cursor-pointer ${
                             isLight
                               ? 'bg-white hover:bg-stone-100 text-stone-900 border-stone-300'
                               : 'bg-stone-800 hover:bg-stone-700 text-stone-200 border-stone-700'
                           }`}
                         >
                           ↗ Open
-                        </a>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -8204,15 +8231,14 @@
                     isLight ? 'border-stone-200' : 'border-stone-800'
                   }`}>
                     <div className="flex flex-wrap items-center gap-2">
-                      <a
-                        href={masterAdmUrl}
-                        target="_blank"
-                        rel="noreferrer"
+                      <button
+                        type="button"
+                        onClick={() => handleEnterAdminAsMaster(venue.slug)}
                         className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-stone-950 font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer active:scale-95 border border-amber-400"
                       >
                         <span>🚀 Enter Admin & Setup Menu</span>
-                        <span>↗</span>
-                      </a>
+                        <span>→</span>
+                      </button>
 
                       <button
                         type="button"
