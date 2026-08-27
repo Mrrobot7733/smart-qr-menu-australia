@@ -63,7 +63,7 @@
     .theme-light header,
     .theme-light .sticky.top-0,
     .theme-light nav {
-      background-color: rgba(255, 255, 255, 0.96) !important;
+      background-color: rgba(255, 255, 255, 0.98) !important;
       border-color: #e7e5e4 !important;
       color: #1c1917 !important;
       box-shadow: 0 1px 4px rgba(0,0,0,0.05) !important;
@@ -98,7 +98,12 @@
     .theme-light [class*="bg-[#0b1b2b]"],
     .theme-light [class*="bg-[#102942]"],
     .theme-light [class*="bg-stone-900"],
-    .theme-light [class*="bg-slate-900"] {
+    .theme-light [class*="bg-slate-900"],
+    .theme-light [class*="bg-slate-950"],
+    .theme-light .bg-slate-900,
+    .theme-light .bg-slate-950,
+    .theme-light .bg-stone-900,
+    .theme-light .bg-stone-950 {
       background-color: #ffffff !important;
       color: #1c1917 !important;
       border-color: #e7e5e4 !important;
@@ -124,9 +129,12 @@
       border-color: #e7e5e4 !important;
     }
     .theme-light h1, .theme-light h2, .theme-light h3, .theme-light h4, .theme-light h5,
+    .theme-light strong, .theme-light b,
     .theme-light .text-white,
     .theme-light .text-stone-100,
-    .theme-light .text-stone-200 {
+    .theme-light .text-stone-200,
+    .theme-light .text-slate-100,
+    .theme-light .text-slate-200 {
       color: #1c1917 !important;
     }
     .theme-light p,
@@ -136,16 +144,24 @@
     .theme-light .text-slate-400 {
       color: #44403c !important;
     }
+    .theme-light .text-stone-500,
+    .theme-light .text-slate-500 {
+      color: #57534e !important;
+    }
     .theme-light [class*="border-stone-800"],
     .theme-light [class*="border-stone-700"],
+    .theme-light [class*="border-stone-900"],
     .theme-light [class*="border-slate-800"],
     .theme-light [class*="border-slate-700"],
+    .theme-light [class*="border-slate-900"],
     .theme-light [class*="border-amber-900"] {
       border-color: #e7e5e4 !important;
     }
     .theme-light [class*="from-[#1c1815]"],
     .theme-light [class*="from-[#2c1a0e]"],
-    .theme-light [class*="from-[#241d18]"] {
+    .theme-light [class*="from-[#241d18]"],
+    .theme-light [class*="from-[#20150d]"],
+    .theme-light [class*="from-[#160f09]"] {
       background-image: linear-gradient(to right, #fef3c7, #fff7ed) !important;
       color: #1c1917 !important;
       border-color: #fde68a !important;
@@ -159,7 +175,7 @@
     }
     .theme-light input::placeholder,
     .theme-light textarea::placeholder {
-      color: #a8a29e !important;
+      color: #78716c !important;
     }
     .theme-light .bg-black\/60,
     .theme-light .bg-black\/50,
@@ -170,7 +186,7 @@
     .theme-light .text-amber-300,
     .theme-light .text-amber-400,
     .theme-light .text-orange-400 {
-      color: #d97706 !important;
+      color: #b45309 !important;
     }
     .theme-light .bg-amber-950,
     .theme-light .bg-amber-950\/60,
@@ -200,7 +216,18 @@
       color: #1e40af !important;
       border-color: #bfdbfe !important;
     }
-    /* Retain high-contrast text on badges and gradient buttons */
+    .theme-light table th {
+      background-color: #f5f3ee !important;
+      color: #1c1917 !important;
+      border-color: #e7e5e4 !important;
+    }
+    .theme-light table td {
+      border-color: #f0eee6 !important;
+      color: #1c1917 !important;
+    }
+    .theme-light table tr:hover {
+      background-color: #fcfbfa !important;
+    }
     .theme-light .bg-gradient-to-r,
     .theme-light [class*="from-amber"],
     .theme-light [class*="from-orange"],
@@ -1441,26 +1468,28 @@
                   <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">● Live Status</span>
                 </div>
 
-                <div className="bg-gradient-to-b from-[#1c1815] to-[#120f0d] border border-amber-900/30 rounded-3xl p-5 shadow-2xl space-y-5">
+                <div className={`border rounded-3xl p-5 shadow-xl space-y-5 transition-colors ${
+                  theme === 'light' ? 'bg-white border-stone-200 shadow-stone-900/5 text-stone-900' : 'bg-gradient-to-b from-[#1c1815] to-[#120f0d] border-amber-900/30 text-white'
+                }`}>
                   <div className="flex justify-between items-start">
                     <div>
                       <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
                         activeOrder.status === 'pending_approval'
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 animate-pulse'
-                          : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                          ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/50 animate-pulse'
+                          : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
                       }`}>
                         {activeOrder.status === 'pending_approval' ? '⏳ AWAITING CASHIER PAYMENT' : '● LIVE ORDER STATUS'}
                       </span>
-                      <h2 className="text-xl font-bold text-white mt-1">
+                      <h2 className={`text-xl font-extrabold mt-1 ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
                         {activeOrder.orderType === 'takeaway' ? '🛍️ Takeaway Pickup' : `Table #${activeOrder.tableNumber}`}
                       </h2>
                     </div>
                     <span className={`text-xs font-extrabold px-3 py-1 rounded-xl shadow border ${
                       activeOrder.status === 'pending_approval'
-                        ? 'text-amber-300 bg-amber-950/90 border-amber-600 animate-pulse'
+                        ? (theme === 'light' ? 'text-amber-950 bg-amber-100 border-amber-400 animate-pulse font-black' : 'text-amber-300 bg-amber-950/90 border-amber-600 animate-pulse')
                         : activeOrder.paymentStatus === 'paid'
-                        ? 'text-emerald-400 bg-emerald-950/80 border-emerald-800'
-                        : 'text-stone-300 bg-stone-900 border-stone-800'
+                        ? (theme === 'light' ? 'text-emerald-900 bg-emerald-100 border-emerald-300 font-bold' : 'text-emerald-400 bg-emerald-950/80 border-emerald-800')
+                        : (theme === 'light' ? 'text-stone-700 bg-stone-100 border-stone-300' : 'text-stone-300 bg-stone-900 border-stone-800')
                     }`}>
                       {activeOrder.status === 'pending_approval'
                         ? '💵 Pay at Counter'
@@ -1480,34 +1509,46 @@
 
                   {/* 4-Digit Counter PIN Card (When paying at Counter) */}
                   {activeOrder.status === 'pending_approval' && activeOrder.counterPin && (
-                    <div className="bg-gradient-to-br from-[#2c1a0e] via-[#20150d] to-[#160f09] border-2 border-amber-500/80 rounded-2xl p-4 sm:p-5 text-center space-y-2.5 shadow-2xl animate-in zoom-in duration-200">
+                    <div className={`border-2 rounded-2xl p-4 sm:p-5 text-center space-y-2.5 shadow-xl animate-in zoom-in duration-200 ${
+                      theme === 'light' ? 'bg-amber-50/90 border-amber-400 text-stone-950' : 'bg-gradient-to-br from-[#2c1a0e] via-[#20150d] to-[#160f09] border-amber-500/80 text-white'
+                    }`}>
                       <div className="inline-flex items-center gap-1.5 bg-amber-500 text-stone-950 font-black px-3 py-0.5 rounded-full text-[10px] uppercase tracking-wider shadow">
                         <span>🔢</span> <span>SHOW THIS 4-DIGIT PIN AT CASHIER / BAR</span>
                       </div>
 
                       <div>
-                        <div className="text-5xl sm:text-6xl font-black text-amber-300 font-mono tracking-widest my-1 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+                        <div className={`text-5xl sm:text-6xl font-black font-mono tracking-widest my-1 ${
+                          theme === 'light' ? 'text-amber-950' : 'text-amber-300 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]'
+                        }`}>
                           #{activeOrder.counterPin}
                         </div>
-                        <span className="text-[11px] text-amber-200 font-bold uppercase tracking-wider block">
+                        <span className={`text-[11px] font-black uppercase tracking-wider block ${
+                          theme === 'light' ? 'text-amber-900' : 'text-amber-200'
+                        }`}>
                           Counter Verification PIN
                         </span>
                       </div>
 
-                      <div className="bg-black/60 border border-amber-500/30 p-2.5 rounded-xl text-xs space-y-1 max-w-sm mx-auto">
-                        <div className="flex justify-between font-bold text-stone-200">
-                          <span>Amount to pay at bar/counter:</span>
-                          <span className="font-mono font-black text-amber-300 text-sm">${activeOrder.totalAmount?.toFixed(2)} AUD</span>
+                      <div className={`p-2.5 rounded-xl text-xs space-y-1 max-w-sm mx-auto border ${
+                        theme === 'light' ? 'bg-white border-amber-300 text-stone-900 shadow-sm' : 'bg-black/60 border-amber-500/30 text-stone-200'
+                      }`}>
+                        <div className="flex justify-between font-bold">
+                          <span className={theme === 'light' ? 'text-stone-700' : 'text-stone-300'}>Amount to pay at bar/counter:</span>
+                          <span className={`font-mono font-black text-sm ${theme === 'light' ? 'text-amber-950' : 'text-amber-300'}`}>${activeOrder.totalAmount?.toFixed(2)} AUD</span>
                         </div>
                         {activeOrder.splitCount > 1 && (
-                          <div className="text-[11px] text-amber-400 font-semibold border-t border-stone-800/80 pt-1 flex justify-between">
+                          <div className={`text-[11px] font-semibold border-t pt-1 flex justify-between ${
+                            theme === 'light' ? 'border-amber-200 text-amber-900' : 'border-stone-800/80 text-amber-400'
+                          }`}>
                             <span>Bill Split ({activeOrder.splitCount} people):</span>
                             <span className="font-mono font-bold">${activeOrder.splitShareAmount} AUD each</span>
                           </div>
                         )}
                       </div>
 
-                      <p className="text-[11px] text-stone-300 max-w-sm mx-auto leading-relaxed pt-1">
+                      <p className={`text-[11px] max-w-sm mx-auto leading-relaxed pt-1 font-medium ${
+                        theme === 'light' ? 'text-stone-800' : 'text-stone-300'
+                      }`}>
                         👉 <strong>Please show PIN #{activeOrder.counterPin} to the staff.</strong> Your order will be sent to the kitchen & bar printers immediately once payment is confirmed.
                       </p>
 
@@ -1520,7 +1561,7 @@
                               setActiveOrderId(null);
                             }
                           }}
-                          className="text-stone-400 hover:text-red-400 text-xs font-semibold underline transition-all cursor-pointer py-1"
+                          className="text-stone-500 hover:text-red-600 text-xs font-bold underline transition-all cursor-pointer py-1"
                         >
                           ✕ Cancel this pending order
                         </button>
@@ -1529,17 +1570,25 @@
                   )}
 
                   {/* Big 3-Digit Call Ticket Badge */}
-                  <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/20 to-amber-500/15 border-2 border-dashed border-amber-500/50 rounded-2xl p-4 text-center space-y-1.5 shadow-inner">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 block">
+                  <div className={`border-2 border-dashed rounded-2xl p-4 text-center space-y-1.5 shadow-inner ${
+                    theme === 'light' ? 'bg-amber-50/70 border-amber-400 text-stone-950' : 'bg-gradient-to-r from-amber-500/15 via-orange-500/20 to-amber-500/15 border-amber-500/50'
+                  }`}>
+                    <span className={`text-[10px] font-black uppercase tracking-widest block ${
+                      theme === 'light' ? 'text-amber-900' : 'text-amber-400'
+                    }`}>
                       🎫 YOUR CALL ORDER NUMBER
                     </span>
-                    <div className="text-4xl sm:text-5xl font-black text-amber-300 font-mono tracking-wider drop-shadow-md">
+                    <div className={`text-4xl sm:text-5xl font-black font-mono tracking-wider ${
+                      theme === 'light' ? 'text-amber-950' : 'text-amber-300 drop-shadow-md'
+                    }`}>
                       #{activeOrder.orderNumber}
                     </div>
-                    <p className="text-xs text-stone-300">
-                      Customer: <strong className="text-white text-xs">{activeOrder.customerName || 'Guest'}</strong>
+                    <p className={`text-xs font-bold ${theme === 'light' ? 'text-stone-800' : 'text-stone-300'}`}>
+                      Customer: <strong className={`text-xs font-black ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>{activeOrder.customerName || 'Guest'}</strong>
                     </p>
-                    <p className="text-[10px] text-stone-400 max-w-xs mx-auto pt-1 leading-snug">
+                    <p className={`text-[10px] max-w-xs mx-auto pt-1 leading-snug font-medium ${
+                      theme === 'light' ? 'text-stone-600' : 'text-stone-400'
+                    }`}>
                       {activeOrder.status === 'pending_approval'
                         ? '⏳ Waiting for cashier confirmation with PIN #' + activeOrder.counterPin
                         : '💡 Keep this number handy. The staff will call or bring Order #' + activeOrder.orderNumber + ' to your table.'}
@@ -1549,29 +1598,39 @@
                   {/* Clean Live Status Banner (Printer-first workflow) */}
                   <div className="space-y-3 pt-1">
                     {activeOrder.status === 'pending_approval' ? (
-                      <div className="bg-gradient-to-r from-amber-950/80 via-[#26180e] to-amber-950/80 border border-amber-500/80 rounded-2xl p-4 text-center space-y-2 shadow-lg">
-                        <div className="text-amber-300 font-black text-sm flex items-center justify-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+                      <div className={`border rounded-2xl p-4 text-center space-y-2 shadow-md ${
+                        theme === 'light'
+                          ? 'bg-amber-50 border-amber-300 text-stone-950'
+                          : 'bg-gradient-to-r from-amber-950/80 via-[#26180e] to-amber-950/80 border-amber-500/80'
+                      }`}>
+                        <div className={`font-black text-sm flex items-center justify-center gap-2 ${theme === 'light' ? 'text-amber-950' : 'text-amber-300'}`}>
+                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
                           <span>⏳ Awaiting Cashier Payment Confirmation</span>
                         </div>
-                        <p className="text-xs text-stone-300 max-w-sm mx-auto">
-                          Show PIN <strong className="text-amber-300 font-mono font-black text-sm">#{activeOrder.counterPin}</strong> at the register. Once paid, your ticket prints immediately in the kitchen & bar.
+                        <p className={`text-xs max-w-sm mx-auto font-medium ${theme === 'light' ? 'text-stone-700' : 'text-stone-300'}`}>
+                          Show PIN <strong className={`font-mono font-black text-sm ${theme === 'light' ? 'text-amber-950' : 'text-amber-300'}`}>#{activeOrder.counterPin}</strong> at the register. Once paid, your ticket prints immediately in the kitchen & bar.
                         </p>
                       </div>
                     ) : (
-                      <div className="bg-gradient-to-r from-emerald-950/80 via-[#102419] to-emerald-950/80 border border-emerald-500/80 rounded-2xl p-4 text-center space-y-2.5 shadow-lg">
-                        <div className="text-emerald-300 font-black text-sm flex items-center justify-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                      <div className={`border rounded-2xl p-4 text-center space-y-2.5 shadow-md ${
+                        theme === 'light'
+                          ? 'bg-emerald-50 border-emerald-300 text-stone-950'
+                          : 'bg-gradient-to-r from-emerald-950/80 via-[#102419] to-emerald-950/80 border-emerald-500/80'
+                      }`}>
+                        <div className={`font-black text-sm flex items-center justify-center gap-2 ${theme === 'light' ? 'text-emerald-950' : 'text-emerald-300'}`}>
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
                           <span>✓ Order Confirmed & Printed in Kitchen</span>
                         </div>
-                        <p className="text-xs text-stone-200 max-w-sm mx-auto leading-relaxed">
+                        <p className={`text-xs max-w-sm mx-auto leading-relaxed font-medium ${theme === 'light' ? 'text-stone-700' : 'text-stone-200'}`}>
                           Your order docket has been printed in the kitchen & bar. Chefs are preparing your dishes fresh.
                         </p>
-                        <div className="inline-flex items-center gap-2 bg-black/60 border border-emerald-500/40 px-3.5 py-1.5 rounded-xl text-xs text-amber-300 font-bold shadow-inner">
+                        <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-inner border ${
+                          theme === 'light' ? 'bg-white border-emerald-300 text-emerald-950' : 'bg-black/60 border-emerald-500/40 text-amber-300'
+                        }`}>
                           <span>⏱️ Estimated Preparation:</span>
-                          <span className="text-white font-black">{activeOrder.takeawayTime || '~15-20 min'}</span>
+                          <span className={`font-black ${theme === 'light' ? 'text-emerald-900' : 'text-white'}`}>{activeOrder.takeawayTime || '~15-20 min'}</span>
                         </div>
-                        <p className="text-[11px] text-stone-400">
+                        <p className={`text-[11px] font-medium ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>
                           {activeOrder.orderType === 'takeaway'
                             ? `Please listen for Call Order #${activeOrder.orderNumber} at the pickup counter.`
                             : `Your items will be brought directly to Table #${activeOrder.tableNumber}.`}
@@ -1581,22 +1640,28 @@
                   </div>
 
                   {/* Items Ordered List */}
-                  <div className="bg-[#14110f] p-4 rounded-2xl border border-stone-800/80 space-y-2">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-400 block">Items in this Order</span>
+                  <div className={`p-4 rounded-2xl border space-y-2 ${
+                    theme === 'light' ? 'bg-stone-50 border-stone-200 text-stone-900' : 'bg-[#14110f] border-stone-800/80 text-white'
+                  }`}>
+                    <span className={`text-[10px] font-extrabold uppercase tracking-wider block ${theme === 'light' ? 'text-stone-900' : 'text-amber-400'}`}>Items in this Order</span>
                     {activeOrder.items?.map((it, idx) => (
-                      <div key={idx} className="flex justify-between text-xs text-stone-200">
+                      <div key={idx} className={`flex justify-between text-xs font-medium ${theme === 'light' ? 'text-stone-800' : 'text-stone-200'}`}>
                         <span>{it.quantity}x {it.name}</span>
-                        <span className="font-mono text-stone-400">${it.totalItemPrice?.toFixed(2)} AUD</span>
+                        <span className={`font-mono ${theme === 'light' ? 'text-stone-900 font-bold' : 'text-stone-400'}`}>${it.totalItemPrice?.toFixed(2)} AUD</span>
                       </div>
                     ))}
                   </div>
 
                   {/* ⭐ Google 5-Star Review Booster */}
-                  <div className="bg-gradient-to-br from-[#241d18] to-[#171310] border border-amber-500/30 rounded-2xl p-4 shadow-xl text-center space-y-2.5">
-                    <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest block">
+                  <div className={`border rounded-2xl p-4 shadow-md text-center space-y-2.5 ${
+                    theme === 'light'
+                      ? 'bg-amber-50/60 border-amber-300 text-stone-950'
+                      : 'bg-gradient-to-br from-[#241d18] to-[#171310] border-amber-500/30 text-white'
+                  }`}>
+                    <span className={`text-[10px] font-black uppercase tracking-widest block ${theme === 'light' ? 'text-amber-950' : 'text-amber-400'}`}>
                       ⭐ RATE YOUR EXPERIENCE
                     </span>
-                    <h3 className="font-extrabold text-white text-sm">
+                    <h3 className={`font-extrabold text-sm ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
                       How was your meal at {restaurant.name}?
                     </h3>
                     <div className="flex justify-center gap-2 py-1">
@@ -1610,8 +1675,8 @@
                               confetti({ particleCount: 60, spread: 60, origin: { y: 0.7 } });
                             }
                           }}
-                          className={`text-2xl transition-transform active:scale-125 ${
-                            reviewRating >= star ? 'scale-110 text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 'text-stone-700 hover:text-stone-500'
+                          className={`text-2xl transition-transform active:scale-125 cursor-pointer ${
+                            reviewRating >= star ? 'scale-110 text-amber-500 drop-shadow-sm' : 'text-stone-300 dark:text-stone-700 hover:text-stone-400'
                           }`}
                         >
                           ★
@@ -1620,8 +1685,10 @@
                     </div>
 
                     {reviewRating === 5 && (
-                      <div className="bg-amber-950/60 border border-amber-500/40 p-3 rounded-xl space-y-2 animate-in fade-in">
-                        <p className="text-[11px] text-amber-200 font-semibold leading-relaxed">
+                      <div className={`p-3 rounded-xl space-y-2 animate-in fade-in border ${
+                        theme === 'light' ? 'bg-amber-100 border-amber-300 text-amber-950' : 'bg-amber-950/60 border-amber-500/40 text-amber-200'
+                      }`}>
+                        <p className="text-[11px] font-semibold leading-relaxed">
                           🎉 Thank you so much! Post this 5-star review on Google Maps and show our team for a free coffee or dessert on your next visit!
                         </p>
                         <button
@@ -1629,7 +1696,7 @@
                             window.open('https://maps.google.com', '_blank');
                             setReviewDone(true);
                           }}
-                          className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black py-2 rounded-xl text-xs shadow hover:brightness-110 flex items-center justify-center gap-1.5 transition-all"
+                          className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black py-2 rounded-xl text-xs shadow hover:brightness-110 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                         >
                           <span>⭐ Post Review on Google Maps</span>
                         </button>
@@ -1637,8 +1704,10 @@
                     )}
 
                     {reviewRating > 0 && reviewRating < 5 && (
-                      <div className="bg-stone-900/90 border border-stone-800 p-3 rounded-xl space-y-2 animate-in fade-in text-left">
-                        <p className="text-[11px] text-stone-300 font-medium">
+                      <div className={`p-3 rounded-xl space-y-2 animate-in fade-in text-left border ${
+                        theme === 'light' ? 'bg-white border-stone-200' : 'bg-stone-900/90 border-stone-800'
+                      }`}>
+                        <p className={`text-[11px] font-medium ${theme === 'light' ? 'text-stone-800' : 'text-stone-300'}`}>
                           We want to make it right! Leave a private note for the manager:
                         </p>
                         {!feedbackSent ? (
@@ -1648,38 +1717,50 @@
                               value={privateFeedback}
                               onChange={(e) => setPrivateFeedback(e.target.value)}
                               placeholder="How can we improve your experience today?"
-                              className="w-full bg-[#120f0d] border border-stone-800 rounded-xl p-2 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-amber-500"
+                              className={`w-full rounded-xl p-2 text-xs border focus:outline-none focus:border-amber-500 transition-colors ${
+                                theme === 'light' ? 'bg-stone-50 border-stone-300 text-stone-900 placeholder:text-stone-400' : 'bg-[#120f0d] border-stone-800 text-white placeholder-stone-500'
+                              }`}
                             />
                             <button
                               onClick={() => setFeedbackSent(true)}
-                              className="w-full bg-amber-900/60 hover:bg-amber-800 text-amber-200 font-bold py-1.5 rounded-xl text-xs transition-all"
+                              className={`w-full font-bold py-1.5 rounded-xl text-xs transition-all cursor-pointer ${
+                                theme === 'light' ? 'bg-amber-500 text-stone-950 hover:bg-amber-400' : 'bg-amber-900/60 hover:bg-amber-800 text-amber-200'
+                              }`}
                             >
                               Send to Manager Privately
                             </button>
                           </div>
                         ) : (
-                          <p className="text-[11px] text-emerald-400 font-bold">✓ Thank you! Your feedback has been sent directly to the manager.</p>
+                          <p className="text-[11px] text-emerald-600 font-bold">✓ Thank you! Your feedback has been sent directly to the manager.</p>
                         )}
                       </div>
                     )}
                   </div>
 
                   {/* Official ATO Tax Invoice Breakdown & Download Button */}
-                  <div className="bg-[#14110f]/90 p-4 rounded-2xl border border-stone-800 text-[11px] text-stone-400 space-y-2.5 shadow-md">
+                  <div className={`p-4 rounded-2xl border text-[11px] space-y-2.5 shadow-md ${
+                    theme === 'light' ? 'bg-stone-50 border-stone-200 text-stone-700' : 'bg-[#14110f]/90 border-stone-800 text-stone-400'
+                  }`}>
                     <div className="flex justify-between items-center">
-                      <span className="font-extrabold text-stone-200 uppercase tracking-wider text-[10px]">Official ATO Tax Invoice</span>
-                      <span className="text-amber-400 font-mono text-[10px] font-bold">ABN: {restaurant.abn}</span>
+                      <span className={`font-extrabold uppercase tracking-wider text-[10px] ${theme === 'light' ? 'text-stone-900' : 'text-stone-200'}`}>Official ATO Tax Invoice</span>
+                      <span className={`font-mono text-[10px] font-bold ${theme === 'light' ? 'text-amber-900' : 'text-amber-400'}`}>ABN: {restaurant.abn}</span>
                     </div>
-                    <div className="flex justify-between"><span>Includes 10% GST:</span><span className="text-stone-200">${activeOrder.gstAmount?.toFixed(2)} AUD</span></div>
-                    <div className="flex justify-between font-black text-white text-sm pt-2 border-t border-stone-800">
+                    <div className="flex justify-between font-medium"><span>Includes 10% GST:</span><span className={theme === 'light' ? 'text-stone-900 font-bold' : 'text-stone-200'}>${activeOrder.gstAmount?.toFixed(2)} AUD</span></div>
+                    <div className={`flex justify-between font-black text-sm pt-2 border-t ${
+                      theme === 'light' ? 'border-stone-200 text-stone-950' : 'border-stone-800 text-white'
+                    }`}>
                       <span>Total Paid:</span>
-                      <span className="text-amber-400 text-base">${activeOrder.totalAmount?.toFixed(2)} AUD</span>
+                      <span className={`text-base font-mono ${theme === 'light' ? 'text-stone-950 font-black' : 'text-amber-400'}`}>${activeOrder.totalAmount?.toFixed(2)} AUD</span>
                     </div>
 
                     <button
                       type="button"
                       onClick={() => setViewInvoiceModal(true)}
-                      className="w-full bg-[#201a16] hover:bg-amber-950 text-amber-300 font-black py-2.5 px-3 rounded-xl text-xs border border-amber-500/50 shadow flex items-center justify-center gap-1.5 active:scale-95 transition-all mt-2 cursor-pointer"
+                      className={`w-full font-black py-2.5 px-3 rounded-xl text-xs border shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all mt-2 cursor-pointer ${
+                        theme === 'light'
+                          ? 'bg-amber-100 hover:bg-amber-200 text-amber-950 border-amber-300'
+                          : 'bg-[#201a16] hover:bg-amber-950 text-amber-300 border-amber-500/50'
+                      }`}
                     >
                       <span>🧾 View & Download Tax Invoice (PDF)</span>
                     </button>
@@ -1782,12 +1863,18 @@
                         setSelCat('tap_beer');
                       }
                     }}
-                    className="w-full bg-[#181411] border border-amber-900/40 px-3 py-1.5 rounded-xl flex items-center justify-between text-xs hover:border-amber-500/50 active:scale-[0.99] transition-all"
+                    className={`w-full px-3 py-1.5 rounded-xl flex items-center justify-between text-xs transition-all border ${
+                      theme === 'light'
+                        ? 'bg-amber-50/80 border-amber-300 text-stone-900 hover:bg-amber-100'
+                        : 'bg-[#181411] border-amber-900/40 text-stone-200 hover:border-amber-500/50'
+                    }`}
                   >
-                    <span className="text-[11px] text-amber-300 font-bold flex items-center gap-1.5">
+                    <span className={`text-[11px] font-bold flex items-center gap-1.5 ${theme === 'light' ? 'text-amber-950' : 'text-amber-300'}`}>
                       <span>🍻 Reorder Previous Drinks</span>
                     </span>
-                    <span className="text-[10px] font-black text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-800/60">
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${
+                      theme === 'light' ? 'bg-amber-200 text-amber-950 border-amber-400' : 'bg-amber-950/80 text-amber-400 border-amber-800/60'
+                    }`}>
                       1-Touch 🍺
                     </span>
                   </button>
@@ -1802,10 +1889,14 @@
                       value={search}
                       onChange={e => setSearch(e.target.value)}
                       placeholder="Search dishes, burgers, beers..."
-                      className="w-full bg-[#181411] border border-stone-800 rounded-xl pl-8 pr-7 py-2 text-xs text-white placeholder-stone-400 focus:outline-none focus:border-amber-500 shadow-sm"
+                      className={`w-full rounded-xl pl-8 pr-7 py-2 text-xs focus:outline-none focus:border-amber-500 shadow-sm border transition-colors ${
+                        theme === 'light'
+                          ? 'bg-white border-stone-300 text-stone-900 placeholder:text-stone-400'
+                          : 'bg-[#181411] border-stone-800 text-white placeholder-stone-500'
+                      }`}
                     />
                     {search && (
-                      <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-white font-bold text-xs">✕</button>
+                      <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-900 font-bold text-xs">✕</button>
                     )}
                   </div>
 
@@ -1817,7 +1908,7 @@
                       className={`px-2.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                         filter === 'gf'
                           ? 'bg-amber-400 text-stone-950 shadow-md ring-1 ring-amber-400'
-                          : 'bg-[#181411] text-stone-300 border border-stone-800 hover:border-stone-700 hover:text-white'
+                          : (theme === 'light' ? 'bg-white text-stone-800 border border-stone-200 hover:bg-stone-50' : 'bg-[#181411] text-stone-300 border border-stone-800 hover:border-stone-700 hover:text-white')
                       }`}
                       title="Gluten Free"
                     >
@@ -1829,7 +1920,7 @@
                       className={`px-2.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                         filter === 'veg'
                           ? 'bg-emerald-400 text-stone-950 shadow-md ring-1 ring-emerald-400'
-                          : 'bg-[#181411] text-stone-300 border border-stone-800 hover:border-stone-700 hover:text-white'
+                          : (theme === 'light' ? 'bg-white text-stone-800 border border-stone-200 hover:bg-stone-50' : 'bg-[#181411] text-stone-300 border border-stone-800 hover:border-stone-700 hover:text-white')
                       }`}
                       title="Vegetarian"
                     >
@@ -1845,7 +1936,7 @@
                     className={`px-3.5 py-1.5 rounded-xl text-xs font-black whitespace-nowrap flex-shrink-0 transition-all cursor-pointer ${
                       selCat === 'all'
                         ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black shadow-md'
-                        : 'bg-[#181411] text-stone-300 border border-stone-800 hover:border-stone-700 hover:text-white'
+                        : (theme === 'light' ? 'bg-white text-stone-800 border border-stone-200 hover:bg-amber-50 hover:border-amber-300' : 'bg-[#181411] text-stone-300 border border-stone-800 hover:border-stone-700 hover:text-white')
                     }`}
                   >
                     ✨ All Dishes ({items.length})
@@ -1859,7 +1950,7 @@
                         className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex-shrink-0 transition-all cursor-pointer ${
                           selCat === c.id
                             ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black shadow-md'
-                            : 'bg-[#181411] text-stone-300 border border-stone-800 hover:border-stone-700 hover:text-white'
+                            : (theme === 'light' ? 'bg-white text-stone-800 border border-stone-200 hover:bg-amber-50 hover:border-amber-300' : 'bg-[#181411] text-stone-300 border border-stone-800 hover:border-stone-700 hover:text-white')
                         }`}
                       >
                         {c.name} ({count})
@@ -1876,10 +1967,10 @@
                       <div
                         key={it.id}
                         onClick={() => it.isAvailable && openItemDetail(it)}
-                        className={`group dish-card bg-[#181411] border rounded-2xl p-3 sm:p-3.5 flex gap-3.5 cursor-pointer transition-all active:scale-[0.99] shadow-md ${
-                          it.isAvailable
-                            ? inCartCount > 0 ? 'border-amber-500/80 shadow-amber-950/30 ring-1 ring-amber-500/30' : 'border-stone-800/90 hover:border-stone-700'
-                            : 'border-red-900/40 opacity-60'
+                        className={`group dish-card border rounded-2xl p-3 sm:p-3.5 flex gap-3.5 cursor-pointer transition-all active:scale-[0.99] shadow-sm ${
+                          theme === 'light'
+                            ? (it.isAvailable ? (inCartCount > 0 ? 'bg-amber-50/40 border-amber-400 shadow-md ring-1 ring-amber-400/40' : 'bg-white border-stone-200 hover:border-amber-400') : 'bg-white border-red-200 opacity-60')
+                            : (it.isAvailable ? (inCartCount > 0 ? 'bg-[#181411] border-amber-500/80 shadow-amber-950/30 ring-1 ring-amber-500/30' : 'bg-[#181411] border-stone-800/90 hover:border-stone-700') : 'bg-[#181411] border-red-900/40 opacity-60')
                         }`}
                       >
                         {/* Food Image */}
@@ -1905,15 +1996,23 @@
                         {/* Dish Details */}
                         <div className="flex-1 flex flex-col justify-between min-w-0 py-0.5">
                           <div>
-                            <h3 className="font-extrabold text-white text-sm sm:text-base leading-snug group-hover:text-amber-400 transition-colors">
+                            <h3 className={`font-extrabold text-sm sm:text-base leading-snug transition-colors ${
+                              theme === 'light' ? 'text-stone-950 group-hover:text-amber-700' : 'text-white group-hover:text-amber-400'
+                            }`}>
                               {it.name}
                             </h3>
-                            <p className="text-xs text-stone-300 line-clamp-2 mt-1 leading-relaxed">{it.description}</p>
+                            <p className={`text-xs line-clamp-2 mt-1 leading-relaxed ${
+                              theme === 'light' ? 'text-stone-600 font-medium' : 'text-stone-300'
+                            }`}>{it.description}</p>
                           </div>
 
-                          <div className="flex justify-between items-center pt-2 mt-1 border-t border-stone-800/80">
+                          <div className={`flex justify-between items-center pt-2 mt-1 border-t ${
+                            theme === 'light' ? 'border-stone-100' : 'border-stone-800/80'
+                          }`}>
                             <div>
-                              <span className="font-black text-amber-400 text-sm sm:text-base font-mono">
+                              <span className={`font-black text-sm sm:text-base font-mono ${
+                                theme === 'light' ? 'text-stone-950' : 'text-amber-400'
+                              }`}>
                                 ${it.price.toFixed(2)} AUD
                               </span>
                             </div>
@@ -1983,13 +2082,15 @@
 
           {/* Item Customization Bottom-Sheet Modal */}
           {selItem && (
-            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-              <div className="w-full max-w-lg bg-[#181411] border border-stone-800 rounded-t-[32px] sm:rounded-3xl p-5 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-10">
+            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-md animate-in fade-in">
+              <div className={`w-full max-w-lg border rounded-t-[32px] sm:rounded-3xl p-5 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-10 transition-colors ${
+                theme === 'light' ? 'bg-white border-stone-200 text-stone-900 shadow-stone-900/10' : 'bg-[#181411] border-stone-800 text-white'
+              }`}>
                 
                 {/* Close Handle & Hero Image */}
                 <div className="relative">
-                  <div className="w-12 h-1 bg-stone-700 rounded-full mx-auto mb-3 sm:hidden"></div>
-                  <div className="w-full h-48 rounded-2xl overflow-hidden bg-stone-950 relative shadow-inner border border-stone-800">
+                  <div className="w-12 h-1 bg-stone-400 dark:bg-stone-700 rounded-full mx-auto mb-3 sm:hidden"></div>
+                  <div className="w-full h-48 rounded-2xl overflow-hidden bg-stone-950 relative shadow-inner border border-stone-300 dark:border-stone-800">
                     <img src={selItem.image} alt={selItem.name} className="w-full h-full object-cover" />
                     <button
                       onClick={() => setSelItem(null)}
@@ -2006,16 +2107,18 @@
 
                 <div>
                   <div className="flex justify-between items-start gap-2">
-                    <h3 className="font-black text-white text-lg sm:text-xl leading-snug">{selItem.name}</h3>
-                    <span className="font-black text-amber-400 text-lg sm:text-xl font-mono">${selItem.price.toFixed(2)} AUD</span>
+                    <h3 className={`font-black text-lg sm:text-xl leading-snug ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>{selItem.name}</h3>
+                    <span className={`font-black text-lg sm:text-xl font-mono ${theme === 'light' ? 'text-stone-950' : 'text-amber-400'}`}>${selItem.price.toFixed(2)} AUD</span>
                   </div>
-                  <p className="text-xs text-stone-300 mt-1 leading-relaxed">{selItem.description}</p>
+                  <p className={`text-xs mt-1 leading-relaxed ${theme === 'light' ? 'text-stone-600 font-medium' : 'text-stone-300'}`}>{selItem.description}</p>
                 </div>
 
                 {/* Options (e.g., Beer Size: Middy, Schooner, Pint) */}
                 {selItem.options?.map((opt, i) => (
-                  <div key={i} className="space-y-2 bg-[#120f0d] p-3.5 rounded-2xl border border-stone-800">
-                    <label className="font-bold text-xs text-amber-300 block uppercase tracking-wider">{opt.name}</label>
+                  <div key={i} className={`space-y-2 p-3.5 rounded-2xl border ${
+                    theme === 'light' ? 'bg-stone-50 border-stone-200' : 'bg-[#120f0d] border-stone-800'
+                  }`}>
+                    <label className={`font-bold text-xs block uppercase tracking-wider ${theme === 'light' ? 'text-stone-900' : 'text-amber-300'}`}>{opt.name}</label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {opt.choices.map(c => (
                         <button
@@ -2025,7 +2128,7 @@
                           className={`p-2.5 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${
                             selectedOptions[opt.name] === c
                               ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black border-amber-400 shadow-md'
-                              : 'bg-[#1c1815] text-stone-200 border-stone-800 hover:bg-[#25201c]'
+                              : (theme === 'light' ? 'bg-white text-stone-800 border-stone-200 hover:bg-amber-50 hover:border-amber-300' : 'bg-[#1c1815] text-stone-200 border-stone-800 hover:bg-[#25201c]')
                           }`}
                         >
                           {c}
@@ -2037,8 +2140,10 @@
 
                 {/* Add-ons & Extras */}
                 {selItem.extras?.length > 0 && (
-                  <div className="space-y-2 bg-[#120f0d] p-3.5 rounded-2xl border border-stone-800">
-                    <label className="font-bold text-xs text-amber-300 block uppercase tracking-wider">Choose Extras & Add-ons</label>
+                  <div className={`space-y-2 p-3.5 rounded-2xl border ${
+                    theme === 'light' ? 'bg-stone-50 border-stone-200' : 'bg-[#120f0d] border-stone-800'
+                  }`}>
+                    <label className={`font-bold text-xs block uppercase tracking-wider ${theme === 'light' ? 'text-stone-900' : 'text-amber-300'}`}>Choose Extras & Add-ons</label>
                     <div className="space-y-1.5">
                       {selItem.extras.map(e => {
                         const isChecked = selectedExtras.some(x => x.id === e.id);
@@ -2049,11 +2154,13 @@
                               setSelectedExtras(p => isChecked ? p.filter(x => x.id !== e.id) : [...p, e]);
                             }}
                             className={`p-2.5 rounded-xl border flex justify-between items-center text-xs cursor-pointer transition-all ${
-                              isChecked ? 'bg-amber-500/20 border-amber-500/80 text-amber-200 font-bold' : 'bg-[#1c1815] border-stone-800 text-stone-200'
+                              isChecked
+                                ? (theme === 'light' ? 'bg-amber-100/80 border-amber-400 text-stone-950 font-bold' : 'bg-amber-500/20 border-amber-500/80 text-amber-200 font-bold')
+                                : (theme === 'light' ? 'bg-white border-stone-200 text-stone-800 hover:bg-stone-50' : 'bg-[#1c1815] border-stone-800 text-stone-200')
                             }`}
                           >
                             <span className="font-semibold">{isChecked ? '✓ ' : '+ '}{e.name}</span>
-                            <span className="font-bold text-amber-400 font-mono">+${e.price.toFixed(2)} AUD</span>
+                            <span className={`font-bold font-mono ${theme === 'light' ? 'text-stone-900' : 'text-amber-400'}`}>+${e.price.toFixed(2)} AUD</span>
                           </label>
                         );
                       })}
@@ -2110,10 +2217,10 @@
                 )}
 
                 {/* Dining Option Selection (Dine-in at Table vs Takeaway Packaging) */}
-                <div className="space-y-1.5 pt-2 border-t border-stone-800">
-                  <label className="font-bold text-xs text-stone-300 block flex items-center justify-between">
+                <div className={`space-y-1.5 pt-2 border-t ${theme === 'light' ? 'border-stone-200' : 'border-stone-800'}`}>
+                  <label className={`font-bold text-xs block flex items-center justify-between ${theme === 'light' ? 'text-stone-800' : 'text-stone-300'}`}>
                     <span>Where will you enjoy this dish?</span>
-                    <span className="text-[10px] text-amber-400 font-normal">Choose per item</span>
+                    <span className={`text-[10px] font-normal ${theme === 'light' ? 'text-stone-600' : 'text-amber-400'}`}>Choose per item</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     <button
@@ -2122,7 +2229,7 @@
                       className={`py-2.5 px-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         itemDiningOption === 'dine_in'
                           ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 border-amber-500 font-black shadow-lg shadow-amber-950/50'
-                          : 'bg-[#120f0d] border-stone-800 text-stone-200 hover:border-amber-500/40'
+                          : (theme === 'light' ? 'bg-stone-50 border-stone-200 text-stone-800 hover:border-amber-400' : 'bg-[#120f0d] border-stone-800 text-stone-200 hover:border-amber-500/40')
                       }`}
                     >
                       <span>🍽️ Dine-In (Table #{activeTable})</span>
@@ -2133,7 +2240,7 @@
                       className={`py-2.5 px-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         itemDiningOption === 'takeaway'
                           ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-stone-950 border-emerald-500 font-black shadow-lg shadow-emerald-950/50'
-                          : 'bg-[#120f0d] border-stone-800 text-stone-200 hover:border-emerald-500/40'
+                          : (theme === 'light' ? 'bg-stone-50 border-stone-200 text-stone-800 hover:border-emerald-400' : 'bg-[#120f0d] border-stone-800 text-stone-200 hover:border-emerald-500/40')
                       }`}
                     >
                       <span>🛍️ Takeaway / Packaging</span>
@@ -2143,29 +2250,37 @@
 
                 {/* Chef Special Notes */}
                 <div className="space-y-1.5">
-                  <label className="font-bold text-xs text-stone-300 block">Special Instructions / Allergies</label>
+                  <label className={`font-bold text-xs block ${theme === 'light' ? 'text-stone-800' : 'text-stone-300'}`}>Special Instructions / Allergies</label>
                   <input
                     type="text"
                     value={itemNotes}
                     onChange={(e) => setItemNotes(e.target.value)}
                     placeholder="e.g. Sauce on the side, no onion, extra crispy..."
-                    className="w-full bg-[#120f0d] border border-stone-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-stone-400 focus:outline-none focus:border-amber-500"
+                    className={`w-full rounded-xl px-3.5 py-2 text-xs border focus:outline-none focus:border-amber-500 transition-colors ${
+                      theme === 'light' ? 'bg-white border-stone-300 text-stone-900 placeholder:text-stone-400' : 'bg-[#120f0d] border-stone-800 text-white placeholder-stone-500'
+                    }`}
                   />
                 </div>
 
                 {/* Stepper & Sticky Add Button */}
-                <div className="flex items-center gap-3 pt-3 border-t border-amber-900/30">
-                  <div className="flex items-center bg-[#120f0d] border border-stone-800 rounded-2xl p-1">
+                <div className={`flex items-center gap-3 pt-3 border-t ${theme === 'light' ? 'border-stone-200' : 'border-amber-900/30'}`}>
+                  <div className={`flex items-center border rounded-2xl p-1 ${
+                    theme === 'light' ? 'bg-stone-100 border-stone-300' : 'bg-[#120f0d] border-stone-800'
+                  }`}>
                     <button
                       onClick={() => setItemQty(q => Math.max(1, q - 1))}
-                      className="w-8 h-8 rounded-xl bg-stone-900 text-stone-200 font-black text-sm flex items-center justify-center hover:bg-stone-800"
+                      className={`w-8 h-8 rounded-xl font-black text-sm flex items-center justify-center ${
+                        theme === 'light' ? 'bg-white text-stone-900 border border-stone-200 hover:bg-stone-50' : 'bg-stone-900 text-stone-200 hover:bg-stone-800'
+                      }`}
                     >
                       -
                     </button>
-                    <span className="w-8 text-center font-black text-white text-sm">{itemQty}</span>
+                    <span className={`w-8 text-center font-black text-sm ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>{itemQty}</span>
                     <button
                       onClick={() => setItemQty(q => q + 1)}
-                      className="w-8 h-8 rounded-xl bg-stone-900 text-stone-200 font-black text-sm flex items-center justify-center hover:bg-stone-800"
+                      className={`w-8 h-8 rounded-xl font-black text-sm flex items-center justify-center ${
+                        theme === 'light' ? 'bg-white text-stone-900 border border-stone-200 hover:bg-stone-50' : 'bg-stone-900 text-stone-200 hover:bg-stone-800'
+                      }`}
                     >
                       +
                     </button>
@@ -2191,12 +2306,14 @@
 
           {/* Cart Drawer / Bottom Sheet */}
           {isCartOpen && (
-            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-              <div className="w-full max-w-lg bg-[#181512] border border-amber-900/30 rounded-t-[32px] sm:rounded-3xl p-5 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col justify-between">
+            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-md animate-in fade-in">
+              <div className={`w-full max-w-lg border rounded-t-[32px] sm:rounded-3xl p-5 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col justify-between transition-colors ${
+                theme === 'light' ? 'bg-white border-stone-200 text-stone-900 shadow-stone-900/10' : 'bg-[#181512] border-amber-900/30 text-white'
+              }`}>
                 <div>
-                  <div className="flex justify-between items-center pb-3 border-b border-stone-800">
+                  <div className={`flex justify-between items-center pb-3 border-b ${theme === 'light' ? 'border-stone-200' : 'border-stone-800'}`}>
                     <div>
-                      <h3 className="font-black text-white text-lg flex items-center gap-2">
+                      <h3 className={`font-black text-lg flex items-center gap-2 ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
                         {hasDineIn && hasTakeaway ? (
                           <span>🍽️ Table #{activeTable} + 🛍️ Takeaway</span>
                         ) : hasTakeaway ? (
@@ -2205,61 +2322,75 @@
                           <span>🍽️ Table #{activeTable} Order</span>
                         )}
                       </h3>
-                      <p className="text-[11px] text-stone-400">
+                      <p className={`text-[11px] font-medium ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>
                         {cartCount} items ({dineInItems.length > 0 ? `${dineInItems.length} table` : ''}{hasDineIn && hasTakeaway ? ' + ' : ''}{takeawayItems.length > 0 ? `${takeawayItems.length} takeaway` : ''}) • GST Included
                       </p>
                     </div>
-                    <button onClick={() => setIsCartOpen(false)} className="text-stone-400 font-black text-xs p-2 bg-stone-800 rounded-full">✕</button>
+                    <button onClick={() => setIsCartOpen(false)} className={`font-black text-xs p-2 rounded-full cursor-pointer ${
+                      theme === 'light' ? 'bg-stone-100 text-stone-700 hover:bg-stone-200' : 'text-stone-400 bg-stone-800 hover:text-white'
+                    }`}>✕</button>
                   </div>
 
                   {/* Cart Items List */}
                   <div className="py-3 space-y-3">
                     {cart.map(c => (
-                      <div key={c.cartId} className="bg-[#120f0d] p-3.5 rounded-2xl border border-stone-800/80 flex justify-between items-center gap-3">
+                      <div key={c.cartId} className={`p-3.5 rounded-2xl border flex justify-between items-center gap-3 transition-colors ${
+                        theme === 'light' ? 'bg-stone-50 border-stone-200 text-stone-900' : 'bg-[#120f0d] border-stone-800/80 text-white'
+                      }`}>
                         <div className="flex-1 min-w-0">
-                          <p className="font-extrabold text-white text-xs truncate">{c.name}</p>
+                          <p className={`font-extrabold text-xs truncate ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>{c.name}</p>
                           {c.selectedOptions && Object.entries(c.selectedOptions).map(([k, v]) => (
-                            <p key={k} className="text-[10px] text-amber-300 font-bold">▶ {k}: {v}</p>
+                            <p key={k} className={`text-[10px] font-bold ${theme === 'light' ? 'text-amber-900' : 'text-amber-300'}`}>▶ {k}: {v}</p>
                           ))}
                           {c.selectedExtras?.length > 0 && (
-                            <p className="text-[10px] text-emerald-300 font-bold">+{c.selectedExtras.map(e => e.name).join(', ')}</p>
+                            <p className={`text-[10px] font-bold ${theme === 'light' ? 'text-emerald-800' : 'text-emerald-300'}`}>+{c.selectedExtras.map(e => e.name).join(', ')}</p>
                           )}
-                          {c.notes && <p className="text-[10px] text-amber-300 italic bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-800/30 mt-0.5">⚠️ {c.notes}</p>}
+                          {c.notes && <p className={`text-[10px] italic px-1.5 py-0.5 rounded border mt-0.5 ${
+                            theme === 'light' ? 'bg-amber-100 border-amber-300 text-amber-950 font-bold' : 'text-amber-300 bg-amber-950/40 border-amber-800/30'
+                          }`}>⚠️ {c.notes}</p>}
                           
                           {/* 1-Click Interactive Dining Switcher Badge */}
                           <div className="flex items-center gap-2 mt-1">
                             <button
                               type="button"
                               onClick={() => toggleCartItemDiningOption(c.cartId)}
-                              className={`text-[10px] font-black px-2 py-0.5 rounded-lg border flex items-center gap-1 transition-all active:scale-95 ${
+                              className={`text-[10px] font-black px-2 py-0.5 rounded-lg border flex items-center gap-1 transition-all active:scale-95 cursor-pointer ${
                                 c.diningOption === 'takeaway'
-                                  ? 'bg-emerald-950/60 text-emerald-300 border-emerald-800/80 hover:bg-emerald-900/60'
-                                  : 'bg-amber-950/60 text-amber-300 border-amber-800/80 hover:bg-amber-900/60'
+                                  ? (theme === 'light' ? 'bg-emerald-100 text-emerald-950 border-emerald-400' : 'bg-emerald-950/60 text-emerald-300 border-emerald-800/80 hover:bg-emerald-900/60')
+                                  : (theme === 'light' ? 'bg-amber-100 text-amber-950 border-amber-400' : 'bg-amber-950/60 text-amber-300 border-amber-800/80 hover:bg-amber-900/60')
                               }`}
                               title="Click to switch between Dine-In and Takeaway"
                             >
                               <span>{c.diningOption === 'takeaway' ? '🛍️ Takeaway' : '🍽️ Table'}</span>
                               <span className="text-[9px] opacity-75">(⇄ Switch)</span>
                             </button>
-                            <span className="text-[11px] text-stone-400 font-mono">${c.unitPrice.toFixed(2)} ea</span>
+                            <span className={`text-[11px] font-mono ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>${c.unitPrice.toFixed(2)} ea</span>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <div className="flex items-center bg-stone-900 rounded-xl border border-stone-800 p-0.5">
-                            <button onClick={() => updateCartQuantity(c.cartId, c.quantity - 1)} className="w-6 h-6 rounded-lg text-stone-300 font-bold text-xs flex items-center justify-center">-</button>
-                            <span className="w-6 text-center font-bold text-xs text-white">{c.quantity}</span>
-                            <button onClick={() => updateCartQuantity(c.cartId, c.quantity + 1)} className="w-6 h-6 rounded-lg text-stone-300 font-bold text-xs flex items-center justify-center">+</button>
+                          <div className={`flex items-center rounded-xl border p-0.5 ${
+                            theme === 'light' ? 'bg-white border-stone-300' : 'bg-stone-900 border-stone-800'
+                          }`}>
+                            <button onClick={() => updateCartQuantity(c.cartId, c.quantity - 1)} className={`w-6 h-6 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer ${
+                              theme === 'light' ? 'text-stone-800 hover:bg-stone-100' : 'text-stone-300 hover:text-white'
+                            }`}>-</button>
+                            <span className={`w-6 text-center font-bold text-xs ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>{c.quantity}</span>
+                            <button onClick={() => updateCartQuantity(c.cartId, c.quantity + 1)} className={`w-6 h-6 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer ${
+                              theme === 'light' ? 'text-stone-800 hover:bg-stone-100' : 'text-stone-300 hover:text-white'
+                            }`}>+</button>
                           </div>
-                          <span className="font-black text-amber-400 text-xs w-14 text-right">${c.totalItemPrice.toFixed(2)}</span>
+                          <span className={`font-black text-xs w-14 text-right font-mono ${theme === 'light' ? 'text-stone-950' : 'text-amber-400'}`}>${c.totalItemPrice.toFixed(2)}</span>
                         </div>
                       </div>
                     ))}
                   </div>
 
                   {/* 🚀 Gamified Tip Selector */}
-                  <div className="bg-[#120f0d] p-3 rounded-2xl border border-stone-800/80 space-y-2">
-                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Add Staff Tip (Optional)</span>
+                  <div className={`p-3 rounded-2xl border space-y-2 ${
+                    theme === 'light' ? 'bg-stone-50 border-stone-200' : 'bg-[#120f0d] border-stone-800/80'
+                  }`}>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider block ${theme === 'light' ? 'text-stone-800' : 'text-amber-400'}`}>Add Staff Tip (Optional)</span>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                       {[
                         { label: '☕ $2 Coffee', val: 2.00 },
@@ -2271,10 +2402,10 @@
                           key={t.label}
                           type="button"
                           onClick={() => setSelectedTip(t.val)}
-                          className={`py-2 px-1 rounded-xl font-bold text-[11px] transition-all ${
+                          className={`py-2 px-1 rounded-xl font-bold text-[11px] transition-all cursor-pointer ${
                             selectedTip === t.val
                               ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black shadow'
-                              : 'bg-stone-900 text-stone-300 border border-stone-800 hover:border-amber-500/40'
+                              : (theme === 'light' ? 'bg-white text-stone-800 border border-stone-200 hover:bg-amber-50' : 'bg-stone-900 text-stone-300 border border-stone-800 hover:border-amber-500/40')
                           }`}
                         >
                           {t.label}
@@ -2285,21 +2416,23 @@
                 </div>
 
                 {/* Total & Checkout Button */}
-                <div className="pt-3 border-t border-stone-800 space-y-3">
-                  <div className="space-y-1 text-xs text-stone-400">
-                    <div className="flex justify-between">
+                <div className={`pt-3 border-t space-y-3 ${theme === 'light' ? 'border-stone-200' : 'border-stone-800'}`}>
+                  <div className={`space-y-1 text-xs ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>
+                    <div className="flex justify-between font-medium">
                       <span>Order Subtotal:</span>
-                      <span className="text-stone-200 font-mono">${cartSubtotal.toFixed(2)} AUD</span>
+                      <span className={`font-mono font-bold ${theme === 'light' ? 'text-stone-900' : 'text-stone-200'}`}>${cartSubtotal.toFixed(2)} AUD</span>
                     </div>
                     {tipAmount > 0 && (
-                      <div className="flex justify-between text-amber-400">
+                      <div className={`flex justify-between font-bold ${theme === 'light' ? 'text-amber-800' : 'text-amber-400'}`}>
                         <span>Staff Tip:</span>
                         <span>+${tipAmount.toFixed(2)} AUD</span>
                       </div>
                     )}
-                    <div className="flex justify-between font-black text-white text-base pt-1.5 border-t border-stone-800">
+                    <div className={`flex justify-between font-black text-base pt-1.5 border-t ${
+                      theme === 'light' ? 'border-stone-200 text-stone-950' : 'border-stone-800 text-white'
+                    }`}>
                       <span>Total to Pay:</span>
-                      <span className="text-amber-400 text-xl font-black">
+                      <span className={`text-xl font-black font-mono ${theme === 'light' ? 'text-stone-950' : 'text-amber-400'}`}>
                         ${(cartSubtotal + tipAmount).toFixed(2)} AUD
                       </span>
                     </div>
@@ -2307,7 +2440,7 @@
 
                   <button
                     onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }}
-                    className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 font-black text-stone-950 py-4 rounded-2xl shadow-xl shadow-amber-950/80 text-sm flex justify-between px-5 items-center active:scale-[0.98] transition-all"
+                    className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 font-black text-stone-950 py-4 rounded-2xl shadow-xl text-sm flex justify-between px-5 items-center active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <span>{hasDineIn && hasTakeaway ? 'Review Hybrid Order & Pay' : (hasTakeaway ? 'Confirm Takeaway & Pay' : 'Proceed to Payment')}</span>
                     <span>${(cartSubtotal + tipAmount).toFixed(2)} AUD →</span>
@@ -2319,11 +2452,13 @@
 
           {/* Payment Modal (Apple Pay 1-Touch / EFTPOS / Counter Split) */}
           {isCheckoutOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-              <div className="w-full max-w-md bg-[#181512] border border-amber-900/30 rounded-3xl p-5 space-y-4 shadow-2xl text-xs max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-center pb-2 border-b border-stone-800">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in">
+              <div className={`w-full max-w-md border rounded-3xl p-5 space-y-4 shadow-2xl text-xs max-h-[90vh] overflow-y-auto transition-colors ${
+                theme === 'light' ? 'bg-white border-stone-200 text-stone-900 shadow-stone-900/10' : 'bg-[#181512] border-amber-900/30 text-white'
+              }`}>
+                <div className={`flex justify-between items-center pb-2 border-b ${theme === 'light' ? 'border-stone-200' : 'border-stone-800'}`}>
                   <div>
-                    <h3 className="font-black text-white text-base flex items-center gap-1.5">
+                    <h3 className={`font-black text-base flex items-center gap-1.5 ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
                       {hasDineIn && hasTakeaway ? (
                         <span>🍽️ Table #{activeTable} + 🛍️ Takeaway</span>
                       ) : hasTakeaway ? (
@@ -2332,25 +2467,28 @@
                         <span>🍽️ Table #{activeTable} Order</span>
                       )}
                     </h3>
-                    <p className="text-[11px] text-stone-400">
+                    <p className={`text-[11px] font-medium ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>
                       {hasTakeaway ? 'Bar Pickup • Official GST Tax Invoice' : 'Dine-In Table Service • Official GST Tax Invoice'}
                     </p>
                   </div>
-                  <button onClick={() => setIsCheckoutOpen(false)} className="text-stone-400 font-bold p-1 bg-stone-800 rounded-full">✕</button>
+                  <button onClick={() => setIsCheckoutOpen(false)} className={`font-bold p-1 rounded-full cursor-pointer ${
+                    theme === 'light' ? 'bg-stone-100 text-stone-700 hover:bg-stone-200' : 'text-stone-400 bg-stone-800 hover:text-white'
+                  }`}>✕</button>
                 </div>
 
-                {/* Customer Contact & Pickup Time Information (Shown for Takeaway or Hybrid) */}
-                {/* Customer / Pickup Identifier */}
-                <div className="bg-[#120f0d] border border-stone-800 p-3.5 rounded-2xl space-y-2.5">
+                {/* Customer Contact & Pickup Time Information */}
+                <div className={`border p-3.5 rounded-2xl space-y-2.5 ${
+                  theme === 'light' ? 'bg-stone-50 border-stone-200' : 'bg-[#120f0d] border-stone-800'
+                }`}>
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">
+                    <span className={`text-[10px] font-black uppercase tracking-wider ${theme === 'light' ? 'text-stone-900' : 'text-amber-400'}`}>
                       {hasTakeaway ? 'Bar Pickup Details' : 'Guest Identification'}
                     </span>
-                    <span className="text-[10px] text-stone-400 font-mono">3-digit order number assigned</span>
+                    <span className={`text-[10px] font-mono ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>3-digit order number assigned</span>
                   </div>
                   
                   <div>
-                    <label className="text-[10px] font-bold text-stone-400 block mb-1">
+                    <label className={`text-[10px] font-bold block mb-1 ${theme === 'light' ? 'text-stone-700' : 'text-stone-400'}`}>
                       Customer Name (for bar/counter callout)
                     </label>
                     <input
@@ -2358,17 +2496,21 @@
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
                       placeholder="e.g. Dave Smith"
-                      className="w-full bg-[#1c1815] border border-stone-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 font-semibold"
+                      className={`w-full rounded-xl px-3.5 py-2 text-xs border focus:outline-none focus:border-amber-500 font-semibold transition-colors ${
+                        theme === 'light' ? 'bg-white border-stone-300 text-stone-900 placeholder:text-stone-400' : 'bg-[#1c1815] border-stone-800 text-white placeholder-stone-600'
+                      }`}
                     />
                   </div>
 
                   {hasTakeaway && (
-                    <div className="pt-1.5 border-t border-stone-800/80 flex items-center justify-between gap-2">
-                      <span className="text-[11px] text-stone-300 font-bold">Estimated Pickup:</span>
+                    <div className={`pt-1.5 border-t flex items-center justify-between gap-2 ${theme === 'light' ? 'border-stone-200' : 'border-stone-800/80'}`}>
+                      <span className={`text-[11px] font-bold ${theme === 'light' ? 'text-stone-800' : 'text-stone-300'}`}>Estimated Pickup:</span>
                       <select
                         value={takeawayTime}
                         onChange={(e) => setTakeawayTime(e.target.value)}
-                        className="bg-[#1c1815] border border-amber-900/40 rounded-xl px-2.5 py-1 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-500"
+                        className={`rounded-xl px-2.5 py-1 text-xs font-bold border focus:outline-none focus:border-amber-500 ${
+                          theme === 'light' ? 'bg-white border-stone-300 text-stone-900' : 'bg-[#1c1815] border-amber-900/40 text-amber-300'
+                        }`}
                       >
                         <option value="As soon as possible (~15-20 min)">⚡ As soon as possible (~15-20 min)</option>
                         <option value="In 30 minutes">🕒 In 30 minutes</option>
@@ -2392,22 +2534,28 @@
 
                   return (
                     <>
-                      <div className="bg-gradient-to-r from-amber-950/40 to-[#261c16] border border-amber-500/40 p-4 rounded-2xl space-y-2">
+                      <div className={`border p-4 rounded-2xl space-y-2 ${
+                        theme === 'light'
+                          ? 'bg-amber-50/80 border-amber-300 text-stone-900'
+                          : 'bg-gradient-to-r from-amber-950/40 to-[#261c16] border-amber-500/40 text-white'
+                      }`}>
                         <div className="flex justify-between items-center">
                           <div>
-                            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+                            <span className={`text-[10px] font-bold uppercase tracking-wider ${theme === 'light' ? 'text-amber-950' : 'text-amber-400'}`}>
                               Total Order Amount {hasDineIn && hasTakeaway ? '(Hybrid: Table + Takeaway)' : hasTakeaway ? '(Takeaway Pickup)' : '(Dine-In Table)'}
                             </span>
-                            <div className="text-2xl font-black text-white">
+                            <div className={`text-2xl font-black font-mono ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
                               ${orderAmt.toFixed(2)} AUD
                             </div>
-                            <span className="text-[10px] text-stone-400">Includes 10% GST (${(orderAmt / 11).toFixed(2)})</span>
+                            <span className={`text-[10px] font-medium ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>Includes 10% GST (${(orderAmt / 11).toFixed(2)})</span>
                           </div>
                           <span className="text-3xl">{hasDineIn && hasTakeaway ? '🍽️🛍️' : hasTakeaway ? '🛍️' : '🍺'}</span>
                         </div>
 
                         {cardRate > 0 && (
-                          <div className="pt-2 border-t border-amber-500/30 flex justify-between items-center text-[11px] text-amber-300">
+                          <div className={`pt-2 border-t flex justify-between items-center text-[11px] ${
+                            theme === 'light' ? 'border-amber-200 text-amber-950 font-bold' : 'border-amber-500/30 text-amber-300'
+                          }`}>
                             <span>💳 Card Processing Surcharge ({(cardRate * 100).toFixed(1)}%):</span>
                             <span className="font-bold font-mono">+${cardSurcharge.toFixed(2)} AUD</span>
                           </div>
@@ -2417,9 +2565,9 @@
                       {/* Instant Digital Payment Options */}
                       <div className="space-y-2.5 pt-1">
                         <div className="flex justify-between items-center">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Pay Now Online (Recommended)</span>
+                          <span className={`text-[10px] font-bold uppercase tracking-wider ${theme === 'light' ? 'text-stone-700' : 'text-stone-400'}`}>Pay Now Online (Recommended)</span>
                           {cardRate > 0 && (
-                            <span className="text-[10px] text-amber-400 font-semibold font-mono">
+                            <span className={`text-[10px] font-bold font-mono ${theme === 'light' ? 'text-stone-900' : 'text-amber-400'}`}>
                               Total with fee: ${digitalTotal.toFixed(2)}
                             </span>
                           )}
@@ -2439,18 +2587,22 @@
                             setIsCheckoutOpen(false);
                             setIsTrackerOpen(true);
                           }}
-                          className="w-full p-3.5 rounded-2xl bg-black border-2 border-stone-700 hover:border-amber-500 text-left font-black text-white flex items-center justify-between shadow-xl active:scale-[0.98] transition-all"
+                          className={`w-full p-3.5 rounded-2xl border-2 text-left font-black flex items-center justify-between shadow-md active:scale-[0.98] transition-all cursor-pointer ${
+                            theme === 'light'
+                              ? 'bg-stone-950 text-white border-stone-950 hover:bg-stone-900'
+                              : 'bg-black border-stone-700 hover:border-amber-500 text-white shadow-xl'
+                          }`}
                         >
                           <div className="flex items-center gap-2.5">
                             <span className="text-2xl"></span>
                             <div>
                               <span className="text-sm font-black block">Apple Pay / Google Pay</span>
-                              <span className="text-[10px] text-stone-400 font-normal">
+                              <span className="text-[10px] text-stone-300 font-normal">
                                 1-Touch Fast Checkout (${digitalTotal.toFixed(2)} AUD)
                               </span>
                             </div>
                           </div>
-                          <span className="text-[10px] bg-emerald-950 border border-emerald-800 text-emerald-300 font-bold px-2.5 py-1 rounded-lg">Instant ✓</span>
+                          <span className="text-[10px] bg-emerald-600 text-white font-bold px-2.5 py-1 rounded-lg">Instant ✓</span>
                         </button>
 
                         {/* Credit Card / EFTPOS */}
@@ -2467,16 +2619,20 @@
                             setIsCheckoutOpen(false);
                             setIsTrackerOpen(true);
                           }}
-                          className="w-full p-3 rounded-2xl bg-[#120f0d] border border-stone-800 hover:border-amber-500/60 text-left font-bold text-white flex items-center justify-between transition-all"
+                          className={`w-full p-3 rounded-2xl border text-left font-bold flex items-center justify-between transition-all cursor-pointer ${
+                            theme === 'light'
+                              ? 'bg-stone-50 border-stone-300 hover:border-amber-500 text-stone-950'
+                              : 'bg-[#120f0d] border-stone-800 hover:border-amber-500/60 text-white'
+                          }`}
                         >
                           <div className="flex items-center gap-2">
                             <span className="text-base">💳</span>
                             <div>
                               <span className="block text-xs font-bold">Credit Card / EFTPOS</span>
-                              <span className="text-[10px] text-stone-400 font-mono">Visa • Mastercard • Amex</span>
+                              <span className={`text-[10px] font-mono ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>Visa • Mastercard • Amex</span>
                             </div>
                           </div>
-                          <span className="text-xs font-mono text-stone-300">${digitalTotal.toFixed(2)}</span>
+                          <span className={`text-xs font-mono font-bold ${theme === 'light' ? 'text-stone-950' : 'text-stone-300'}`}>${digitalTotal.toFixed(2)}</span>
                         </button>
                       </div>
                     </>
@@ -2484,31 +2640,35 @@
                 })()}
 
                 {/* Pay at Counter / Pay on Pickup Section */}
-                <div className="pt-2 border-t border-stone-800 space-y-2.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+                <div className={`pt-2 border-t space-y-2.5 ${theme === 'light' ? 'border-stone-200' : 'border-stone-800'}`}>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider block ${theme === 'light' ? 'text-stone-800' : 'text-amber-400'}`}>
                     {hasTakeaway ? 'Pay on Collection at Bar' : 'Pay at Counter & Split Options'}
                   </span>
                   
-                  <div className="bg-[#120f0d] border border-amber-900/40 p-3.5 rounded-2xl space-y-3">
+                  <div className={`border p-3.5 rounded-2xl space-y-3 ${
+                    theme === 'light' ? 'bg-amber-50/70 border-amber-300' : 'bg-[#120f0d] border-amber-900/40'
+                  }`}>
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <span className="text-base">🍻</span>
-                        <span className="font-extrabold text-amber-300 text-xs">
+                        <span className={`font-extrabold text-xs ${theme === 'light' ? 'text-amber-950' : 'text-amber-300'}`}>
                           {hasTakeaway ? 'Pay on Collection at the Bar' : 'Pay & Split at Counter'}
                         </span>
                       </div>
-                      <span className="text-[10px] bg-amber-950 text-amber-300 px-2 py-0.5 rounded border border-amber-800">
+                      <span className={`text-[10px] px-2 py-0.5 rounded border ${
+                        theme === 'light' ? 'bg-amber-200 text-amber-950 border-amber-400' : 'bg-amber-950 text-amber-300 border-amber-800'
+                      }`}>
                         {hasTakeaway ? 'EFTPOS or Cash on Pickup' : 'Staff Assisted'}
                       </span>
                     </div>
 
                     {/* Split Bill Selector (Exclusively for 100% Dine-in) */}
                     {(hasDineIn && !hasTakeaway) ? (
-                      <div className="space-y-1.5 pt-1 border-t border-stone-800/80">
+                      <div className={`space-y-1.5 pt-1 border-t ${theme === 'light' ? 'border-amber-200' : 'border-stone-800/80'}`}>
                         <div className="flex justify-between items-center text-[10px]">
-                          <span className="text-stone-400 font-bold">Split bill between:</span>
+                          <span className={`font-bold ${theme === 'light' ? 'text-stone-700' : 'text-stone-400'}`}>Split bill between:</span>
                           {splitCount > 1 && (
-                            <span className="text-amber-400 font-black">
+                            <span className={`font-black ${theme === 'light' ? 'text-amber-950' : 'text-amber-400'}`}>
                               ${((cartSubtotal + tipAmount) / splitCount).toFixed(2)} AUD each ({splitCount} people)
                             </span>
                           )}
@@ -2520,10 +2680,10 @@
                               key={num}
                               type="button"
                               onClick={() => setSplitCount(num)}
-                              className={`py-1.5 rounded-xl font-bold text-xs transition-all ${
+                              className={`py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                                 splitCount === num
                                   ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black shadow'
-                                  : 'bg-stone-900 text-stone-400 border border-stone-800 hover:text-white'
+                                  : (theme === 'light' ? 'bg-white text-stone-800 border border-amber-300 hover:bg-amber-100' : 'bg-stone-900 text-stone-400 border border-stone-800 hover:text-white')
                               }`}
                             >
                               {num === 1 ? '1 Pay (Full)' : `÷ ${num} Ways`}
@@ -2531,14 +2691,14 @@
                           ))}
                         </div>
 
-                        <p className="text-[10px] text-stone-400 pt-1 leading-snug">
+                        <p className={`text-[10px] pt-1 leading-snug font-medium ${theme === 'light' ? 'text-stone-700' : 'text-stone-400'}`}>
                           {splitCount > 1
                             ? `💡 The staff will split your bill into ${splitCount} separate payments of $${((cartSubtotal + tipAmount) / splitCount).toFixed(2)} at the counter.`
                             : '💡 Pay the entire table bill at the bar/counter with cash or card.'}
                         </p>
                       </div>
                     ) : (
-                      <p className="text-[10px] text-stone-400 leading-snug">
+                      <p className={`text-[10px] leading-snug font-medium ${theme === 'light' ? 'text-stone-700' : 'text-stone-400'}`}>
                         💡 Your order is sent directly to the kitchen. You will pay with cash or card when picking up your food at the bar.
                       </p>
                     )}
@@ -2557,7 +2717,7 @@
                         setIsCheckoutOpen(false);
                         setIsTrackerOpen(true);
                       }}
-                      className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-stone-950 font-black py-2.5 rounded-xl text-xs flex justify-between px-3.5 items-center shadow transition-all active:scale-[0.98]"
+                      className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-stone-950 font-black py-2.5 rounded-xl text-xs flex justify-between px-3.5 items-center shadow transition-all active:scale-[0.98] cursor-pointer"
                     >
                       <span>{hasTakeaway ? 'Send Order & Pay on Pickup' : 'Confirm & Send to Counter'}</span>
                       <span>${(cartSubtotal + tipAmount).toFixed(2)} AUD →</span>
@@ -2570,44 +2730,54 @@
 
           {/* Service Modal (Table Water & Assistance Calls) */}
           {isServiceOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-              <div className="w-full max-w-xs bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-3.5 shadow-2xl text-xs">
-                <div className="flex justify-between items-center pb-1 border-b border-slate-800">
-                  <h3 className="font-black text-white text-sm">Table #{activeTable} Service</h3>
-                  <button onClick={() => setIsServiceOpen(false)} className="text-slate-400 font-bold p-1 bg-slate-800 rounded-full">✕</button>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in">
+              <div className={`w-full max-w-xs border rounded-3xl p-5 space-y-3.5 shadow-2xl text-xs transition-colors ${
+                theme === 'light' ? 'bg-white border-stone-200 text-stone-900 shadow-stone-900/10' : 'bg-slate-900 border-slate-800 text-white'
+              }`}>
+                <div className={`flex justify-between items-center pb-1 border-b ${theme === 'light' ? 'border-stone-200' : 'border-slate-800'}`}>
+                  <h3 className={`font-black text-sm ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>🔔 Table #{activeTable} Staff Call</h3>
+                  <button onClick={() => setIsServiceOpen(false)} className={`font-bold p-1 rounded-full cursor-pointer ${
+                    theme === 'light' ? 'bg-stone-100 text-stone-700 hover:bg-stone-200' : 'text-slate-400 bg-slate-800 hover:text-white'
+                  }`}>✕</button>
                 </div>
 
                 <div className="space-y-2">
                   <button
                     onClick={() => { sendServiceCall('water'); setIsServiceOpen(false); }}
-                    className="w-full p-3.5 bg-slate-950 border border-slate-800 hover:border-sky-500 rounded-2xl font-bold text-white text-left flex items-center gap-2.5 transition-all"
+                    className={`w-full p-3.5 border rounded-2xl font-bold text-left flex items-center gap-2.5 transition-all cursor-pointer ${
+                      theme === 'light' ? 'bg-stone-50 border-stone-200 text-stone-950 hover:bg-amber-50 hover:border-amber-400' : 'bg-slate-950 border-slate-800 hover:border-sky-500 text-white'
+                    }`}
                   >
                     <span className="text-lg">💧</span>
                     <div>
                       <span className="block font-bold">Table Water & Glasses</span>
-                      <span className="text-[10px] text-slate-400 font-normal">Fresh chilled tap water</span>
+                      <span className={`text-[10px] font-normal ${theme === 'light' ? 'text-stone-600' : 'text-slate-400'}`}>Fresh chilled tap water</span>
                     </div>
                   </button>
 
                   <button
                     onClick={() => { sendServiceCall('call_staff'); setIsServiceOpen(false); }}
-                    className="w-full p-3.5 bg-slate-950 border border-slate-800 hover:border-orange-500 rounded-2xl font-bold text-white text-left flex items-center gap-2.5 transition-all"
+                    className={`w-full p-3.5 border rounded-2xl font-bold text-left flex items-center gap-2.5 transition-all cursor-pointer ${
+                      theme === 'light' ? 'bg-stone-50 border-stone-200 text-stone-950 hover:bg-amber-50 hover:border-amber-400' : 'bg-slate-950 border-slate-800 hover:border-orange-500 text-white'
+                    }`}
                   >
                     <span className="text-lg">🔔</span>
                     <div>
                       <span className="block font-bold">Staff Assistance</span>
-                      <span className="text-[10px] text-slate-400 font-normal">Cutlery, napkins, allergen info</span>
+                      <span className={`text-[10px] font-normal ${theme === 'light' ? 'text-stone-600' : 'text-slate-400'}`}>Cutlery, napkins, allergen info</span>
                     </div>
                   </button>
 
                   <button
                     onClick={() => { sendServiceCall('bar_tab'); setIsServiceOpen(false); }}
-                    className="w-full p-3.5 bg-slate-950 border border-slate-800 hover:border-amber-500 rounded-2xl font-bold text-white text-left flex items-center gap-2.5 transition-all"
+                    className={`w-full p-3.5 border rounded-2xl font-bold text-left flex items-center gap-2.5 transition-all cursor-pointer ${
+                      theme === 'light' ? 'bg-stone-50 border-stone-200 text-stone-950 hover:bg-amber-50 hover:border-amber-400' : 'bg-slate-950 border-slate-800 hover:border-amber-500 text-white'
+                    }`}
                   >
                     <span className="text-lg">🧾</span>
                     <div>
                       <span className="block font-bold">Request Bill / Settle Tab</span>
-                      <span className="text-[10px] text-slate-400 font-normal">Pay with cash or split bill</span>
+                      <span className={`text-[10px] font-normal ${theme === 'light' ? 'text-stone-600' : 'text-slate-400'}`}>Pay with cash or split bill</span>
                     </div>
                   </button>
                 </div>
