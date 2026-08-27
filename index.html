@@ -1840,6 +1840,27 @@
                     );
                   })}
                 </div>
+
+                {/* Customer Menu Footer */}
+                <footer className="mt-8 mb-20 pt-6 border-t border-stone-200/60 dark:border-stone-800 text-center space-y-2">
+                  <p className="text-[11px] font-bold text-stone-500">
+                    {restaurant.name} • {restaurant.address}
+                  </p>
+                  <p className="text-[10px] text-stone-400">
+                    All prices in AUD and include 10% GST • Please advise staff of any severe allergies
+                  </p>
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent('switch-app-role', { detail: 'admin' }));
+                      }}
+                      className="text-[10px] font-bold text-stone-400 hover:text-amber-500 transition-colors cursor-pointer"
+                    >
+                      ⚙️ Staff & Manager Portal ➔
+                    </button>
+                  </div>
+                </footer>
               </>
             )}
           </main>
@@ -5910,14 +5931,18 @@
     function AppContent() {
       const { orders, theme, toggleTheme } = useOrderAU();
       const pendingCount = orders.filter(o => o.status === 'pending_approval').length;
+      
       const [role, setRole] = useState(() => {
         const p = new URLSearchParams(window.location.search);
         const v = p.get('view');
+        const hasTable = p.get('table');
+        const isTakeaway = p.get('mode') === 'takeaway' || p.get('type') === 'takeaway';
+
         if (v === 'admin') return 'admin';
         if (v === 'kitchen' || v === 'kds') return 'kitchen';
-        if (v === 'customer' || v === 'menu') return 'customer';
         if (v === 'simulator') return 'simulator';
-        return 'admin'; // Default directly to admin panel for easy access
+        if (v === 'customer' || v === 'menu' || hasTable !== null || isTakeaway) return 'customer';
+        return 'customer'; // Default to customer menu on any QR scan or direct link
       });
 
       useEffect(() => {
@@ -5937,107 +5962,112 @@
 
       return (
         <div className={`min-h-screen ${theme === 'light' ? 'theme-light bg-[#f8f6f2] text-stone-900' : 'theme-dark bg-[#0e0c0a] text-stone-100'} flex flex-col font-sans transition-colors duration-200`}>
-          {/* Top Navigation Bar */}
-          <nav className={`px-3 sm:px-4 py-2.5 sticky top-0 z-50 shadow-md border-b transition-colors ${theme === 'light' ? 'bg-white/95 border-stone-200 text-stone-900' : 'bg-[#161311] border-amber-900/30 text-white'}`}>
-            <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="font-black text-sm flex items-center gap-1.5">
-                  <span>🇦🇺</span>
-                  <span><span className="text-amber-500 font-extrabold">SmartMenu</span> Australia ($ AUD)</span>
-                </span>
-              </div>
+          {/* Top Navigation Bar - ONLY VISIBLE TO STAFF (Admin / Kitchen / Simulator) */}
+          {role !== 'customer' && (
+            <nav className={`px-3 sm:px-4 py-2.5 sticky top-0 z-50 shadow-md border-b transition-colors ${theme === 'light' ? 'bg-white/95 border-stone-200 text-stone-900' : 'bg-[#161311] border-amber-900/30 text-white'}`}>
+              <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-sm flex items-center gap-1.5">
+                    <span>🇦🇺</span>
+                    <span><span className="text-amber-500 font-extrabold">SmartMenu</span> Australia ($ AUD)</span>
+                  </span>
+                  <span className="text-[10px] bg-stone-200 text-stone-800 font-mono font-black px-2 py-0.5 rounded-full uppercase">
+                    Staff Hub
+                  </span>
+                </div>
 
-              {/* Top View Selector & Cashier PIN Quick Button */}
-              <div className="flex flex-wrap items-center gap-2">
-                {/* ☀️ / 🌙 Theme Toggle Button */}
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all shadow-sm border cursor-pointer active:scale-95 ${
-                    theme === 'light'
-                      ? 'bg-amber-100 hover:bg-amber-200 text-amber-950 border-amber-300'
-                      : 'bg-stone-800 hover:bg-stone-700 text-amber-300 border-stone-700'
-                  }`}
-                  title="Switch between Clean Light Cafe Theme & Night Lounge Dark Theme"
-                >
-                  <span>{theme === 'light' ? '☀️ Light Mode' : '🌙 Dark Mode'}</span>
-                </button>
-
-                {/* 🔢 Dedicated Cashier PIN Pay Button (Always Visible) */}
-                <button
-                  onClick={handleOpenCashierPin}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow active:scale-95 cursor-pointer border ${
-                    pendingCount > 0
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 border-amber-300 animate-pulse ring-2 ring-amber-500/50'
-                      : (theme === 'light' ? 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300' : 'bg-amber-950/70 hover:bg-amber-900 text-amber-300 border-amber-500/50')
-                  }`}
-                  title="Click to enter customer 4-digit PIN and verify counter payment"
-                >
-                  <span className="text-base">🔢</span>
-                  <span>Cashier PIN & Pay</span>
-                  {pendingCount > 0 && (
-                    <span className="bg-stone-950 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-400">
-                      {pendingCount} waiting
-                    </span>
-                  )}
-                </button>
-
-                <div className={`flex items-center gap-1 p-1 rounded-2xl border transition-colors ${theme === 'light' ? 'bg-stone-100 border-stone-200' : 'bg-[#100e0c] border-stone-800'}`}>
+                {/* Top View Selector & Cashier PIN Quick Button */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* ☀️ / 🌙 Theme Toggle Button */}
                   <button
-                    onClick={() => setRole('admin')}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${
-                      role === 'admin'
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg'
-                        : (theme === 'light' ? 'text-stone-700 hover:text-black hover:bg-stone-200' : 'text-stone-300 hover:text-white bg-[#1e1916] hover:bg-[#28221e]')
+                    type="button"
+                    onClick={toggleTheme}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all shadow-sm border cursor-pointer active:scale-95 ${
+                      theme === 'light'
+                        ? 'bg-amber-100 hover:bg-amber-200 text-amber-950 border-amber-300'
+                        : 'bg-stone-800 hover:bg-stone-700 text-amber-300 border-stone-700'
                     }`}
+                    title="Switch between Clean Light Cafe Theme & Night Lounge Dark Theme"
                   >
-                    <span>⚙️ Admin Panel</span>
+                    <span>{theme === 'light' ? '☀️ Light Mode' : '🌙 Dark Mode'}</span>
                   </button>
 
+                  {/* 🔢 Dedicated Cashier PIN Pay Button (Always Visible) */}
                   <button
-                    onClick={() => setRole('customer')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      role === 'customer'
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg font-black'
-                        : (theme === 'light' ? 'text-stone-600 hover:text-black' : 'text-stone-400 hover:text-white')
+                    onClick={handleOpenCashierPin}
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow active:scale-95 cursor-pointer border ${
+                      pendingCount > 0
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 border-amber-300 animate-pulse ring-2 ring-amber-500/50'
+                        : (theme === 'light' ? 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300' : 'bg-amber-950/70 hover:bg-amber-900 text-amber-300 border-amber-500/50')
                     }`}
+                    title="Click to enter customer 4-digit PIN and verify counter payment"
                   >
-                    <span>📱 Customer Menu</span>
+                    <span className="text-base">🔢</span>
+                    <span>Cashier PIN & Pay</span>
+                    {pendingCount > 0 && (
+                      <span className="bg-stone-950 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-400">
+                        {pendingCount} waiting
+                      </span>
+                    )}
                   </button>
 
-                  <button
-                    onClick={() => setRole('kitchen')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      role === 'kitchen'
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg font-black'
-                        : (theme === 'light' ? 'text-stone-600 hover:text-black' : 'text-stone-400 hover:text-white')
-                    }`}
-                  >
-                    <span>👨‍🍳 Kitchen KDS</span>
-                  </button>
+                  <div className={`flex items-center gap-1 p-1 rounded-2xl border transition-colors ${theme === 'light' ? 'bg-stone-100 border-stone-200' : 'bg-[#100e0c] border-stone-800'}`}>
+                    <button
+                      onClick={() => setRole('admin')}
+                      className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${
+                        role === 'admin'
+                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg'
+                          : (theme === 'light' ? 'text-stone-700 hover:text-black hover:bg-stone-200' : 'text-stone-300 hover:text-white bg-[#1e1916] hover:bg-[#28221e]')
+                      }`}
+                    >
+                      <span>⚙️ Admin Panel</span>
+                    </button>
 
-                  <a
-                    href="promo.html"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-500 hover:text-amber-600 border border-amber-500/40 hover:bg-amber-500/30 shadow-sm"
-                    title="Watch 30-Second Commercial & Interactive Video Demo"
-                  >
-                    <span>🎬 Video Spot</span>
-                  </a>
+                    <button
+                      onClick={() => setRole('customer')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                        role === 'customer'
+                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg font-black'
+                          : (theme === 'light' ? 'text-stone-600 hover:text-black' : 'text-stone-400 hover:text-white')
+                      }`}
+                    >
+                      <span>📱 Customer Menu</span>
+                    </button>
 
-                  <button
-                    onClick={() => setRole('simulator')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      role === 'simulator'
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg font-black'
-                        : (theme === 'light' ? 'text-stone-600 hover:text-black' : 'text-stone-400 hover:text-white')
-                    }`}
-                  >
-                    <span>⚡ Dual Screen</span>
-                  </button>
+                    <button
+                      onClick={() => setRole('kitchen')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                        role === 'kitchen'
+                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg font-black'
+                          : (theme === 'light' ? 'text-stone-600 hover:text-black' : 'text-stone-400 hover:text-white')
+                      }`}
+                    >
+                      <span>👨‍🍳 Kitchen KDS</span>
+                    </button>
+
+                    <a
+                      href="promo.html"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-500 hover:text-amber-600 border border-amber-500/40 hover:bg-amber-500/30 shadow-sm"
+                      title="Watch 30-Second Commercial & Interactive Video Demo"
+                    >
+                      <span>🎬 Video Spot</span>
+                    </a>
+
+                    <button
+                      onClick={() => setRole('simulator')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                        role === 'simulator'
+                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg font-black'
+                          : (theme === 'light' ? 'text-stone-600 hover:text-black' : 'text-stone-400 hover:text-white')
+                      }`}
+                    >
+                      <span>⚡ Dual Screen</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </nav>
+            </nav>
+          )}
 
           <div className="flex-1">
             {role === 'customer' && <CustomerViewAU />}
