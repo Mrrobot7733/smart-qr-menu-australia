@@ -7369,6 +7369,738 @@
       );
     }
 
+    
+    // --- Master Reseller & Multi-Venue Management Portal (AU 🇦🇺) ---
+    function MasterResellerDashboardAU() {
+      const { showToast, theme, setTheme, toggleTheme } = useOrderAU();
+      
+      const DEFAULT_VENUES = [
+        {
+          id: 'sydney-bistro',
+          name: 'Sydney Bistro & Taphouse',
+          slug: 'sydney-bistro',
+          subtitle: 'Smart QR Menu & Kitchen Order System',
+          address: '100 Exhibition Street, Melbourne VIC 3000',
+          abn: '51 824 753 556',
+          plan: 'Pro Multi-Station ($149/mo)',
+          planPrice: 149,
+          tableCount: 16,
+          status: 'active',
+          createdAt: '2026-08-01',
+          contactPerson: 'Manager on Duty',
+          contactEmail: 'manager@sydneybistro.com.au'
+        },
+        {
+          id: 'bondi-beach-cafe',
+          name: 'Bondi Beach Espresso & Brunch',
+          slug: 'bondi-beach-cafe',
+          subtitle: 'Artisan Coffee, Sourdough & Bowls',
+          address: '24 Campbell Parade, Bondi Beach NSW 2026',
+          abn: '92 114 382 990',
+          plan: 'Pro Multi-Station ($149/mo)',
+          planPrice: 149,
+          tableCount: 12,
+          status: 'active',
+          createdAt: '2026-08-15',
+          contactPerson: 'Alex Thompson',
+          contactEmail: 'alex@bondibrunch.com.au'
+        },
+        {
+          id: 'flinders-cocktail-bar',
+          name: 'Flinders Lane Cocktail Lounge',
+          slug: 'flinders-cocktail-bar',
+          subtitle: 'Craft Cocktails, Tapas & WA Wines',
+          address: '18 Flinders Lane, Melbourne VIC 3000',
+          abn: '33 847 291 002',
+          plan: 'Pro Multi-Station ($149/mo)',
+          planPrice: 149,
+          tableCount: 20,
+          status: 'active',
+          createdAt: '2026-08-20',
+          contactPerson: 'Sarah Jenkins',
+          contactEmail: 'sarah@flinderscocktails.com.au'
+        }
+      ];
+
+      const [venues, setVenues] = useState(() => {
+        try {
+          const stored = localStorage.getItem('smartmenu_master_venues_au');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          }
+        } catch (e) {}
+        return DEFAULT_VENUES;
+      });
+
+      const saveVenues = (newVenues) => {
+        setVenues(newVenues);
+        try {
+          localStorage.setItem('smartmenu_master_venues_au', JSON.stringify(newVenues));
+        } catch (e) {}
+      };
+
+      const [searchTerm, setSearchTerm] = useState('');
+      const [isCreateOpen, setIsCreateOpen] = useState(false);
+      const [selectedVenueForShare, setSelectedVenueForShare] = useState(null);
+
+      // Create Venue Form State
+      const [vName, setVName] = useState('');
+      const [vSlug, setVSlug] = useState('');
+      const [vSubtitle, setVSubtitle] = useState('');
+      const [vAddress, setVAddress] = useState('');
+      const [vAbn, setVAbn] = useState('');
+      const [vTables, setVTables] = useState(12);
+      const [vPlan, setVPlan] = useState('Pro Multi-Station ($149/mo)');
+      const [vContact, setVContact] = useState('');
+      const [vEmail, setVEmail] = useState('');
+      const [vTemplate, setVTemplate] = useState('cafe');
+
+      const handleNameChange = (val) => {
+        setVName(val);
+        const autoSlug = val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        setVSlug(autoSlug);
+      };
+
+      const handleCreateVenue = (e) => {
+        e.preventDefault();
+        const slug = (vSlug || vName.toLowerCase().replace(/[^a-z0-9]+/g, '-')).trim();
+        if (!slug) {
+          if (showToast) showToast('⚠️ Please provide a venue name and slug');
+          return;
+        }
+
+        if (venues.some(v => v.slug === slug)) {
+          if (showToast) showToast('⚠️ A venue with this slug already exists! Choose another name.');
+          return;
+        }
+
+        const newV = {
+          id: slug,
+          name: vName.trim() || 'New Australian Venue',
+          slug: slug,
+          subtitle: vSubtitle.trim() || 'Smart QR Order & Pay Venue',
+          address: vAddress.trim() || 'Sydney NSW 2000',
+          abn: vAbn.trim() || '11 222 333 444',
+          tableCount: parseInt(vTables, 10) || 12,
+          plan: vPlan,
+          planPrice: vPlan.includes('149') ? 149 : 99,
+          status: 'active',
+          createdAt: new Date().toISOString().slice(0, 10),
+          contactPerson: vContact.trim(),
+          contactEmail: vEmail.trim()
+        };
+
+        // Initialize Venue Data in LocalStorage for this slug
+        try {
+          const initRest = {
+            id: slug,
+            name: newV.name,
+            subtitle: newV.subtitle,
+            address: newV.address,
+            abn: newV.abn,
+            wifiName: `${newV.name.replace(/\s+/g, '')}_Guest`,
+            wifiPassword: 'SmartMenu2026',
+            cardSurchargeRate: 0.015,
+            sundaySurchargeRate: 0.10,
+            isSundayActive: true,
+            tableSessionTimeoutHours: 2,
+            stripeAccountId: `acct_${slug}`,
+            stripeDashboardUrl: 'https://dashboard.stripe.com/'
+          };
+          localStorage.setItem(`smart_qr_${slug}_restaurant`, JSON.stringify(initRest));
+
+          // Generate tables
+          const tableArr = [];
+          for (let i = 1; i <= newV.tableCount; i++) {
+            tableArr.push({ id: `t-${i}`, number: i, name: `Table ${i}`, area: 'Main Bistro Hall', seats: 4 });
+          }
+          localStorage.setItem(`smart_qr_${slug}_tables`, JSON.stringify(tableArr));
+        } catch (e) {}
+
+        const updated = [newV, ...venues];
+        saveVenues(updated);
+        setIsCreateOpen(false);
+        setSelectedVenueForShare(newV);
+
+        // Reset form
+        setVName(''); setVSlug(''); setVSubtitle(''); setVAddress(''); setVAbn(''); setVContact(''); setVEmail('');
+        if (showToast) showToast(`✓ Venue "${newV.name}" created and ready for onboarding!`);
+      };
+
+      const handleDeleteVenue = (slug, name) => {
+        if (confirm(`Are you sure you want to remove "${name}" from your Master Portal?`)) {
+          const filtered = venues.filter(v => v.slug !== slug);
+          saveVenues(filtered);
+          if (showToast) showToast(`Removed "${name}" from master list`);
+        }
+      };
+
+      const getBaseUrl = () => {
+        return window.location.origin;
+      };
+
+      const getCustomerUrl = (slug) => `${getBaseUrl()}/menu/?venue=${encodeURIComponent(slug)}&table=1`;
+      const getKitchenUrl = (slug) => `${getBaseUrl()}/?venue=${encodeURIComponent(slug)}&view=kitchen`;
+      const getAdminUrl = (slug) => `${getBaseUrl()}/?venue=${encodeURIComponent(slug)}&view=admin`;
+
+      const copyToClipboard = (text, label) => {
+        navigator.clipboard.writeText(text).then(() => {
+          if (showToast) showToast(`✓ Copied ${label} to clipboard!`);
+        }).catch(() => {
+          const el = document.createElement('textarea');
+          el.value = text;
+          document.body.appendChild(el);
+          el.select();
+          document.execCommand('copy');
+          document.body.removeChild(el);
+          if (showToast) showToast(`✓ Copied ${label}!`);
+        });
+      };
+
+      const getWhatsAppMessage = (venue) => {
+        const cust = getCustomerUrl(venue.slug);
+        const kitch = getKitchenUrl(venue.slug);
+        const adm = getAdminUrl(venue.slug);
+
+        return `👋 G'day ${venue.contactPerson || venue.name} Team!
+
+Here are your official SmartMenu Australia platform links for ${venue.name}:
+
+📱 1. CUSTOMER TABLE QR MENU:
+${cust}
+(Print QR codes for tables 1 to ${venue.tableCount} from your Admin panel)
+
+👨‍🍳 2. KITCHEN KDS DISPLAY (Open on Kitchen iPad/Tablet):
+${kitch}
+
+💼 3. ADMIN & CASHIER PIN PORTAL (For Manager / Cash Register):
+${adm}
+
+Need any adjustments or help? We are always here to support your team!
+Cheers,
+SmartMenu Australia Support Team`;
+      };
+
+      const filteredVenues = venues.filter(v => {
+        if (!searchTerm.trim()) return true;
+        const q = searchTerm.toLowerCase();
+        return v.name.toLowerCase().includes(q) || v.slug.toLowerCase().includes(q) || v.address.toLowerCase().includes(q);
+      });
+
+      const totalMrr = venues.reduce((s, v) => s + (v.planPrice || 149), 0);
+      const totalTables = venues.reduce((s, v) => s + (v.tableCount || 12), 0);
+
+      return (
+        <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto font-sans">
+          {/* Master Top Header Banner */}
+          <div className={`p-6 rounded-3xl border-2 shadow-2xl flex flex-wrap justify-between items-center gap-4 transition-all ${
+            theme === 'light'
+              ? 'bg-white border-amber-400 text-stone-950 shadow-amber-900/10'
+              : 'bg-gradient-to-r from-amber-950/80 via-slate-900 to-amber-950/80 border-amber-500/70 text-white'
+          }`}>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2.5">
+                <span className="text-3xl p-2.5 rounded-2xl bg-amber-500 text-stone-950 font-black shadow-md">👑</span>
+                <div>
+                  <h1 className="text-xl md:text-2xl font-black tracking-tight flex items-center gap-2">
+                    <span>SmartMenu Australia Master Portal</span>
+                    <span className="text-[10px] bg-amber-500 text-stone-950 font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                      SUPER ADMIN
+                    </span>
+                  </h1>
+                  <p className={`text-xs ${theme === 'light' ? 'text-stone-600 font-bold' : 'text-stone-300'}`}>
+                    Agency & Franchise Headquarters • Controlled by Marco Panichi
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                onClick={() => setIsCreateOpen(true)}
+                className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-stone-950 font-black px-5 py-3 rounded-2xl text-xs shadow-xl flex items-center gap-2 transition-all active:scale-95 cursor-pointer border-2 border-amber-300"
+              >
+                <span className="text-base">➕</span>
+                <span>ONBOARD NEW CLIENT VENUE</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Master KPI Stats Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className={`p-5 rounded-3xl border-2 space-y-1 shadow-md ${
+              theme === 'light' ? 'bg-white border-stone-200 text-stone-950' : 'bg-slate-900 border-slate-800 text-white'
+            }`}>
+              <span className={`text-xs font-black uppercase tracking-wider ${theme === 'light' ? 'text-stone-500' : 'text-stone-400'}`}>Active Client Venues</span>
+              <div className="text-3xl font-black font-mono text-amber-500">{venues.length}</div>
+              <p className={`text-[11px] font-bold ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>100% Hosted on Cloudflare</p>
+            </div>
+
+            <div className={`p-5 rounded-3xl border-2 space-y-1 shadow-md ${
+              theme === 'light' ? 'bg-white border-stone-200 text-stone-950' : 'bg-slate-900 border-slate-800 text-white'
+            }`}>
+              <span className={`text-xs font-black uppercase tracking-wider ${theme === 'light' ? 'text-stone-500' : 'text-stone-400'}`}>Managed QR Tables</span>
+              <div className="text-3xl font-black font-mono text-emerald-500">{totalTables}</div>
+              <p className={`text-[11px] font-bold ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>Live across all customer dining areas</p>
+            </div>
+
+            <div className={`p-5 rounded-3xl border-2 space-y-1 shadow-md ${
+              theme === 'light' ? 'bg-white border-stone-200 text-stone-950' : 'bg-slate-900 border-slate-800 text-white'
+            }`}>
+              <span className={`text-xs font-black uppercase tracking-wider ${theme === 'light' ? 'text-stone-500' : 'text-stone-400'}`}>Est. Monthly SaaS Revenue</span>
+              <div className="text-3xl font-black font-mono text-orange-500">${totalMrr} AUD<span className="text-xs font-normal text-stone-400">/mo</span></div>
+              <p className={`text-[11px] font-bold ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>Based on $149/mo Pro Tier</p>
+            </div>
+
+            <div className={`p-5 rounded-3xl border-2 space-y-1 shadow-md ${
+              theme === 'light' ? 'bg-white border-stone-200 text-stone-950' : 'bg-slate-900 border-slate-800 text-white'
+            }`}>
+              <span className={`text-xs font-black uppercase tracking-wider ${theme === 'light' ? 'text-stone-500' : 'text-stone-400'}`}>System & Realtime Sync</span>
+              <div className="text-xl font-black text-emerald-500 flex items-center gap-2 pt-1">
+                <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Operational (100%)</span>
+              </div>
+              <p className={`text-[11px] font-bold ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>MQTT Broker & Cloudflare Pages Active</p>
+            </div>
+          </div>
+
+          {/* Search & Actions Bar */}
+          <div className="flex flex-wrap justify-between items-center gap-3">
+            <div className="relative flex-1 min-w-[260px] max-w-md">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search venue by name, slug or city..."
+                className={`w-full rounded-2xl px-4 py-2.5 text-xs font-medium border-2 focus:outline-none focus:border-amber-500 transition-all ${
+                  theme === 'light' ? 'bg-white border-stone-300 text-stone-950' : 'bg-slate-900 border-slate-800 text-white'
+                }`}
+              />
+            </div>
+
+            <span className="text-xs font-black text-stone-400">
+              Showing {filteredVenues.length} of {venues.length} venues
+            </span>
+          </div>
+
+          {/* Venues Cards Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {filteredVenues.map(venue => {
+              const custUrl = getCustomerUrl(venue.slug);
+              const kitchUrl = getKitchenUrl(venue.slug);
+              const adminUrl = getAdminUrl(venue.slug);
+
+              return (
+                <div
+                  key={venue.slug}
+                  className={`p-5 rounded-3xl border-2 space-y-4 shadow-lg transition-all ${
+                    theme === 'light' ? 'bg-white border-stone-300 text-stone-950' : 'bg-slate-900 border-slate-800 text-white'
+                  }`}
+                >
+                  {/* Venue Top Info */}
+                  <div className="flex justify-between items-start gap-3 border-b pb-3 border-stone-200 dark:border-slate-800">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-stone-950 font-black text-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                        🍽️
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-black text-base truncate">{venue.name}</h3>
+                          <span className="text-[10px] bg-emerald-500/20 text-emerald-600 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
+                            Active
+                          </span>
+                        </div>
+                        <p className={`text-xs truncate ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>
+                          {venue.subtitle}
+                        </p>
+                        <p className={`text-[11px] font-mono mt-0.5 ${theme === 'light' ? 'text-stone-500' : 'text-stone-500'}`}>
+                          📍 {venue.address} • ABN: {venue.abn}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-xs bg-amber-500/20 text-amber-600 font-black px-2.5 py-1 rounded-xl block border border-amber-500/30">
+                        {venue.plan}
+                      </span>
+                      <span className="text-[10px] text-stone-400 mt-1 block">
+                        🪑 {venue.tableCount || 12} Tables
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 3 Essential Links Dispatcher Cards */}
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 block">
+                      ⚡ 3 Client Handover Links (1-Click Copy & Test):
+                    </span>
+
+                    {/* 1. Customer Table Menu */}
+                    <div className={`p-2.5 rounded-2xl border flex items-center justify-between gap-2 ${
+                      theme === 'light' ? 'bg-stone-50 border-stone-200' : 'bg-slate-950 border-slate-800'
+                    }`}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-base">📱</span>
+                        <div className="min-w-0">
+                          <span className="text-[11px] font-black block">1. Customer QR Menu:</span>
+                          <span className="text-[10px] text-stone-400 font-mono truncate block">{custUrl}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <button
+                          onClick={() => copyToClipboard(custUrl, `Customer Menu Link for ${venue.name}`)}
+                          className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-[11px] shadow-sm transition-all cursor-pointer"
+                        >
+                          📋 Copy
+                        </button>
+                        <a
+                          href={custUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2.5 py-1.5 rounded-xl bg-stone-200 dark:bg-slate-800 hover:bg-stone-300 dark:hover:bg-slate-700 text-stone-800 dark:text-stone-200 font-bold text-[11px] transition-all"
+                        >
+                          ↗ Open
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* 2. Kitchen KDS Display */}
+                    <div className={`p-2.5 rounded-2xl border flex items-center justify-between gap-2 ${
+                      theme === 'light' ? 'bg-stone-50 border-stone-200' : 'bg-slate-950 border-slate-800'
+                    }`}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-base">👨‍🍳</span>
+                        <div className="min-w-0">
+                          <span className="text-[11px] font-black block">2. Kitchen KDS Display:</span>
+                          <span className="text-[10px] text-stone-400 font-mono truncate block">{kitchUrl}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <button
+                          onClick={() => copyToClipboard(kitchUrl, `Kitchen KDS Link for ${venue.name}`)}
+                          className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-[11px] shadow-sm transition-all cursor-pointer"
+                        >
+                          📋 Copy
+                        </button>
+                        <a
+                          href={kitchUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2.5 py-1.5 rounded-xl bg-stone-200 dark:bg-slate-800 hover:bg-stone-300 dark:hover:bg-slate-700 text-stone-800 dark:text-stone-200 font-bold text-[11px] transition-all"
+                        >
+                          ↗ Open
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* 3. Admin & Cashier Portal */}
+                    <div className={`p-2.5 rounded-2xl border flex items-center justify-between gap-2 ${
+                      theme === 'light' ? 'bg-stone-50 border-stone-200' : 'bg-slate-950 border-slate-800'
+                    }`}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-base">💼</span>
+                        <div className="min-w-0">
+                          <span className="text-[11px] font-black block">3. Admin & Cashier Portal:</span>
+                          <span className="text-[10px] text-stone-400 font-mono truncate block">{adminUrl}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <button
+                          onClick={() => copyToClipboard(adminUrl, `Admin Link for ${venue.name}`)}
+                          className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-[11px] shadow-sm transition-all cursor-pointer"
+                        >
+                          📋 Copy
+                        </button>
+                        <a
+                          href={adminUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2.5 py-1.5 rounded-xl bg-stone-200 dark:bg-slate-800 hover:bg-stone-300 dark:hover:bg-slate-700 text-stone-800 dark:text-stone-200 font-bold text-[11px] transition-all"
+                        >
+                          ↗ Open
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Bottom Actions */}
+                  <div className="flex flex-wrap justify-between items-center pt-2 border-t border-stone-200 dark:border-slate-800 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedVenueForShare(venue)}
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
+                    >
+                      <span>💬 WhatsApp / Email Handover Pack</span>
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteVenue(venue.slug, venue.name)}
+                        className="text-stone-400 hover:text-red-500 text-xs font-bold px-2 py-1 transition-colors cursor-pointer"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Modal: Onboard New Client Venue Wizard */}
+          {isCreateOpen && (
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto no-print">
+              <div className={`border-2 rounded-3xl p-5 md:p-6 w-full max-w-xl space-y-4 shadow-2xl animate-in fade-in zoom-in duration-150 font-sans ${
+                theme === 'light' ? 'bg-white border-amber-400 text-stone-950' : 'bg-slate-900 border-slate-700 text-white'
+              }`}>
+                <div className="flex justify-between items-center border-b pb-3 border-stone-200 dark:border-slate-800">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-2xl p-2 rounded-2xl bg-amber-500 text-stone-950 font-black shadow-sm">🏢</span>
+                    <div>
+                      <h3 className="font-extrabold text-base">Onboard New Australian Venue</h3>
+                      <p className={`text-xs ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>
+                        Instantly deploy an isolated venue and generate its 3 handover links
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsCreateOpen(false)}
+                    className="w-8 h-8 rounded-full bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 dark:hover:bg-slate-700 text-stone-600 dark:text-stone-300 flex items-center justify-center font-bold text-xs cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <form onSubmit={handleCreateVenue} className="space-y-3.5 text-xs">
+                  <div>
+                    <label className={`font-bold block mb-1 ${theme === 'light' ? 'text-stone-700' : 'text-stone-300'}`}>
+                      Venue Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={vName}
+                      onChange={(e) => handleNameChange(e.target.value)}
+                      placeholder="e.g. Margaret River Taphouse, Carlton Pizzeria"
+                      className={`w-full rounded-xl px-3 py-2 text-xs border focus:outline-none focus:border-amber-500 ${
+                        theme === 'light' ? 'bg-stone-50 border-stone-300 text-stone-900' : 'bg-slate-950 border-slate-800 text-white'
+                      }`}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className={`font-bold block mb-1 ${theme === 'light' ? 'text-stone-700' : 'text-stone-300'}`}>
+                        URL Slug (Generated automatically) *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={vSlug}
+                        onChange={(e) => setVSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}
+                        placeholder="e.g. margaret-river-taphouse"
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-mono font-bold border focus:outline-none focus:border-amber-500 ${
+                          theme === 'light' ? 'bg-stone-50 border-stone-300 text-amber-700' : 'bg-slate-950 border-slate-800 text-amber-400'
+                        }`}
+                      />
+                    </div>
+
+                    <div>
+                      <label className={`font-bold block mb-1 ${theme === 'light' ? 'text-stone-700' : 'text-stone-300'}`}>
+                        Number of Tables
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={vTables}
+                        onChange={(e) => setVTables(e.target.value)}
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-mono border focus:outline-none focus:border-amber-500 ${
+                          theme === 'light' ? 'bg-stone-50 border-stone-300 text-stone-900' : 'bg-slate-950 border-slate-800 text-white'
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className={`font-bold block mb-1 ${theme === 'light' ? 'text-stone-700' : 'text-stone-300'}`}>
+                      Cuisine / Subtitle
+                    </label>
+                    <input
+                      type="text"
+                      value={vSubtitle}
+                      onChange={(e) => setVSubtitle(e.target.value)}
+                      placeholder="e.g. Woodfired Pizza, Craft Beers & Australian Wine"
+                      className={`w-full rounded-xl px-3 py-2 text-xs border focus:outline-none focus:border-amber-500 ${
+                        theme === 'light' ? 'bg-stone-50 border-stone-300 text-stone-900' : 'bg-slate-950 border-slate-800 text-white'
+                      }`}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className={`font-bold block mb-1 ${theme === 'light' ? 'text-stone-700' : 'text-stone-300'}`}>
+                        Physical Address
+                      </label>
+                      <input
+                        type="text"
+                        value={vAddress}
+                        onChange={(e) => setVAddress(e.target.value)}
+                        placeholder="e.g. 100 Main Street, Sydney NSW 2000"
+                        className={`w-full rounded-xl px-3 py-2 text-xs border focus:outline-none focus:border-amber-500 ${
+                          theme === 'light' ? 'bg-stone-50 border-stone-300 text-stone-900' : 'bg-slate-950 border-slate-800 text-white'
+                        }`}
+                      />
+                    </div>
+
+                    <div>
+                      <label className={`font-bold block mb-1 ${theme === 'light' ? 'text-stone-700' : 'text-stone-300'}`}>
+                        ABN (Tax Invoice)
+                      </label>
+                      <input
+                        type="text"
+                        value={vAbn}
+                        onChange={(e) => setVAbn(e.target.value)}
+                        placeholder="e.g. 51 824 753 556"
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-mono border focus:outline-none focus:border-amber-500 ${
+                          theme === 'light' ? 'bg-stone-50 border-stone-300 text-stone-900' : 'bg-slate-950 border-slate-800 text-white'
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className={`font-bold block mb-1 ${theme === 'light' ? 'text-stone-700' : 'text-stone-300'}`}>
+                        Contact Person (Manager)
+                      </label>
+                      <input
+                        type="text"
+                        value={vContact}
+                        onChange={(e) => setVContact(e.target.value)}
+                        placeholder="e.g. John Doe"
+                        className={`w-full rounded-xl px-3 py-2 text-xs border focus:outline-none focus:border-amber-500 ${
+                          theme === 'light' ? 'bg-stone-50 border-stone-300 text-stone-900' : 'bg-slate-950 border-slate-800 text-white'
+                        }`}
+                      />
+                    </div>
+
+                    <div>
+                      <label className={`font-bold block mb-1 ${theme === 'light' ? 'text-stone-700' : 'text-stone-300'}`}>
+                        SaaS Subscription Plan
+                      </label>
+                      <select
+                        value={vPlan}
+                        onChange={(e) => setVPlan(e.target.value)}
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-bold border focus:outline-none focus:border-amber-500 ${
+                          theme === 'light' ? 'bg-stone-50 border-stone-300 text-stone-900' : 'bg-slate-950 border-slate-800 text-white'
+                        }`}
+                      >
+                        <option value="Pro Multi-Station ($149/mo)">Pro Multi-Station ($149/mo) - Full KDS & Square</option>
+                        <option value="Starter QR ($99/mo)">Starter QR ($99/mo) - Menu & Orders</option>
+                        <option value="Enterprise Custom ($299/mo)">Enterprise Custom ($299/mo)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-3 border-t border-stone-200 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setIsCreateOpen(false)}
+                      className="px-4 py-2 rounded-xl font-bold bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-stone-300"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-stone-950 font-black shadow-lg hover:brightness-110 active:scale-95"
+                    >
+                      🚀 Create Venue & Generate Links
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal: Client Handover Pack & WhatsApp Generator */}
+          {selectedVenueForShare && (() => {
+            const v = selectedVenueForShare;
+            const cust = getCustomerUrl(v.slug);
+            const kitch = getKitchenUrl(v.slug);
+            const adm = getAdminUrl(v.slug);
+            const msg = getWhatsAppMessage(v);
+
+            return (
+              <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto no-print">
+                <div className={`border-2 rounded-3xl p-5 md:p-6 w-full max-w-xl space-y-4 shadow-2xl animate-in fade-in zoom-in duration-150 font-sans ${
+                  theme === 'light' ? 'bg-white border-emerald-400 text-stone-950' : 'bg-slate-900 border-slate-700 text-white'
+                }`}>
+                  <div className="flex justify-between items-center border-b pb-3 border-stone-200 dark:border-slate-800">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-2xl p-2 rounded-2xl bg-emerald-500/20 text-emerald-600 border border-emerald-500/30">📦</span>
+                      <div>
+                        <h3 className="font-extrabold text-base">Client Onboarding Pack: {v.name}</h3>
+                        <p className={`text-xs ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>
+                          All 3 links and welcome message ready to send to the restaurant owner
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setSelectedVenueForShare(null)}
+                      className="w-8 h-8 rounded-full bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 dark:hover:bg-slate-700 text-stone-600 dark:text-stone-300 flex items-center justify-center font-bold text-xs cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div className="space-y-3 text-xs">
+                    {/* Preformatted WhatsApp Box */}
+                    <div>
+                      <label className={`font-bold block mb-1 ${theme === 'light' ? 'text-stone-700' : 'text-stone-300'}`}>
+                        Formatted WhatsApp / Email Handover Message:
+                      </label>
+                      <textarea
+                        rows="8"
+                        readOnly
+                        value={msg}
+                        className={`w-full font-mono text-[11px] p-3 rounded-2xl border ${
+                          theme === 'light' ? 'bg-stone-50 border-stone-300 text-stone-900' : 'bg-slate-950 border-slate-800 text-emerald-300'
+                        }`}
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap justify-between items-center gap-2 pt-2 border-t border-stone-200 dark:border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(msg, 'Full Onboarding Message')}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-lg cursor-pointer"
+                      >
+                        <span>📋 Copy WhatsApp Message</span>
+                      </button>
+
+                      <a
+                        href={`https://wa.me/?text=${encodeURIComponent(msg)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="bg-green-600 hover:bg-green-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shadow"
+                      >
+                        <span>💬 Open in WhatsApp</span>
+                        <span>↗</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      );
+    }
+
+
     function AppContent() {
       const { orders, theme, toggleTheme } = useOrderAU();
       const pendingCount = orders.filter(o => o.status === 'pending_approval').length;
@@ -7379,6 +8111,7 @@
         const hasTable = p.get('table');
         const isTakeaway = p.get('mode') === 'takeaway' || p.get('type') === 'takeaway';
 
+        if (v === 'master' || v === 'superadmin' || v === 'agency') return 'master';
         if (v === 'admin') return 'admin';
         if (v === 'kitchen' || v === 'kds') return 'kitchen';
         if (v === 'simulator') return 'simulator';
@@ -7454,6 +8187,18 @@
 
                   <div className={`flex items-center gap-1 p-1 rounded-2xl border transition-colors ${theme === 'light' ? 'bg-stone-100 border-stone-200' : 'bg-[#100e0c] border-stone-800'}`}>
                     <button
+                      onClick={() => setRole('master')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
+                        role === 'master'
+                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 shadow-lg'
+                          : (theme === 'light' ? 'text-amber-800 hover:text-amber-950 bg-amber-100/70 hover:bg-amber-200' : 'text-amber-300 hover:text-white bg-[#221a14] hover:bg-[#2e221a]')
+                      }`}
+                      title="Master Reseller & Multi-Venue Control Center"
+                    >
+                      <span>👑 Master Portal</span>
+                    </button>
+
+                    <button
                       onClick={() => setRole('admin')}
                       className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${
                         role === 'admin'
@@ -7513,6 +8258,7 @@
           <div className="flex-1">
             {role === 'customer' && <CustomerViewAU />}
             {role === 'kitchen' && <KitchenDisplayAU />}
+            {role === 'master' && <MasterResellerDashboardAU />}
             {role === 'admin' && <AdminDashboardAU />}
             {role === 'simulator' && (
               <div className="p-4 grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
