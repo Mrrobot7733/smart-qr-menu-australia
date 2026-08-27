@@ -1618,7 +1618,7 @@
                   </div>
                 )}
 
-                {/* 👨‍🍳 Chef's Daily Special (Distinct Sapphire / Deep Indigo Palette for High Visual Contrast) */}
+                {/* 👨‍🍳 Chef's Daily Special (High-Contrast Theme-Aware Card) */}
                 {(() => {
                   const visibleItems = items.filter(i => i.isVisible !== false);
                   const special = visibleItems.find(i => i.id === 'au-6') || visibleItems[0];
@@ -1626,27 +1626,37 @@
                   return (
                     <div
                       onClick={() => openItemDetail(special)}
-                      className="bg-gradient-to-r from-[#0b1b2b] via-[#102942] to-[#0b1b2b] border border-cyan-400/60 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-lg cursor-pointer active:scale-[0.99] transition-all hover:border-cyan-400"
+                      className={`border-2 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-md cursor-pointer active:scale-[0.99] transition-all ${
+                        theme === 'light'
+                          ? 'bg-gradient-to-r from-amber-100/90 via-orange-50 to-amber-100/90 border-amber-400 text-stone-950 hover:border-amber-500'
+                          : 'bg-gradient-to-r from-[#1f1712] via-[#2d1e16] to-[#1f1712] border-amber-500/70 text-white hover:border-amber-400'
+                      }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <img
                           src={special.image}
                           alt={special.name}
-                          className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border border-cyan-400/40 shadow bg-black/40"
+                          className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border-2 border-amber-400/60 shadow bg-black/10"
                         />
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[9px] uppercase font-black tracking-wider bg-cyan-500/25 text-cyan-200 border border-cyan-400/50 px-1.5 py-0.5 rounded">
-                              👨‍🍳 Chef's Pick
+                            <span className="text-[10px] uppercase font-black tracking-wider bg-amber-500 text-stone-950 px-2 py-0.5 rounded-full shadow-xs border border-amber-600/30">
+                              👨‍🍳 Chef's Recommendation
                             </span>
                           </div>
-                          <h3 className="font-extrabold text-white text-xs sm:text-sm truncate mt-0.5">{special.name}</h3>
-                          <p className="text-xs text-cyan-100/90 truncate leading-snug">{special.description}</p>
+                          <h3 className={`font-black text-xs sm:text-sm truncate mt-1 ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
+                            {special.name}
+                          </h3>
+                          <p className={`text-xs truncate leading-snug font-medium ${theme === 'light' ? 'text-stone-700' : 'text-amber-100/80'}`}>
+                            {special.description}
+                          </p>
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0 pl-1">
-                        <span className="text-sm font-black text-cyan-300 block font-mono">${special.price.toFixed(2)} AUD</span>
-                        <span className="text-[10px] text-stone-950 bg-cyan-400 hover:bg-cyan-300 font-black px-2.5 py-1 rounded-lg shadow-sm inline-block mt-0.5">
+                        <span className={`text-sm sm:text-base font-black block font-mono ${theme === 'light' ? 'text-amber-900' : 'text-amber-300'}`}>
+                          ${special.price.toFixed(2)} AUD
+                        </span>
+                        <span className="text-[11px] text-stone-950 bg-amber-400 hover:bg-amber-300 font-black px-3 py-1 rounded-xl shadow inline-block mt-0.5 border border-amber-500/50">
                           + Add
                         </span>
                       </div>
@@ -2691,7 +2701,7 @@
 
     // --- Kitchen Display (Australia) - With 80mm Thermal Printing ---
     function KitchenDisplayAU() {
-      const { venueId, orders, updateOrderStatus, serviceCalls, resolveServiceCall, restaurant, showToast } = useOrderAU();
+      const { venueId, orders, updateOrderStatus, serviceCalls, resolveServiceCall, restaurant, showToast, theme } = useOrderAU();
       const [autoPrint, setAutoPrint] = useState(false);
       const [printOrder, setPrintOrder] = useState(null);
       const pending = serviceCalls.filter(c => c.status === 'pending');
@@ -2724,23 +2734,26 @@
       const pendingCounterOrders = orders.filter(o => o.status === 'pending_approval');
 
       return (
-        <div className="p-4 space-y-4 max-w-6xl mx-auto">
+        <div className="p-3 sm:p-5 space-y-4 max-w-7xl mx-auto">
           {/* Header */}
-          <div className="bg-[#161311] border border-amber-900/30 p-4 rounded-3xl flex flex-wrap justify-between items-center gap-3 shadow-xl">
+          <div className={`p-4 sm:p-5 rounded-3xl flex flex-wrap justify-between items-center gap-3 shadow-lg border ${
+            theme === 'light'
+              ? 'bg-white border-stone-300 text-stone-900'
+              : 'bg-[#161311] border-amber-900/30 text-white'
+          }`}>
             <div>
-              <h2 className="font-black text-white text-lg flex items-center gap-2 flex-wrap">
-                <span>👨‍🍳 Kitchen & Bar KDS</span>
-                <span className="text-[11px] bg-amber-500/20 text-amber-300 font-bold px-2.5 py-0.5 rounded-full border border-amber-500/30">
+              <h2 className={`font-black text-lg sm:text-xl flex items-center gap-2 flex-wrap ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
+                <span>👨‍🍳 Kitchen & Bar KDS Feed</span>
+                <span className="text-xs bg-amber-500 text-stone-950 font-black px-3 py-0.5 rounded-full shadow-xs">
                   {restaurant.name}
                 </span>
-                <span className="text-[10px] bg-stone-800 text-stone-300 font-mono px-2 py-0.5 rounded-md border border-stone-700">
-                  ?venue={venueId}
-                </span>
               </h2>
-              <p className="text-xs text-stone-400">Live Kitchen Docket Stream & 80mm Star/Epson CloudPRNT Link</p>
+              <p className={`text-xs mt-0.5 ${theme === 'light' ? 'text-stone-600 font-bold' : 'text-stone-300'}`}>
+                Live Kitchen Production Screen • Star & Epson Thermal Docket Integration
+              </p>
             </div>
             
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               {/* Auto-Print Toggle */}
               <button
                 onClick={() => {
@@ -2748,10 +2761,10 @@
                   setAutoPrint(nextState);
                   if (showToast) showToast(nextState ? '🖨️ Auto-Print Enabled' : 'Auto-Print Disabled');
                 }}
-                className={`px-3.5 py-2 rounded-2xl text-xs font-bold flex items-center gap-2 border transition-all ${
+                className={`px-3.5 py-2 rounded-2xl text-xs font-black flex items-center gap-2 border transition-all cursor-pointer shadow-sm ${
                   autoPrint
-                    ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300 shadow-lg shadow-emerald-950/40'
-                    : 'bg-[#1e1916] border-stone-800 text-stone-400 hover:border-amber-500/40'
+                    ? 'bg-emerald-600 border-emerald-700 text-white'
+                    : (theme === 'light' ? 'bg-stone-100 border-stone-300 text-stone-800 hover:bg-stone-200' : 'bg-[#1e1916] border-stone-800 text-stone-300')
                 }`}
               >
                 <span>🖨️</span>
@@ -2760,9 +2773,13 @@
 
               <button
                 onClick={() => playSound.kitchenChime()}
-                className="bg-[#201b17] hover:bg-[#2a2420] text-amber-300 border border-amber-900/30 px-3.5 py-2 rounded-2xl text-xs font-bold flex items-center gap-1.5 transition-all shadow"
+                className={`px-3.5 py-2 rounded-2xl text-xs font-black flex items-center gap-1.5 transition-all shadow-sm border cursor-pointer ${
+                  theme === 'light'
+                    ? 'bg-amber-100 hover:bg-amber-200 text-amber-950 border-amber-300'
+                    : 'bg-[#201b17] hover:bg-[#2a2420] text-amber-300 border-amber-900/30'
+                }`}
               >
-                <span>🔔</span> <span>Test Chime</span>
+                <span>🔔</span> <span>Chime</span>
               </button>
             </div>
           </div>
@@ -2776,15 +2793,14 @@
                   window.dispatchEvent(new CustomEvent('switch-admin-tab', { detail: 'cashier' }));
                 }, 50);
               }}
-              className="bg-amber-950/70 hover:bg-amber-900/80 border border-amber-500/80 p-3 rounded-2xl flex flex-wrap justify-between items-center text-xs text-amber-200 shadow-lg cursor-pointer transition-all active:scale-98 group"
+              className="bg-amber-500 hover:bg-amber-400 text-stone-950 border-2 border-amber-600 p-3 sm:p-4 rounded-2xl flex flex-wrap justify-between items-center text-xs font-black shadow-lg cursor-pointer transition-all active:scale-98 group"
               title="Click to switch to Cashier and enter PIN"
             >
               <span className="flex items-center gap-2">
-                <span className="text-base">⏳</span>
-                <span><strong>{pendingCounterOrders.length} order(s) awaiting cashier counter payment</strong> (Kitchen tickets hold until PIN confirmed).</span>
-                <span className="text-[10px] text-amber-400 underline font-bold group-hover:text-white">👉 Click to Open PIN Cashier</span>
+                <span className="text-xl">⏳</span>
+                <span>{pendingCounterOrders.length} order(s) awaiting payment at counter. Tickets will print immediately once confirmed.</span>
               </span>
-              <span className="text-[10px] bg-amber-950/80 border border-amber-700 text-amber-300 font-mono px-2 py-0.5 rounded">
+              <span className="bg-stone-950 text-amber-300 font-mono text-xs px-2.5 py-1 rounded-xl">
                 Pending PINs: {pendingCounterOrders.map(p => `#${p.counterPin}`).join(', ')}
               </span>
             </div>
@@ -2792,31 +2808,33 @@
 
           {/* Pending Service Calls */}
           {pending.length > 0 && (
-            <div className="bg-gradient-to-r from-amber-950 via-[#2a1d15] to-amber-950 border border-amber-500/80 p-3.5 rounded-2xl flex justify-between items-center text-xs font-bold text-amber-200 shadow-xl animate-pulse">
+            <div className="bg-red-600 text-white border-2 border-red-700 p-3.5 rounded-2xl flex justify-between items-center text-xs font-black shadow-xl animate-pulse">
               <span className="flex items-center gap-2">
-                <span className="text-base">🔔</span>
-                <span>Table #{pending[0].tableNumber}: {pending[0].message}</span>
+                <span className="text-xl">🔔</span>
+                <span className="text-sm">Table #{pending[0].tableNumber}: {pending[0].message}</span>
               </span>
-              <button onClick={() => resolveServiceCall(pending[0].id)} className="bg-amber-500 text-stone-950 hover:bg-amber-400 font-extrabold px-3 py-1.5 rounded-xl shadow">
+              <button onClick={() => resolveServiceCall(pending[0].id)} className="bg-white text-red-700 hover:bg-stone-100 font-black px-4 py-2 rounded-xl shadow cursor-pointer text-xs">
                 Attended ✓
               </button>
             </div>
           )}
 
           {/* Live Kitchen & Bar Docket Stream */}
-          <div className="bg-[#14110f]/80 border border-amber-900/40 rounded-3xl p-4 sm:p-5 space-y-4 shadow-xl">
-            <div className="flex flex-wrap justify-between items-center border-b border-stone-800 pb-3 gap-2">
+          <div className={`p-4 sm:p-5 rounded-3xl space-y-4 shadow-lg border ${
+            theme === 'light' ? 'bg-white border-stone-200' : 'bg-[#14110f]/90 border-amber-900/40'
+          }`}>
+            <div className="flex flex-wrap justify-between items-center border-b border-stone-200/80 pb-3 gap-2">
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></span>
-                <h3 className="font-black text-sm uppercase tracking-wider text-white">
-                  📋 Live Kitchen & Bar Docket Feed
+                <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-ping"></span>
+                <h3 className={`font-black text-sm uppercase tracking-wider ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
+                  📋 Live Kitchen Production Dockets
                 </h3>
-                <span className="bg-amber-500 text-stone-950 text-xs font-black px-2.5 py-0.5 rounded-full shadow">
+                <span className="bg-amber-500 text-stone-950 text-xs font-black px-3 py-0.5 rounded-full shadow">
                   {orders.filter(o => o.status !== 'pending_approval' && o.status !== 'delivered' && o.status !== 'cancelled').length} Active
                 </span>
               </div>
-              <p className="text-xs text-stone-400">
-                Tickets print automatically to thermal printer. Tap <strong className="text-amber-400">Re-Print Docket</strong> or <strong className="text-emerald-400">Clear / Done</strong> when finished.
+              <p className={`text-xs font-bold ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>
+                Tap <strong className="text-amber-600">Re-Print</strong> for physical paper docket or <strong className="text-emerald-600">✓ Done</strong> when plated.
               </p>
             </div>
 
@@ -2825,11 +2843,13 @@
 
               if (activeList.length === 0) {
                 return (
-                  <div className="text-center py-16 px-4 space-y-3 bg-[#181412] border border-dashed border-stone-800 rounded-2xl">
-                    <span className="text-4xl block">✅</span>
-                    <h4 className="font-black text-white text-base">All Kitchen Tickets Printed & Clear</h4>
-                    <p className="text-xs text-stone-400 max-w-md mx-auto">
-                      New orders from table QR codes and cashier PIN approvals will arrive here and trigger automatic thermal docket printing in real-time.
+                  <div className={`text-center py-16 px-4 space-y-3 border-2 border-dashed rounded-2xl ${
+                    theme === 'light' ? 'bg-stone-50 border-stone-300' : 'bg-[#181412] border-stone-800'
+                  }`}>
+                    <span className="text-5xl block">✅</span>
+                    <h4 className={`font-black text-base ${theme === 'light' ? 'text-stone-900' : 'text-white'}`}>All Kitchen Tickets Cleared</h4>
+                    <p className={`text-xs max-w-md mx-auto font-medium ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>
+                      New orders placed from table QR codes or approved in Cashier will pop up here in real-time.
                     </p>
                   </div>
                 );
@@ -2843,179 +2863,155 @@
                     const isHybrid = dineInList.length > 0 && takeawayList.length > 0;
 
                     return (
-                      <div key={o.id} className={`bg-[#1c1815] border rounded-2xl p-4 space-y-3 text-xs shadow-xl transition-all flex flex-col justify-between ${
-                        isHybrid ? 'border-amber-500/60 ring-1 ring-amber-500/20' : (o.orderType === 'takeaway' || !dineInList.length ? 'border-emerald-500/50' : 'border-amber-900/40 hover:border-amber-500/50')
+                      <div key={o.id} className={`rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-md flex flex-col justify-between border-2 transition-all ${
+                        theme === 'light'
+                          ? (isHybrid ? 'bg-amber-50/60 border-amber-400' : (o.orderType === 'takeaway' || !dineInList.length ? 'bg-emerald-50/60 border-emerald-400' : 'bg-white border-stone-300 hover:border-amber-400'))
+                          : (isHybrid ? 'bg-[#1c1815] border-amber-500/80' : (o.orderType === 'takeaway' || !dineInList.length ? 'bg-[#141b16] border-emerald-500/80' : 'bg-[#1c1815] border-stone-800 hover:border-amber-500/50'))
                       }`}>
-                        <div className="space-y-2.5">
+                        <div className="space-y-3">
+                          {/* Header Ticket Badge */}
                           <div className="flex justify-between items-center font-black">
-                            <div className="flex items-center gap-2">
+                            <div>
                               {isHybrid ? (
-                                <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-500 text-stone-950 px-2.5 py-0.5 rounded-lg text-xs font-black flex items-center gap-1 shadow">
-                                  <span>🍽️ Table {o.tableNumber} + 🛍️ Takeaway</span>
+                                <span className="bg-amber-500 text-stone-950 px-3 py-1 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm">
+                                  <span>🍽️ T.{o.tableNumber} + 🛍️ TAKEAWAY</span>
                                 </span>
                               ) : (o.orderType === 'takeaway' || !dineInList.length) ? (
-                                <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-stone-950 px-2.5 py-0.5 rounded-lg text-xs font-black flex items-center gap-1 shadow">
-                                  <span>🛍️</span> <span>TAKEAWAY</span>
+                                <span className="bg-emerald-600 text-white px-3 py-1 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm">
+                                  <span>🛍️ TAKEAWAY PICKUP</span>
                                 </span>
                               ) : (
-                                <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 px-2.5 py-0.5 rounded-lg text-xs font-black shadow">
-                                  🍽️ Table {o.tableNumber}
+                                <span className="bg-stone-900 text-amber-400 px-3 py-1 rounded-xl text-xs font-black shadow-sm">
+                                  🍽️ TABLE #{o.tableNumber}
                                 </span>
                               )}
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-base font-black text-amber-300 font-mono tracking-wider bg-amber-950/90 border border-amber-700/80 px-2.5 py-0.5 rounded-lg shadow">
+                              <span className="text-base font-black text-amber-500 font-mono tracking-wider bg-stone-950 text-white px-2.5 py-0.5 rounded-lg shadow-sm">
                                 #{o.orderNumber}
                               </span>
-                              <span className="text-[10px] text-stone-400 font-mono">
+                              <span className={`text-[11px] font-mono font-bold ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>
                                 {o.createdAt ? new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                               </span>
                             </div>
                           </div>
 
                           {/* Guest Name & Payment Status */}
-                          <div className="flex justify-between text-[11px] text-stone-400">
-                            <span>Customer: <strong className="text-stone-200">{o.customerName || 'Walk-in'}</strong></span>
-                            <span className="text-emerald-400 font-bold">
-                              {o.paymentStatus === 'paid'
-                                ? (o.paymentMethod === 'counter_cash'
-                                    ? '✓ Paid at Counter (Cash)'
-                                    : o.paymentMethod === 'counter_eftpos'
-                                    ? '✓ Paid at Counter (EFTPOS)'
-                                    : o.paymentMethod === 'counter'
-                                    ? '✓ Paid at Counter'
-                                    : o.paymentMethod === 'apple_pay'
-                                    ? '✓ Paid (Apple Pay)'
-                                    : '✓ Paid Online (Card)')
-                                : (takeawayList.length > 0 ? '⏳ Pay on Pickup' : '⏳ Pay at Counter')}
+                          <div className={`flex justify-between text-xs font-bold border-b pb-2 ${theme === 'light' ? 'border-stone-200 text-stone-700' : 'border-stone-800 text-stone-400'}`}>
+                            <span>Customer: <strong className={theme === 'light' ? 'text-stone-950' : 'text-stone-100'}>{o.customerName || 'Walk-in'}</strong></span>
+                            <span className="text-emerald-600 font-black">
+                              {o.paymentStatus === 'paid' ? '✓ PAID' : '⏳ UNPAID'}
                             </span>
                           </div>
 
-                          {/* Takeaway Pickup Time & Audible Call Banner */}
+                          {/* Takeaway Notice Banner */}
                           {takeawayList.length > 0 && (
-                            <div className="bg-[#120f0d] p-2.5 rounded-xl border border-emerald-900/40 text-[11px] space-y-1 text-emerald-300">
+                            <div className="bg-emerald-100 border-2 border-emerald-400 p-2 rounded-xl text-xs font-black text-emerald-950 space-y-0.5">
                               <div className="flex justify-between items-center">
-                                <span>📢 Call at Bar: <strong className="text-amber-300 font-mono text-xs font-black">ORDER #{o.orderNumber}</strong></span>
-                                <span className="text-stone-300">🕒 {o.takeawayTime || 'As soon as possible'}</span>
+                                <span>📦 PACK FOR TAKEAWAY</span>
+                                <span>🕒 {o.takeawayTime || 'ASAP'}</span>
                               </div>
-                              <div className="text-[10px] text-stone-400">📦 Pack takeaway items in containers / bag</div>
                             </div>
                           )}
 
-                          {/* Ordered Items List Grouped by Destination */}
-                          <div className="space-y-2.5 pt-1.5 border-t border-stone-800/80">
-                            {dineInList.length > 0 && (
-                              <div className="space-y-1.5">
-                                {isHybrid && (
-                                  <div className="text-[10px] font-black text-amber-400 uppercase tracking-wider bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-800/60 flex items-center justify-between">
-                                    <span>🍽️ Table Service (Table #{o.tableNumber})</span>
-                                    <span className="text-[9px] font-normal text-amber-300">Dine-In</span>
-                                  </div>
-                                )}
-                                {dineInList.map((it, i) => (
-                                  <div key={i} className="bg-[#120f0d] p-2.5 rounded-xl border border-stone-800/90 space-y-1">
-                                    <div className="flex items-start gap-2">
-                                      <span className="text-sm font-black text-amber-400 bg-stone-900 border border-amber-500/50 px-2 py-0.5 rounded-lg font-mono flex-shrink-0">
-                                        {it.quantity}x
-                                      </span>
-                                      <div className="flex-1 min-w-0">
-                                        <h4 className="font-black text-white text-xs sm:text-sm uppercase tracking-wide">
-                                          {it.name}
-                                        </h4>
-                                        {it.selectedOptions && Object.entries(it.selectedOptions).map(([k, v]) => (
-                                          <div key={k} className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5 mt-0.5 pl-1">
-                                            <span className="text-amber-500">▶</span>
-                                            <span className="text-stone-400">{k}:</span>
-                                            <span className="text-amber-200 font-black underline decoration-amber-500/60">{v}</span>
-                                          </div>
-                                        ))}
-                                        {it.selectedExtras?.map((ex, exi) => (
-                                          <div key={exi} className="text-[11px] font-bold text-emerald-300 flex items-center gap-1.5 mt-0.5 pl-1">
-                                            <span className="text-emerald-400 font-black">+ EXTRA:</span>
-                                            <span className="text-emerald-200 font-extrabold">{ex.name}</span>
-                                          </div>
-                                        ))}
-                                        {it.notes && (
-                                          <div className="mt-1.5 p-1.5 rounded-lg bg-amber-500/15 border border-amber-500/70 text-amber-200 font-black text-[11px] flex items-start gap-1.5 shadow-sm">
-                                            <span className="text-xs leading-none">⚠️</span>
-                                            <span className="leading-tight"><strong className="text-amber-300 uppercase tracking-wider">NOTE/ALLERGY:</strong> {it.notes}</span>
-                                          </div>
-                                        )}
+                          {/* Ordered Items List (Ultra High Contrast) */}
+                          <div className="space-y-2 pt-1">
+                            {dineInList.map((it, i) => (
+                              <div key={i} className={`p-2.5 rounded-xl border-2 space-y-1.5 ${
+                                theme === 'light' ? 'bg-stone-50 border-stone-200' : 'bg-[#120f0d] border-stone-800'
+                              }`}>
+                                <div className="flex items-start gap-2.5">
+                                  <span className="text-sm sm:text-base font-black bg-stone-950 text-amber-400 px-2.5 py-1 rounded-lg font-mono flex-shrink-0 shadow-xs">
+                                    {it.quantity}x
+                                  </span>
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className={`font-black text-sm sm:text-base uppercase tracking-wide leading-snug ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
+                                      {it.name}
+                                    </h4>
+                                    {it.selectedOptions && Object.entries(it.selectedOptions).map(([k, v]) => (
+                                      <div key={k} className="text-xs font-black text-amber-700 flex items-center gap-1 mt-0.5">
+                                        <span>▶ {k}:</span>
+                                        <span className="underline">{v}</span>
                                       </div>
-                                    </div>
+                                    ))}
+                                    {it.selectedExtras?.map((ex, exi) => (
+                                      <div key={exi} className="text-xs font-black text-emerald-700 flex items-center gap-1 mt-0.5">
+                                        <span>+ EXTRA:</span>
+                                        <span>{ex.name}</span>
+                                      </div>
+                                    ))}
+                                    {it.notes && (
+                                      <div className="mt-1.5 p-2 rounded-lg bg-amber-200 border-2 border-amber-500 text-amber-950 font-black text-xs shadow-xs">
+                                        ⚠️ <strong>ALLERGY/NOTE:</strong> {it.notes}
+                                      </div>
+                                    )}
                                   </div>
-                                ))}
+                                </div>
                               </div>
-                            )}
+                            ))}
 
-                            {takeawayList.length > 0 && (
-                              <div className="space-y-1.5 pt-1">
-                                {isHybrid && (
-                                  <div className="text-[10px] font-black text-emerald-400 uppercase tracking-wider bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-800/60 flex justify-between items-center">
-                                    <span>🛍️ Takeaway / Packaging</span>
-                                    <span className="text-[9px] font-normal text-emerald-300">📦 Pack</span>
-                                  </div>
-                                )}
-                                {takeawayList.map((it, i) => (
-                                  <div key={i} className="bg-[#120f0d] p-2.5 rounded-xl border border-emerald-900/50 space-y-1">
-                                    <div className="flex items-start gap-2">
-                                      <span className="text-sm font-black text-emerald-400 bg-stone-900 border border-emerald-500/50 px-2 py-0.5 rounded-lg font-mono flex-shrink-0">
-                                        {it.quantity}x
+                            {takeawayList.map((it, i) => (
+                              <div key={i} className={`p-2.5 rounded-xl border-2 space-y-1.5 ${
+                                theme === 'light' ? 'bg-emerald-50/80 border-emerald-300' : 'bg-[#101e14] border-emerald-800'
+                              }`}>
+                                <div className="flex items-start gap-2.5">
+                                  <span className="text-sm sm:text-base font-black bg-emerald-700 text-white px-2.5 py-1 rounded-lg font-mono flex-shrink-0 shadow-xs">
+                                    {it.quantity}x
+                                  </span>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-center">
+                                      <h4 className={`font-black text-sm sm:text-base uppercase tracking-wide leading-snug ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
+                                        {it.name}
+                                      </h4>
+                                      <span className="text-[10px] bg-emerald-700 text-white px-2 py-0.5 rounded-full font-black uppercase">
+                                        Takeaway
                                       </span>
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-start">
-                                          <h4 className="font-black text-white text-xs sm:text-sm uppercase tracking-wide">
-                                            {it.name}
-                                          </h4>
-                                          <span className="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700/60 px-1.5 py-0.5 rounded font-black uppercase">
-                                            Takeaway
-                                          </span>
-                                        </div>
-                                        {it.selectedOptions && Object.entries(it.selectedOptions).map(([k, v]) => (
-                                          <div key={k} className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5 mt-0.5 pl-1">
-                                            <span className="text-amber-500">▶</span>
-                                            <span className="text-stone-400">{k}:</span>
-                                            <span className="text-amber-200 font-black underline decoration-amber-500/60">{v}</span>
-                                          </div>
-                                        ))}
-                                        {it.selectedExtras?.map((ex, exi) => (
-                                          <div key={exi} className="text-[11px] font-bold text-emerald-300 flex items-center gap-1.5 mt-0.5 pl-1">
-                                            <span className="text-emerald-400 font-black">+ EXTRA:</span>
-                                            <span className="text-emerald-200 font-extrabold">{ex.name}</span>
-                                          </div>
-                                        ))}
-                                        {it.notes && (
-                                          <div className="mt-1.5 p-1.5 rounded-lg bg-amber-500/15 border border-amber-500/70 text-amber-200 font-black text-[11px] flex items-start gap-1.5 shadow-sm">
-                                            <span className="text-xs leading-none">⚠️</span>
-                                            <span className="leading-tight"><strong className="text-amber-300 uppercase tracking-wider">NOTE/ALLERGY:</strong> {it.notes}</span>
-                                          </div>
-                                        )}
-                                      </div>
                                     </div>
+                                    {it.selectedOptions && Object.entries(it.selectedOptions).map(([k, v]) => (
+                                      <div key={k} className="text-xs font-black text-amber-700 flex items-center gap-1 mt-0.5">
+                                        <span>▶ {k}:</span>
+                                        <span className="underline">{v}</span>
+                                      </div>
+                                    ))}
+                                    {it.selectedExtras?.map((ex, exi) => (
+                                      <div key={exi} className="text-xs font-black text-emerald-700 flex items-center gap-1 mt-0.5">
+                                        <span>+ EXTRA:</span>
+                                        <span>{ex.name}</span>
+                                      </div>
+                                    ))}
+                                    {it.notes && (
+                                      <div className="mt-1.5 p-2 rounded-lg bg-amber-200 border-2 border-amber-500 text-amber-950 font-black text-xs shadow-xs">
+                                        ⚠️ <strong>ALLERGY/NOTE:</strong> {it.notes}
+                                      </div>
+                                    )}
                                   </div>
-                                ))}
+                                </div>
                               </div>
-                            )}
+                            ))}
                           </div>
                         </div>
 
                         {/* Action Buttons: Print & Clear */}
-                        <div className="pt-3 border-t border-stone-800 grid grid-cols-2 gap-2">
+                        <div className="pt-3 border-t border-stone-200 grid grid-cols-2 gap-2">
                           <button
                             onClick={() => handlePrintDocket(o)}
-                            className="bg-[#26201b] hover:bg-[#322a24] border border-amber-900/30 text-amber-300 font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow"
+                            className={`py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm border-2 cursor-pointer ${
+                              theme === 'light'
+                                ? 'bg-stone-100 hover:bg-stone-200 text-stone-900 border-stone-300'
+                                : 'bg-[#26201b] hover:bg-[#322a24] text-amber-300 border-amber-900/50'
+                            }`}
                           >
-                            <span>🖨️ Re-Print Docket</span>
+                            <span>🖨️ Re-Print</span>
                           </button>
 
                           <button
                             onClick={() => {
                               updateOrderStatus(o.id, 'delivered');
-                              if (showToast) showToast(`✓ Ticket #${o.orderNumber} cleared`);
+                              if (showToast) showToast(`✓ Ticket #${o.orderNumber} completed`);
                             }}
-                            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 text-white font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow transition-all active:scale-95"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition-all active:scale-95 cursor-pointer border-2 border-emerald-700"
                           >
-                            <span>✓ Clear / Done</span>
+                            <span>✓ Plated / Done</span>
                           </button>
                         </div>
                       </div>
@@ -4243,14 +4239,129 @@
 
           {/* View: Cashier PIN & Sales/Orders Report */}
           {(tab === 'cashier' || tab === 'stats') && (
-            <div className="space-y-6">
+            <div className="space-y-5">
+              {/* 🔢 PRIMO PIANO: Cashier 4-Digit PIN Unlock & Payment Verification Hub */}
+              <div className={`p-4 sm:p-5 rounded-3xl space-y-4 shadow-xl border-2 transition-all ${
+                theme === 'light'
+                  ? 'bg-white border-amber-400 text-stone-950 shadow-amber-900/5'
+                  : 'bg-gradient-to-r from-amber-950/70 via-slate-950 to-amber-950/70 border-amber-500/80 text-white'
+              }`}>
+                <div className="flex flex-wrap justify-between items-center gap-2 border-b pb-3 border-stone-200/80">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-2xl p-2 rounded-2xl bg-amber-500 text-stone-950 font-black shadow-sm">🔢</span>
+                    <div>
+                      <h3 className={`font-black text-base sm:text-lg flex items-center gap-2 ${theme === 'light' ? 'text-stone-950' : 'text-amber-300'}`}>
+                        <span>Cashier PIN Clearance & Scontrini Sblocco</span>
+                        {orders.filter(o => o.status === 'pending_approval').length > 0 && (
+                          <span className="text-xs bg-amber-500 text-stone-950 font-black px-2.5 py-0.5 rounded-full animate-bounce shadow">
+                            {orders.filter(o => o.status === 'pending_approval').length} Waiting at Counter
+                          </span>
+                        )}
+                      </h3>
+                      <p className={`text-xs ${theme === 'light' ? 'text-stone-600 font-bold' : 'text-slate-300'}`}>
+                        Enter the patron's 4-digit PIN or click a pending order below to review bill, apply discounts, settle payment, and print kitchen tickets.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={exportCsvReport}
+                    className="bg-stone-900 hover:bg-stone-800 text-white font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all active:scale-95 cursor-pointer border border-stone-700"
+                    title="Export Sales & GST Breakdown CSV for ATO BAS & Accountant"
+                  >
+                    <span>📥 Export BAS & GST (CSV)</span>
+                  </button>
+                </div>
+
+                {/* Main Large PIN Input Bar */}
+                <form onSubmit={handleVerifyPinSubmit} className="flex flex-wrap items-center gap-3 pt-1">
+                  <div className="relative flex-1 min-w-[240px] max-w-md">
+                    <input
+                      type="text"
+                      maxLength="4"
+                      value={counterPinInput}
+                      onChange={(e) => setCounterPinInput(e.target.value.replace(/\D/g, ''))}
+                      placeholder="ENTER 4-DIGIT PIN (e.g. 4829)"
+                      className={`w-full border-2 rounded-2xl px-4 py-3 text-xl font-mono font-black tracking-widest placeholder:tracking-normal placeholder:text-xs placeholder:font-sans focus:outline-none transition-all shadow-inner ${
+                        theme === 'light'
+                          ? 'bg-stone-50 border-amber-400 text-stone-950 placeholder:text-stone-400 focus:bg-white focus:border-amber-500'
+                          : 'bg-slate-900 border-amber-500 text-amber-300 placeholder:text-slate-600 focus:border-amber-300'
+                      }`}
+                    />
+                    <span className="absolute right-3.5 top-3.5 text-xs bg-amber-500 text-stone-950 font-black px-2 py-0.5 rounded-md shadow-xs">
+                      PIN #
+                    </span>
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-stone-950 font-black text-sm px-6 py-3 rounded-2xl shadow-lg flex items-center gap-2 transition-all active:scale-95 cursor-pointer border-2 border-amber-400"
+                  >
+                    <span>🔓 SBLOCCA SCONTRINO</span>
+                  </button>
+                </form>
+
+                {/* High-Visibility Pending Counter Orders Cards (1-Click Settle) */}
+                {orders.filter(o => o.status === 'pending_approval').length > 0 ? (
+                  <div className="pt-3 border-t border-stone-200/80 space-y-2">
+                    <span className="text-xs font-black uppercase tracking-wider text-amber-600 block">
+                      ⚡ Orders Currently Awaiting Payment (1-Click to Open & Settle):
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                      {orders.filter(o => o.status === 'pending_approval').map(pOrd => (
+                        <div
+                          key={pOrd.id}
+                          onClick={() => openCounterPaymentModal(pOrd)}
+                          className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all active:scale-98 shadow-md flex items-center justify-between gap-3 ${
+                            theme === 'light'
+                              ? 'bg-amber-50/90 border-amber-400 hover:bg-amber-100/90 text-stone-950'
+                              : 'bg-amber-950/80 border-amber-500 hover:bg-amber-900 text-white'
+                          }`}
+                        >
+                          <div className="space-y-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="bg-amber-500 text-stone-950 font-mono font-black text-sm px-2 py-0.5 rounded-lg shadow-xs">
+                                PIN #{pOrd.counterPin}
+                              </span>
+                              <span className="font-black text-xs">
+                                {pOrd.orderType === 'takeaway' ? '🛍️ Takeaway' : `Table #${pOrd.tableNumber}`}
+                              </span>
+                            </div>
+                            <p className="text-xs font-bold text-stone-600 truncate">
+                              Customer: {pOrd.customerName || 'Walk-in'} ({pOrd.items?.length || 0} items)
+                            </p>
+                          </div>
+
+                          <div className="text-right flex-shrink-0">
+                            <div className="text-base font-black font-mono text-amber-700">
+                              ${pOrd.totalAmount?.toFixed(2)} AUD
+                            </div>
+                            <span className="text-[10px] bg-stone-950 text-white font-black px-2 py-0.5 rounded-md inline-block mt-0.5">
+                              Sblocca ➔
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 ${
+                    theme === 'light' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : 'bg-emerald-950/40 border-emerald-800 text-emerald-300'
+                  }`}>
+                    <span>✓ All counter orders verified and printed. Cashier ready for next patron PIN.</span>
+                  </div>
+                )}
+              </div>
+
               {/* Summary Stats Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl space-y-1 shadow-lg">
-                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Gross Revenue ($AUD)</span>
-                  <div className="text-2xl font-black text-emerald-400 font-mono">${totalRevenue.toFixed(2)}</div>
-                  <div className="text-[10px] text-slate-400 flex justify-between pt-1 border-t border-slate-800/80 mt-2">
-                    <span className="text-emerald-400 font-bold">Includes ${(totalRevenue / 11).toFixed(2)} GST (10%)</span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                <div className={`p-4 sm:p-5 rounded-3xl space-y-1 shadow-md border ${
+                  theme === 'light' ? 'bg-white border-stone-200 text-stone-950' : 'bg-slate-900 border-slate-800 text-white'
+                }`}>
+                  <span className={`text-xs font-black uppercase tracking-wider ${theme === 'light' ? 'text-stone-600' : 'text-slate-400'}`}>Total Gross Revenue ($AUD)</span>
+                  <div className="text-2xl font-black text-emerald-600 font-mono">${totalRevenue.toFixed(2)}</div>
+                  <div className={`text-[11px] font-bold flex justify-between pt-1 border-t mt-2 ${theme === 'light' ? 'border-stone-200 text-stone-600' : 'border-slate-800 text-slate-400'}`}>
+                    <span className="text-emerald-600 font-black">Includes ${(totalRevenue / 11).toFixed(2)} GST (10%)</span>
                     <span>🍽️ Dine-in: ${orders.filter(o => o.orderType !== 'takeaway').reduce((s, o) => s + (o.paymentStatus === 'paid' ? o.totalAmount : 0), 0).toFixed(2)}</span>
                   </div>
                 </div>
@@ -4260,115 +4371,51 @@
                     const el = document.getElementById('orders-history-section-au');
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="bg-slate-900 border border-orange-500/40 hover:border-orange-500 p-5 rounded-3xl space-y-1 shadow-lg cursor-pointer transition-all hover:bg-slate-850 group relative overflow-hidden"
+                  className={`p-4 sm:p-5 rounded-3xl space-y-1 shadow-md border cursor-pointer transition-all hover:scale-[1.01] ${
+                    theme === 'light' ? 'bg-white border-amber-300 hover:border-amber-400 text-stone-950' : 'bg-slate-900 border-orange-500/40 hover:border-orange-500 text-white'
+                  }`}
                 >
-                  <span className="text-xs text-orange-400 font-black uppercase tracking-wider flex items-center justify-between">
+                  <span className="text-xs text-amber-600 font-black uppercase tracking-wider flex items-center justify-between">
                     <span>Total Orders Placed</span>
-                    <span className="text-[10px] bg-orange-500/20 text-orange-300 px-2 py-0.5 rounded-full">👉 Click to View List</span>
+                    <span className="text-[10px] bg-amber-500 text-stone-950 px-2 py-0.5 rounded-full font-black">👉 View All</span>
                   </span>
-                  <div className="text-3xl font-black text-white group-hover:scale-105 transition-transform flex items-center gap-2 font-mono">
-                    <span>{orders.length}</span>
-                    <span className="text-xs font-normal text-slate-400">orders logged</span>
+                  <div className="text-2xl font-black font-mono">
+                    <span>{orders.length}</span> <span className="text-xs font-normal text-stone-500">tickets</span>
                   </div>
-                  <div className="text-[10px] text-slate-400 pt-1">
-                    🟢 {orders.filter(o => o.status === 'delivered' || o.status === 'ready').length} completed • 🟡 {orders.filter(o => o.status === 'new' || o.status === 'preparing').length} in production
+                  <div className={`text-[11px] font-bold pt-1 ${theme === 'light' ? 'text-stone-600' : 'text-slate-400'}`}>
+                    🟢 {orders.filter(o => o.status === 'delivered' || o.status === 'ready').length} done • 🟡 {orders.filter(o => o.status === 'new' || o.status === 'preparing').length} in kitchen
                   </div>
                 </div>
 
-                <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl space-y-1 shadow-lg">
-                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Average Check</span>
-                  <div className="text-2xl font-black text-white font-mono">${orders.length > 0 ? (totalRevenue / orders.length).toFixed(2) : '0.00'}</div>
-                  <div className="text-[10px] text-slate-400 pt-1">
+                <div className={`p-4 sm:p-5 rounded-3xl space-y-1 shadow-md border ${
+                  theme === 'light' ? 'bg-white border-stone-200 text-stone-950' : 'bg-slate-900 border-slate-800 text-white'
+                }`}>
+                  <span className={`text-xs font-black uppercase tracking-wider ${theme === 'light' ? 'text-stone-600' : 'text-slate-400'}`}>Average Check</span>
+                  <div className={`text-2xl font-black font-mono ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
+                    ${orders.length > 0 ? (totalRevenue / orders.length).toFixed(2) : '0.00'}
+                  </div>
+                  <div className={`text-[11px] font-bold pt-1 ${theme === 'light' ? 'text-stone-600' : 'text-slate-400'}`}>
                     Across {orders.length} table & takeaway dockets
                   </div>
                 </div>
               </div>
 
               {/* Interactive Orders History Section */}
-              <div id="orders-history-section-au" className="bg-slate-900 border border-slate-800 rounded-3xl p-5 md:p-6 space-y-4 shadow-xl">
-                <div className="flex flex-wrap justify-between items-center gap-3 border-b border-slate-800 pb-3">
+              <div id="orders-history-section-au" className={`rounded-3xl p-4 sm:p-5 space-y-4 shadow-lg border ${
+                theme === 'light' ? 'bg-white border-stone-200 text-stone-950' : 'bg-slate-900 border-slate-800 text-white'
+              }`}>
+                <div className="flex flex-wrap justify-between items-center gap-3 border-b border-stone-200/80 pb-3">
                   <div>
-                    <h3 className="text-base font-black text-white flex items-center gap-2">
+                    <h3 className={`text-base font-black flex items-center gap-2 ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
                       <span>🧾 Complete Orders History & Tax Invoices</span>
-                      <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full font-mono font-bold">
+                      <span className="text-xs bg-amber-500 text-stone-950 px-2 py-0.5 rounded-full font-mono font-bold">
                         {orders.length} Orders
                       </span>
                     </h3>
-                    <p className="text-xs text-slate-400">
-                      Click any order to view the <strong>itemized bill with full prices, options, extras, GST (10%), card surcharges and printable tax receipt</strong>.
+                    <p className={`text-xs font-medium ${theme === 'light' ? 'text-stone-600' : 'text-slate-400'}`}>
+                      Click any order to view the itemized bill, options, GST (10%), card surcharges, and print tax receipts.
                     </p>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={exportCsvReport}
-                    className="bg-[#1c1815] hover:bg-[#28221e] border border-amber-500/60 text-amber-300 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-2 shadow transition-all active:scale-95 cursor-pointer"
-                    title="Export Sales & GST Breakdown CSV for ATO BAS & Accountant"
-                  >
-                    <span>📥</span>
-                    <span>Export BAS & GST Report (CSV)</span>
-                  </button>
-                </div>
-
-                {/* 🔢 Quick Cashier PIN Unlock Bar */}
-                <div className="bg-gradient-to-r from-amber-950/70 via-slate-950 to-amber-950/70 border-2 border-amber-500/60 p-4 rounded-2xl space-y-3 shadow-xl">
-                  <div className="flex flex-wrap justify-between items-center gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">🔢</span>
-                      <div>
-                        <h4 className="font-black text-amber-300 text-sm">Cashier 4-Digit PIN Unlock & Payment Confirmation</h4>
-                        <p className="text-[11px] text-slate-300">Enter customer 4-digit PIN code to review bill, confirm cash/EFTPOS payment, and release order to kitchen.</p>
-                      </div>
-                    </div>
-                    {orders.filter(o => o.status === 'pending_approval').length > 0 && (
-                      <span className="text-xs bg-amber-500 text-stone-950 font-black px-3 py-1 rounded-full animate-bounce shadow">
-                        {orders.filter(o => o.status === 'pending_approval').length} Order(s) Awaiting Payment
-                      </span>
-                    )}
-                  </div>
-
-                  <form onSubmit={handleVerifyPinSubmit} className="flex flex-wrap items-center gap-2 pt-1">
-                    <div className="relative flex-1 min-w-[200px] max-w-xs">
-                      <input
-                        type="text"
-                        maxLength="4"
-                        value={counterPinInput}
-                        onChange={(e) => setCounterPinInput(e.target.value.replace(/\D/g, ''))}
-                        placeholder="Enter 4-Digit PIN (e.g. 4829)"
-                        className="w-full bg-slate-900 border-2 border-amber-500/80 rounded-xl px-3.5 py-2 text-base font-mono font-black text-amber-300 tracking-widest placeholder:text-slate-600 focus:outline-none focus:border-amber-300"
-                      />
-                      <span className="absolute right-3 top-2.5 text-xs text-amber-400 font-bold">PIN</span>
-                    </div>
-                    <button
-                      type="submit"
-                      className="bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-stone-950 font-black text-xs px-5 py-2.5 rounded-xl shadow-lg flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
-                    >
-                      <span>🔓 Open & Verify Bill</span>
-                    </button>
-                  </form>
-
-                  {/* Pending Counter Orders Quick Chips */}
-                  {orders.filter(o => o.status === 'pending_approval').length > 0 && (
-                    <div className="pt-2 border-t border-amber-900/50 space-y-1.5">
-                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Orders Waiting at Counter (Click to open):</span>
-                      <div className="flex flex-wrap gap-2">
-                        {orders.filter(o => o.status === 'pending_approval').map(pOrd => (
-                          <button
-                            key={pOrd.id}
-                            type="button"
-                            onClick={() => openCounterPaymentModal(pOrd)}
-                            className="bg-amber-950 hover:bg-amber-900 border border-amber-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg transition-all active:scale-95"
-                          >
-                            <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-1.5 py-0.5 rounded font-mono">
-                              PIN #{pOrd.counterPin}
-                            </span>
-                            <span>{pOrd.orderType === 'takeaway' ? '🛍️ Takeaway' : `Table #${pOrd.tableNumber}`}</span>
-                            <span className="text-amber-300 font-mono font-black">${pOrd.totalAmount?.toFixed(2)} AUD</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Filter and Search Bar */}
@@ -4453,34 +4500,38 @@
                           <div
                             key={ord.id}
                             onClick={() => setSelectedOrderForDetail(ord)}
-                            className="bg-slate-950 hover:bg-slate-900/90 border border-slate-800 hover:border-orange-500/60 p-4 rounded-2xl transition-all cursor-pointer shadow-md group flex flex-col md:flex-row md:items-center justify-between gap-3"
+                            className={`p-4 rounded-2xl transition-all cursor-pointer shadow-md group flex flex-col md:flex-row md:items-center justify-between gap-3 border-2 ${
+                              theme === 'light'
+                                ? 'bg-white border-stone-200 hover:border-amber-400 text-stone-950'
+                                : 'bg-slate-950 hover:bg-slate-900 border-slate-800 hover:border-orange-500/60 text-white'
+                            }`}
                           >
                             <div className="flex items-start sm:items-center gap-3">
                               {/* Order Number Badge */}
-                              <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-mono font-black text-base px-3 py-2 rounded-xl shadow group-hover:scale-105 transition-transform flex-shrink-0 text-center min-w-[65px]">
+                              <div className="bg-stone-950 text-amber-400 border border-amber-500/50 font-mono font-black text-base px-3.5 py-2 rounded-xl shadow group-hover:scale-105 transition-transform flex-shrink-0 text-center min-w-[70px]">
                                 #{ord.orderNumber}
                               </div>
 
                               <div className="space-y-1">
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <span className="font-extrabold text-white text-sm">
+                                  <span className={`font-black text-sm ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
                                     {ord.customerName || 'Guest Patron'}
                                   </span>
 
                                   <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
                                     isHybrid
-                                      ? 'bg-purple-950 text-purple-300 border border-purple-800'
-                                      : (isTakeawayOnly ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-blue-950 text-blue-300 border border-blue-800')
+                                      ? (theme === 'light' ? 'bg-purple-100 text-purple-900 border border-purple-300' : 'bg-purple-950 text-purple-300 border border-purple-800')
+                                      : (isTakeawayOnly ? (theme === 'light' ? 'bg-emerald-100 text-emerald-950 border border-emerald-300' : 'bg-emerald-950 text-emerald-300 border border-emerald-800') : (theme === 'light' ? 'bg-blue-100 text-blue-950 border border-blue-300' : 'bg-blue-950 text-blue-300 border border-blue-800'))
                                   }`}>
                                     {isHybrid
                                       ? `🍽️ Table #${ord.tableNumber} + 🛍️ Takeaway`
                                       : (isTakeawayOnly ? '🛍️ Takeaway / Pickup' : `🍽️ Table #${ord.tableNumber}`)}
                                   </span>
 
-                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                    ord.status === 'pending_approval' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse' :
-                                    ord.status === 'delivered' ? 'bg-slate-800 text-slate-300' :
-                                    'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                                    ord.status === 'pending_approval' ? 'bg-amber-500 text-stone-950 animate-pulse' :
+                                    ord.status === 'delivered' ? (theme === 'light' ? 'bg-stone-100 text-stone-700 border border-stone-300' : 'bg-slate-800 text-slate-300') :
+                                    (theme === 'light' ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30')
                                   }`}>
                                     {ord.status === 'pending_approval' ? '⏳ Awaiting PIN' :
                                      ord.status === 'delivered' ? '✓ Completed' : '🖨️ Sent to Kitchen'}
@@ -4488,34 +4539,32 @@
                                 </div>
 
                                 {/* Items Summary Snippet */}
-                                <p className="text-xs text-slate-400 line-clamp-1">
-                                  <strong className="text-slate-300">{totalDishes} items:</strong> {ord.items?.map(it => `${it.quantity}x ${it.name}`).join(', ')}
+                                <p className={`text-xs line-clamp-1 font-medium ${theme === 'light' ? 'text-stone-700' : 'text-slate-400'}`}>
+                                  <strong className={theme === 'light' ? 'text-stone-950 font-black' : 'text-slate-200'}>{totalDishes} items:</strong> {ord.items?.map(it => `${it.quantity}x ${it.name}`).join(', ')}
                                 </p>
                               </div>
                             </div>
 
-                            <div className="flex items-center justify-between md:justify-end gap-4 border-t md:border-t-0 pt-2 md:pt-0 border-slate-800/80">
+                            <div className={`flex items-center justify-between md:justify-end gap-4 border-t md:border-t-0 pt-2 md:pt-0 ${theme === 'light' ? 'border-stone-200' : 'border-slate-800/80'}`}>
                               <div className="text-left md:text-right">
-                                <div className="text-base font-black text-orange-400 font-mono">
+                                <div className={`text-base font-black font-mono ${theme === 'light' ? 'text-amber-800' : 'text-orange-400'}`}>
                                   ${finalTotal.toFixed(2)} AUD
                                 </div>
-                                <div className="text-[10px] text-slate-400 flex items-center gap-1 md:justify-end">
+                                <div className={`text-[10px] font-bold flex items-center gap-1 md:justify-end ${theme === 'light' ? 'text-stone-600' : 'text-slate-400'}`}>
                                   <span>
                                     {ord.paymentMethod === 'apple_pay'
                                       ? ' Apple Pay'
                                       : ord.paymentMethod === 'credit_card'
-                                      ? '💳 Stripe Card'
+                                      ? '💳 Card'
                                       : ord.paymentMethod === 'counter_cash'
-                                      ? '💵 Counter Cash'
+                                      ? '💵 Cash'
                                       : ord.paymentMethod === 'counter_eftpos'
-                                      ? '💳 Counter EFTPOS'
-                                      : '💵 Bar Counter'}
+                                      ? '💳 EFTPOS'
+                                      : '💵 Counter'}
                                   </span>
                                   <span>•</span>
-                                  <span className={`font-bold ${ord.paymentStatus === 'paid' ? 'text-emerald-400' : 'text-amber-400'}`}>
-                                    {ord.paymentStatus === 'paid'
-                                      ? (ord.paymentMethod === 'counter' || ord.paymentMethod === 'counter_cash' || ord.paymentMethod === 'counter_eftpos' ? 'Paid at Counter' : 'Paid Online')
-                                      : 'Pending'}
+                                  <span className={`font-black ${ord.paymentStatus === 'paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                    {ord.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
                                   </span>
                                 </div>
                               </div>
@@ -4525,7 +4574,11 @@
                                   e.stopPropagation();
                                   setSelectedOrderForDetail(ord);
                                 }}
-                                className="bg-slate-800 hover:bg-orange-500 text-white font-black text-xs px-3.5 py-2 rounded-xl border border-slate-700 hover:border-orange-400 transition-all flex items-center gap-1 shadow whitespace-nowrap"
+                                className={`font-black text-xs px-3.5 py-2 rounded-xl transition-all flex items-center gap-1 shadow-sm whitespace-nowrap border-2 cursor-pointer ${
+                                  theme === 'light'
+                                    ? 'bg-stone-100 hover:bg-amber-500 text-stone-900 hover:text-stone-950 border-stone-300 hover:border-amber-400'
+                                    : 'bg-slate-800 hover:bg-orange-500 text-white border-slate-700 hover:border-orange-400'
+                                }`}
                               >
                                 <span>👁️ View Bill</span>
                               </button>
