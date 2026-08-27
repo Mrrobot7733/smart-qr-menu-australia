@@ -4110,6 +4110,9 @@
       const [qrUrl, setQrUrl] = useState('');
       const [editingItem, setEditingItem] = useState(null);
       const [isAddingNew, setIsAddingNew] = useState(false);
+      const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+      const [bulkImportText, setBulkImportText] = useState('');
+      const [bulkImportMode, setBulkImportMode] = useState('csv');
       const [searchTerm, setSearchTerm] = useState('');
       const [categoryFilter, setCategoryFilter] = useState('all');
       const [selectedOrderForDetail, setSelectedOrderForDetail] = useState(null);
@@ -4527,6 +4530,126 @@
         setTableFormSeats(table.seats || 4);
       };
 
+      const handleExportCsvTemplate = () => {
+        const headers = ["Name", "Category", "Price", "Description", "ImageURL", "GlutenFree", "Vegetarian", "Station"];
+        const sampleRows = [
+          ["Truffle & Parmesan Fries", "Bites & Starters", "14.50", "Crispy shoestring fries with truffle oil and shaved parmesan", "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=800&q=80", "true", "true", "kitchen"],
+          ["Angus Ribeye Steak 300g", "Pub Classics & Steaks", "42.00", "Grain-fed beef ribeye with rosemary chat potatoes and red wine jus", "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80", "true", "false", "kitchen"],
+          ["Espresso Martini", "Cocktails & WA Wines", "22.00", "Vodka, Kahlua, fresh espresso shot, coffee beans", "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=800&q=80", "false", "true", "bar"]
+        ];
+
+        const csvContent = "data:text/csv;charset=utf-8,"
+          + [headers.join(","), ...sampleRows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(","))].join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `smartmenu_template_${venueId || 'menu'}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        if (showToast) showToast("✓ Downloaded CSV Menu Template!");
+      };
+
+      const handleProcessBulkImport = () => {
+        const raw = (bulkImportText || '').trim();
+        if (!raw) {
+          if (showToast) showToast("⚠️ Please paste CSV or upload a file first");
+          return;
+        }
+
+        try {
+          let newDishes = [];
+          if (bulkImportMode === 'json' || raw.startsWith('[]'.slice(0, 1))) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              newDishes = parsed.map((it, idx) => ({
+                id: it.id || `bulk-${Date.now()}-${idx}`,
+                categoryId: it.categoryId || 'bites',
+                name: it.name || `Dish #${idx + 1}`,
+                description: it.description || '',
+                price: parseFloat(it.price) || 15.00,
+                image: it.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+                station: it.station || 'kitchen',
+                isAvailable: it.isAvailable !== false,
+                isVisible: it.isVisible !== false,
+                isGF: !!it.isGF,
+                isVegetarian: !!it.isVegetarian,
+                options: it.options || [],
+                extras: it.extras || []
+              }));
+            }
+          } else {
+            const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
+            if (lines.length <= 1) {
+              if (showToast) showToast("⚠️ CSV has no data rows");
+              return;
+            }
+
+            const headerLine = lines[0];
+            const delimiter = headerLine.includes(';') ? ';' : ',';
+            const dataRows = lines.slice(1);
+
+            newDishes = dataRows.map((line, idx) => {
+              let matches = [];
+              if (delimiter === ';') {
+                matches = line.split(';').map(c => c.replace(/^"|"$/g, '').trim());
+              } else {
+                matches = line.split(',').map(c => c.replace(/^"|"$/g, '').trim());
+              }
+
+              const [name, catName, priceStr, desc, img, gfStr, vegStr, stationStr] = matches;
+              if (!name || !name.trim()) return null;
+
+              let matchedCat = categories.find(c => c.name.toLowerCase() === (catName || '').toLowerCase() || c.id === catName);
+              const catId = matchedCat ? matchedCat.id : (categories[0]?.id || 'bites');
+
+              const price = parseFloat((priceStr || '').replace(/[^\d.]/g, '')) || 15.00;
+              const isGF = String(gfStr).toLowerCase() === 'true' || String(gfStr).toLowerCase() === 'yes';
+              const isVeg = String(vegStr).toLowerCase() === 'true' || String(vegStr).toLowerCase() === 'yes';
+              const station = (stationStr || '').toLowerCase().includes('bar') ? 'bar' : 'kitchen';
+
+              return {
+                id: `imp-${Date.now()}-${idx}`,
+                categoryId: catId,
+                name: name.trim(),
+                description: desc ? desc.trim() : '',
+                price: Number(price.toFixed(2)),
+                image: img && img.startsWith('http') ? img.trim() : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+                station: station,
+                isAvailable: true,
+                isVisible: true,
+                isGF: isGF,
+                isVegetarian: isVeg,
+                options: [],
+                extras: []
+              };
+            }).filter(Boolean);
+          }
+
+          if (newDishes.length > 0) {
+            setItems(prev => [...newDishes, ...prev]);
+            setIsBulkImportOpen(false);
+            setBulkImportText('');
+            if (showToast) showToast(`✓ Successfully imported ${newDishes.length} dishes into the menu!`);
+          } else {
+            if (showToast) showToast("⚠️ No valid dishes found in data");
+          }
+        } catch (err) {
+          if (showToast) showToast(`❌ Import error: ${err.message}`);
+        }
+      };
+
+      const handleFileUploadBulk = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setBulkImportText(event.target.result || '');
+        };
+        reader.readAsText(file);
+      };
+
       const handleSaveTable = (e) => {
         e.preventDefault();
         const finalArea = tableFormArea === 'other' && tableFormCustomArea.trim() ? tableFormCustomArea.trim() : tableFormArea;
@@ -4789,6 +4912,53 @@
           {/* View: Menu & Price Editor */}
           {tab === 'menu' && (
             <div className="space-y-4">
+              {/* Bulk Menu Actions Bar */}
+              <div className={`p-4 rounded-3xl border-2 flex flex-wrap justify-between items-center gap-3 shadow-md ${
+                theme === 'light' ? 'bg-white border-stone-300 text-stone-950' : 'bg-slate-900 border-slate-800 text-white'
+              }`}>
+                <div>
+                  <h3 className="text-base font-black flex items-center gap-2">
+                    <span>📋 Live Menu Management</span>
+                    <span className="text-xs bg-amber-500 text-stone-950 px-2.5 py-0.5 rounded-full font-bold">
+                      {items.length} Dishes & Drinks
+                    </span>
+                  </h3>
+                  <p className={`text-xs ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>
+                    Add individual items, edit prices in real-time, or bulk import hundreds of dishes via CSV, Excel, or Square POS
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={openAddModal}
+                    className="bg-gradient-to-r from-orange-500 to-amber-500 hover:brightness-110 text-white font-extrabold px-3.5 py-2 rounded-xl text-xs shadow transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <span>➕ Add Single Dish</span>
+                  </button>
+                  <button
+                    onClick={() => setIsBulkImportOpen(true)}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-3.5 py-2 rounded-xl text-xs shadow transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>📥 Bulk Import (CSV / Excel)</span>
+                  </button>
+                  <button
+                    onClick={handleExportCsvTemplate}
+                    className={`font-bold px-3 py-2 rounded-xl text-xs border transition-all cursor-pointer flex items-center gap-1 ${
+                      theme === 'light' ? 'bg-stone-100 hover:bg-stone-200 text-stone-800 border-stone-300' : 'bg-slate-800 hover:bg-slate-700 text-stone-300 border-slate-700'
+                    }`}
+                    title="Download Excel / CSV format template"
+                  >
+                    <span>📄 CSV Template</span>
+                  </button>
+                  <button
+                    onClick={() => setTab('pos')}
+                    className="bg-stone-900 hover:bg-black text-amber-400 font-bold px-3 py-2 rounded-xl text-xs border border-stone-700 shadow-sm transition-all cursor-pointer flex items-center gap-1"
+                    title="Sync catalog directly from Square POS"
+                  >
+                    <span>⬛ Sync from Square</span>
+                  </button>
+                </div>
+              </div>
               {/* Search & Category Filter */}
               <div className="bg-slate-900/60 p-3 rounded-2xl border border-slate-800 flex flex-wrap justify-between items-center gap-3">
                 <input
@@ -6315,6 +6485,122 @@
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Bulk Menu Import (CSV / Excel / JSON) */}
+          {isBulkImportOpen && (
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto no-print">
+              <div className={`border-2 rounded-3xl p-5 md:p-6 w-full max-w-2xl space-y-4 shadow-2xl animate-in fade-in zoom-in duration-150 font-sans ${
+                theme === 'light' ? 'bg-white border-stone-300 text-stone-950' : 'bg-slate-900 border-slate-700 text-white'
+              }`}>
+                <div className="flex justify-between items-center border-b pb-3 border-stone-200 dark:border-slate-800">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-2xl p-2 rounded-2xl bg-emerald-500/20 text-emerald-600 border border-emerald-500/30">📥</span>
+                    <div>
+                      <h3 className="font-extrabold text-base flex items-center gap-2">
+                        <span>Bulk Import Menu (CSV / Excel / JSON)</span>
+                      </h3>
+                      <p className={`text-xs ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>
+                        Import dozens or hundreds of dishes simultaneously in 1 second
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsBulkImportOpen(false)}
+                    className="w-8 h-8 rounded-full bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 dark:hover:bg-slate-700 text-stone-600 dark:text-stone-300 flex items-center justify-center font-bold text-xs cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="space-y-3.5 text-xs">
+                  {/* Mode Selector & Quick File Upload */}
+                  <div className="flex flex-wrap justify-between items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setBulkImportMode('csv')}
+                        className={`px-3 py-1.5 rounded-xl font-bold border transition-all cursor-pointer ${
+                          bulkImportMode === 'csv'
+                            ? 'bg-emerald-500 text-stone-950 border-emerald-400 font-black shadow-sm'
+                            : (theme === 'light' ? 'bg-stone-100 text-stone-700 border-stone-300' : 'bg-slate-950 text-stone-400 border-slate-800')
+                        }`}
+                      >
+                        📄 CSV / Excel Format
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBulkImportMode('json')}
+                        className={`px-3 py-1.5 rounded-xl font-bold border transition-all cursor-pointer ${
+                          bulkImportMode === 'json'
+                            ? 'bg-emerald-500 text-stone-950 border-emerald-400 font-black shadow-sm'
+                            : (theme === 'light' ? 'bg-stone-100 text-stone-700 border-stone-300' : 'bg-slate-950 text-stone-400 border-slate-800')
+                        }`}
+                      >
+                        {`{ } JSON Format`}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="cursor-pointer bg-stone-900 hover:bg-stone-800 text-white font-bold px-3 py-1.5 rounded-xl border border-stone-700 inline-flex items-center gap-1.5 shadow-sm">
+                        <span>📁 Upload .CSV / .JSON File</span>
+                        <input type="file" accept=".csv,.txt,.json" onChange={handleFileUploadBulk} className="hidden" />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleExportCsvTemplate}
+                        className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+                      >
+                        Download Template
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Textarea for Paste */}
+                  <div>
+                    <label className={`font-bold block mb-1 ${theme === 'light' ? 'text-stone-700' : 'text-stone-300'}`}>
+                      Paste your CSV data or text below:
+                    </label>
+                    <textarea
+                      rows="8"
+                      value={bulkImportText}
+                      onChange={(e) => setBulkImportText(e.target.value)}
+                      placeholder={`Name,Category,Price,Description,ImageURL,GlutenFree,Vegetarian,Station\nAngus Beef Burger,Burgers & Sandwiches,24.00,Grass fed beef with cheddar and aioli,,false,false,kitchen\nMargherita Pizza,Woodfired Pizzas,22.00,San Marzano tomatoes fior di latte basil,,false,true,kitchen\nStone & Wood Pacific Ale,Craft Beers on Tap,12.50,Fresh draft pint from Byron Bay,,false,false,bar`}
+                      className={`w-full font-mono text-xs p-3 rounded-2xl border focus:outline-none focus:border-emerald-500 transition-colors ${
+                        theme === 'light' ? 'bg-stone-50 border-stone-300 text-stone-900' : 'bg-slate-950 border-slate-800 text-emerald-300'
+                      }`}
+                    />
+                    <p className={`text-[10px] mt-1 ${theme === 'light' ? 'text-stone-500' : 'text-stone-400'}`}>
+                      Columns: <code>Name, Category, Price, Description, ImageURL, GlutenFree, Vegetarian, Station</code> (comma or semicolon separated)
+                    </p>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-3 border-t border-stone-200 dark:border-slate-800">
+                    <span className="text-[11px] font-bold text-stone-400">
+                      {bulkImportText.trim() ? `${bulkImportText.trim().split('\n').length - 1} rows detected` : 'No data pasted yet'}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsBulkImportOpen(false)}
+                        className={`px-4 py-2 rounded-xl font-bold cursor-pointer ${
+                          theme === 'light' ? 'bg-stone-100 hover:bg-stone-200 text-stone-700' : 'bg-slate-800 hover:bg-slate-700 text-stone-300'
+                        }`}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleProcessBulkImport}
+                        className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 font-extrabold text-white shadow-lg cursor-pointer transition-all active:scale-95"
+                      >
+                        ⚡ Import Dishes to Menu
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
