@@ -4710,16 +4710,29 @@
       // --- Manager PIN Lock Screen ---
       if (!isAdminAuthenticated) {
         return (
-          <div className="min-h-screen bg-gradient-to-br from-stone-950 via-[#15110e] to-stone-950 text-white flex flex-col items-center justify-center p-4 font-sans selection:bg-amber-500">
-            <div className="w-full max-w-sm bg-[#1c1713] border-2 border-amber-500/70 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl text-center animate-in fade-in zoom-in duration-200">
-              <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-500 to-orange-600 text-stone-950 font-black text-3xl flex items-center justify-center mx-auto shadow-xl border border-amber-400">
+          <div className={`min-h-screen flex flex-col items-center justify-center p-4 font-sans selection:bg-amber-500 transition-colors ${
+            theme === 'light' ? 'bg-[#f4efe6] text-stone-950' : 'bg-stone-950 text-white'
+          }`}>
+            <div className={`w-full max-w-sm border-2 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl text-center animate-in fade-in zoom-in duration-200 ${
+              theme === 'light' ? 'bg-white border-amber-400 shadow-stone-900/10' : 'bg-[#1a1511] border-amber-500/70 shadow-black'
+            }`}>
+              <div className="w-16 h-16 rounded-3xl bg-amber-500 text-stone-950 font-black text-3xl flex items-center justify-center mx-auto shadow-xl border-2 border-amber-400">
                 💼
               </div>
 
               <div>
-                <h2 className="text-lg font-black tracking-tight text-white">{restaurant.name}</h2>
-                <p className="text-xs text-amber-400 font-bold mt-0.5">Manager & Cashier Admin Portal</p>
-                <p className="text-[11px] text-stone-400 mt-2">Enter your 6-digit Manager PIN to access settings, menu & sales:</p>
+                <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-amber-500 text-stone-950 inline-block mb-1 shadow-xs">
+                  VENUE MANAGEMENT
+                </span>
+                <h2 className={`text-lg font-black tracking-tight ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
+                  {restaurant.name}
+                </h2>
+                <p className={`text-xs font-bold mt-0.5 ${theme === 'light' ? 'text-amber-800' : 'text-amber-400'}`}>
+                  Manager & Cashier Admin Portal
+                </p>
+                <p className={`text-[11px] font-medium mt-2 ${theme === 'light' ? 'text-stone-600' : 'text-stone-300'}`}>
+                  Enter your 6-digit Manager PIN to access settings, menu & sales:
+                </p>
               </div>
 
               {/* 6 Digit PIN Circles */}
@@ -4732,7 +4745,7 @@
                         ? 'bg-red-500 border-red-400 animate-bounce'
                         : (adminPinInput.length > idx
                             ? 'bg-amber-500 border-amber-400 scale-110 shadow-sm shadow-amber-500/50'
-                            : 'bg-stone-900 border-stone-700')
+                            : (theme === 'light' ? 'bg-stone-100 border-stone-300' : 'bg-stone-900 border-stone-700'))
                     }`}
                   />
                 ))}
@@ -4745,7 +4758,11 @@
                     key={digit}
                     type="button"
                     onClick={() => handleAdminPinKeyPress(digit)}
-                    className="h-14 rounded-2xl bg-stone-900/90 hover:bg-stone-800 border border-stone-800 text-xl font-black text-white hover:text-amber-400 active:scale-95 transition-all cursor-pointer shadow-sm"
+                    className={`h-14 rounded-2xl border text-xl font-black active:scale-95 transition-all cursor-pointer shadow-sm ${
+                      theme === 'light'
+                        ? 'bg-stone-50 hover:bg-amber-100 border-stone-300 text-stone-950 hover:border-amber-400'
+                        : 'bg-stone-900/90 hover:bg-stone-800 border-stone-700 text-white hover:text-amber-400'
+                    }`}
                   >
                     {digit}
                   </button>
@@ -4753,30 +4770,48 @@
                 <button
                   type="button"
                   onClick={() => setAdminPinInput('')}
-                  className="h-14 rounded-2xl bg-stone-900/40 hover:bg-stone-800 text-xs font-bold text-stone-400 hover:text-white active:scale-95 transition-all cursor-pointer"
+                  className={`h-14 rounded-2xl text-xs font-bold active:scale-95 transition-all cursor-pointer ${
+                    theme === 'light' ? 'bg-stone-100 hover:bg-stone-200 text-stone-700' : 'bg-stone-900/40 hover:bg-stone-800 text-stone-400 hover:text-white'
+                  }`}
                 >
                   Clear
                 </button>
                 <button
                   type="button"
                   onClick={() => handleAdminPinKeyPress('0')}
-                  className="h-14 rounded-2xl bg-stone-900/90 hover:bg-stone-800 border border-stone-800 text-xl font-black text-white hover:text-amber-400 active:scale-95 transition-all cursor-pointer shadow-sm"
+                  className={`h-14 rounded-2xl border text-xl font-black active:scale-95 transition-all cursor-pointer shadow-sm ${
+                    theme === 'light'
+                      ? 'bg-stone-50 hover:bg-amber-100 border-stone-300 text-stone-950 hover:border-amber-400'
+                      : 'bg-stone-900/90 hover:bg-stone-800 border-stone-700 text-white hover:text-amber-400'
+                  }`}
                 >
                   0
                 </button>
                 <button
                   type="button"
                   onClick={handleAdminPinBackspace}
-                  className="h-14 rounded-2xl bg-stone-900/40 hover:bg-stone-800 text-base font-bold text-amber-500 hover:text-amber-400 active:scale-95 transition-all cursor-pointer"
+                  className={`h-14 rounded-2xl text-base font-bold active:scale-95 transition-all cursor-pointer ${
+                    theme === 'light' ? 'bg-stone-100 hover:bg-stone-200 text-amber-900' : 'bg-stone-900/40 hover:bg-stone-800 text-amber-400'
+                  }`}
                 >
                   ⌫
                 </button>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 flex justify-between items-center text-xs">
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className={`font-bold px-2.5 py-1 rounded-lg border text-[11px] cursor-pointer ${
+                    theme === 'light' ? 'bg-stone-100 text-stone-800 border-stone-300' : 'bg-stone-800 text-amber-300 border-stone-700'
+                  }`}
+                >
+                  {theme === 'light' ? '☀️ Light' : '🌙 Dark'}
+                </button>
+
                 <a
                   href={`/menu/?venue=${encodeURIComponent(venueId || 'sydney-bistro')}&table=1`}
-                  className="text-[11px] text-stone-400 hover:text-amber-400 underline transition-colors"
+                  className={`text-[11px] underline font-medium ${theme === 'light' ? 'text-stone-600 hover:text-black' : 'text-stone-400 hover:text-amber-400'}`}
                 >
                   ← Return to Customer Menu
                 </a>
@@ -7716,19 +7751,34 @@
       const totalMrr = venues.reduce((s, v) => s + (v.planPrice || 149), 0);
       const totalTables = venues.reduce((s, v) => s + (v.tableCount || 12), 0);
 
+      const isLight = theme === 'light';
+
       // --- 1. Master PIN Lock Screen ---
       if (!isMasterAuthenticated) {
         return (
-          <div className="min-h-screen bg-gradient-to-br from-stone-950 via-[#16120e] to-stone-950 text-white flex flex-col items-center justify-center p-4 font-sans selection:bg-amber-500">
-            <div className="w-full max-w-sm bg-[#1e1914] border-2 border-amber-500/70 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl text-center animate-in fade-in zoom-in duration-200">
-              <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-500 to-orange-600 text-stone-950 font-black text-3xl flex items-center justify-center mx-auto shadow-xl border border-amber-400">
+          <div className={`min-h-screen flex flex-col items-center justify-center p-4 font-sans selection:bg-amber-500 transition-colors ${
+            isLight ? 'bg-[#f4efe6] text-stone-950' : 'bg-stone-950 text-white'
+          }`}>
+            <div className={`w-full max-w-sm border-2 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl text-center animate-in fade-in zoom-in duration-200 ${
+              isLight ? 'bg-white border-amber-400 shadow-stone-900/10' : 'bg-[#1a1511] border-amber-500/70 shadow-black'
+            }`}>
+              <div className="w-16 h-16 rounded-3xl bg-amber-500 text-stone-950 font-black text-3xl flex items-center justify-center mx-auto shadow-xl border-2 border-amber-400">
                 👑
               </div>
 
               <div>
-                <h2 className="text-xl font-black tracking-tight text-white">SmartMenu Master Portal</h2>
-                <p className="text-xs text-amber-400/90 font-bold mt-1">Platform Headquarters • Restricted Access</p>
-                <p className="text-[11px] text-stone-400 mt-2">Enter your 6-digit Master PIN to unlock command center:</p>
+                <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-amber-500 text-stone-950 inline-block mb-1 shadow-xs">
+                  RESTRICTED HEADQUARTERS
+                </span>
+                <h2 className={`text-xl font-black tracking-tight ${isLight ? 'text-stone-950' : 'text-white'}`}>
+                  SmartMenu Master Portal
+                </h2>
+                <p className={`text-xs font-bold mt-1 ${isLight ? 'text-amber-800' : 'text-amber-400'}`}>
+                  Platform Master Command Center
+                </p>
+                <p className={`text-[11px] font-medium mt-2 ${isLight ? 'text-stone-600' : 'text-stone-300'}`}>
+                  Enter your 6-digit Master PIN to unlock:
+                </p>
               </div>
 
               {/* 6 Digit PIN Circles */}
@@ -7741,7 +7791,7 @@
                         ? 'bg-red-500 border-red-400 animate-bounce'
                         : (masterPinInput.length > idx
                             ? 'bg-amber-500 border-amber-400 scale-110 shadow-sm shadow-amber-500/50'
-                            : 'bg-stone-900 border-stone-700')
+                            : (isLight ? 'bg-stone-100 border-stone-300' : 'bg-stone-900 border-stone-700'))
                     }`}
                   />
                 ))}
@@ -7754,7 +7804,11 @@
                     key={digit}
                     type="button"
                     onClick={() => handlePinKeyPress(digit)}
-                    className="h-14 rounded-2xl bg-stone-900/90 hover:bg-stone-800 border border-stone-800 text-xl font-black text-white hover:text-amber-400 active:scale-95 transition-all cursor-pointer shadow-sm"
+                    className={`h-14 rounded-2xl border text-xl font-black active:scale-95 transition-all cursor-pointer shadow-sm ${
+                      isLight
+                        ? 'bg-stone-50 hover:bg-amber-100 border-stone-300 text-stone-950 hover:border-amber-400'
+                        : 'bg-stone-900/90 hover:bg-stone-800 border-stone-700 text-white hover:text-amber-400'
+                    }`}
                   >
                     {digit}
                   </button>
@@ -7762,32 +7816,50 @@
                 <button
                   type="button"
                   onClick={() => setMasterPinInput('')}
-                  className="h-14 rounded-2xl bg-stone-900/40 hover:bg-stone-800 text-xs font-bold text-stone-400 hover:text-white active:scale-95 transition-all cursor-pointer"
+                  className={`h-14 rounded-2xl text-xs font-bold active:scale-95 transition-all cursor-pointer ${
+                    isLight ? 'bg-stone-100 hover:bg-stone-200 text-stone-700' : 'bg-stone-900/40 hover:bg-stone-800 text-stone-400 hover:text-white'
+                  }`}
                 >
                   Clear
                 </button>
                 <button
                   type="button"
                   onClick={() => handlePinKeyPress('0')}
-                  className="h-14 rounded-2xl bg-stone-900/90 hover:bg-stone-800 border border-stone-800 text-xl font-black text-white hover:text-amber-400 active:scale-95 transition-all cursor-pointer shadow-sm"
+                  className={`h-14 rounded-2xl border text-xl font-black active:scale-95 transition-all cursor-pointer shadow-sm ${
+                    isLight
+                      ? 'bg-stone-50 hover:bg-amber-100 border-stone-300 text-stone-950 hover:border-amber-400'
+                      : 'bg-stone-900/90 hover:bg-stone-800 border-stone-700 text-white hover:text-amber-400'
+                  }`}
                 >
                   0
                 </button>
                 <button
                   type="button"
                   onClick={handlePinBackspace}
-                  className="h-14 rounded-2xl bg-stone-900/40 hover:bg-stone-800 text-base font-bold text-amber-500 hover:text-amber-400 active:scale-95 transition-all cursor-pointer"
+                  className={`h-14 rounded-2xl text-base font-bold active:scale-95 transition-all cursor-pointer ${
+                    isLight ? 'bg-stone-100 hover:bg-stone-200 text-amber-900' : 'bg-stone-900/40 hover:bg-stone-800 text-amber-400'
+                  }`}
                 >
                   ⌫
                 </button>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 flex justify-between items-center text-xs">
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className={`font-bold px-2.5 py-1 rounded-lg border text-[11px] cursor-pointer ${
+                    isLight ? 'bg-stone-100 text-stone-800 border-stone-300' : 'bg-stone-800 text-amber-300 border-stone-700'
+                  }`}
+                >
+                  {isLight ? '☀️ Light' : '🌙 Dark'}
+                </button>
+
                 <a
                   href="/menu/?venue=sydney-bistro&table=1"
-                  className="text-[11px] text-stone-400 hover:text-amber-400 underline transition-colors"
+                  className={`text-[11px] underline font-medium ${isLight ? 'text-stone-600 hover:text-black' : 'text-stone-400 hover:text-amber-400'}`}
                 >
-                  ← Return to Customer Menu
+                  ← Customer Menu
                 </a>
               </div>
             </div>
@@ -7795,40 +7867,70 @@
         );
       }
 
-      // --- 2. Master Dashboard Main View ---
+      // --- 2. Master Dashboard Main View (Ultra-High-Contrast Theme-Aware) ---
       return (
-        <div className="min-h-screen bg-[#0e0c0a] text-stone-100 p-4 md:p-8 space-y-6 max-w-7xl mx-auto font-sans">
-          {/* Master Top Header Banner */}
-          <div className="p-6 rounded-3xl border-2 shadow-2xl flex flex-wrap justify-between items-center gap-4 bg-gradient-to-r from-amber-950/80 via-slate-900 to-amber-950/80 border-amber-500/70 text-white">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2.5">
-                <span className="text-3xl p-2.5 rounded-2xl bg-amber-500 text-stone-950 font-black shadow-md">👑</span>
-                <div>
-                  <h1 className="text-xl md:text-2xl font-black tracking-tight flex items-center gap-2">
-                    <span>SmartMenu Australia Master Portal</span>
-                    <span className="text-[10px] bg-amber-500 text-stone-950 font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+        <div className={`min-h-screen p-4 md:p-8 space-y-6 max-w-7xl mx-auto font-sans transition-colors ${
+          isLight ? 'bg-[#f8f6f2] text-stone-950' : 'bg-[#0e0c0a] text-stone-100'
+        }`}>
+          {/* Master Top Header Banner (High Contrast) */}
+          <div className={`p-6 rounded-3xl border-2 shadow-2xl flex flex-wrap justify-between items-center gap-4 transition-all ${
+            isLight
+              ? 'bg-gradient-to-r from-amber-100 via-orange-50 to-amber-100 border-amber-400 text-stone-950 shadow-amber-900/10'
+              : 'bg-gradient-to-r from-[#211710] via-[#1c1611] to-[#211710] border-amber-500/70 text-white shadow-2xl'
+          }`}>
+            <div className="space-y-1.5 min-w-0">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl p-2.5 rounded-2xl bg-amber-500 text-stone-950 font-black shadow-md border border-amber-400 flex-shrink-0">
+                  👑
+                </span>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1 className={`text-xl md:text-2xl font-black tracking-tight ${isLight ? 'text-stone-950' : 'text-white'}`}>
+                      SmartMenu Australia Master Portal
+                    </h1>
+                    <span className="text-[10px] bg-stone-950 text-amber-300 font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-amber-400/50 shadow-xs">
                       SUPER ADMIN HQ
                     </span>
-                  </h1>
-                  <p className="text-xs text-stone-300 font-bold">
-                    Master Command Center • Controlled by Marco Panichi
+                  </div>
+                  <p className={`text-xs font-bold mt-0.5 ${isLight ? 'text-stone-700' : 'text-stone-300'}`}>
+                    Agency & Multi-Venue Control Center • <strong className={isLight ? 'text-stone-950' : 'text-amber-300'}>Marco Panichi</strong>
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5">
+              {/* Theme Toggle */}
               <button
-                onClick={() => setIsCreateOpen(true)}
-                className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-stone-950 font-black px-5 py-3 rounded-2xl text-xs shadow-xl flex items-center gap-2 transition-all active:scale-95 cursor-pointer border-2 border-amber-300"
+                type="button"
+                onClick={toggleTheme}
+                className={`px-3.5 py-2.5 rounded-2xl text-xs font-black transition-all shadow-sm border cursor-pointer active:scale-95 ${
+                  isLight
+                    ? 'bg-white hover:bg-stone-100 text-stone-900 border-stone-300'
+                    : 'bg-stone-800 hover:bg-stone-700 text-amber-300 border-stone-700'
+                }`}
+                title="Toggle Light/Dark Theme"
               >
-                <span className="text-base">➕</span>
-                <span>ONBOARD NEW CLIENT VENUE</span>
+                <span>{isLight ? '☀️ Light' : '🌙 Dark'}</span>
               </button>
 
               <button
+                type="button"
+                onClick={() => setIsCreateOpen(true)}
+                className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-stone-950 font-black px-5 py-2.5 rounded-2xl text-xs shadow-xl flex items-center gap-2 transition-all active:scale-95 cursor-pointer border-2 border-amber-300"
+              >
+                <span className="text-base">➕</span>
+                <span>ONBOARD NEW VENUE</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={handleMasterLogout}
-                className="bg-stone-800 hover:bg-rose-950 hover:text-rose-300 text-stone-300 font-bold px-3.5 py-3 rounded-2xl text-xs border border-stone-700 transition-all cursor-pointer"
+                className={`font-bold px-3.5 py-2.5 rounded-2xl text-xs border transition-all cursor-pointer ${
+                  isLight
+                    ? 'bg-white hover:bg-red-50 text-stone-700 hover:text-red-700 border-stone-300'
+                    : 'bg-stone-800 hover:bg-rose-950 hover:text-rose-300 text-stone-300 border-stone-700'
+                }`}
                 title="Lock Master Portal Session"
               >
                 <span>🔒 Lock Session</span>
@@ -7836,33 +7938,59 @@
             </div>
           </div>
 
-          {/* Master KPI Stats Grid */}
+          {/* Master KPI Stats Grid (Crystal Clear High Contrast) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-3xl border-2 space-y-1 shadow-md bg-slate-900 border-slate-800 text-white">
-              <span className="text-xs font-black uppercase tracking-wider text-stone-400">Active Client Venues</span>
+            <div className={`p-5 rounded-3xl border-2 space-y-1 shadow-md transition-all ${
+              isLight ? 'bg-white border-stone-300 text-stone-950' : 'bg-[#181411] border-stone-800 text-white'
+            }`}>
+              <span className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-stone-600' : 'text-stone-400'}`}>
+                Active Client Venues
+              </span>
               <div className="text-3xl font-black font-mono text-amber-500">{venues.length}</div>
-              <p className="text-[11px] font-bold text-stone-400">100% Hosted on Cloudflare</p>
+              <p className={`text-[11px] font-bold ${isLight ? 'text-stone-700' : 'text-stone-300'}`}>
+                100% Hosted on Cloudflare
+              </p>
             </div>
 
-            <div className="p-5 rounded-3xl border-2 space-y-1 shadow-md bg-slate-900 border-slate-800 text-white">
-              <span className="text-xs font-black uppercase tracking-wider text-stone-400">Managed QR Tables</span>
+            <div className={`p-5 rounded-3xl border-2 space-y-1 shadow-md transition-all ${
+              isLight ? 'bg-white border-stone-300 text-stone-950' : 'bg-[#181411] border-stone-800 text-white'
+            }`}>
+              <span className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-stone-600' : 'text-stone-400'}`}>
+                Managed QR Tables
+              </span>
               <div className="text-3xl font-black font-mono text-emerald-500">{totalTables}</div>
-              <p className="text-[11px] font-bold text-stone-400">Live across all dining areas</p>
+              <p className={`text-[11px] font-bold ${isLight ? 'text-stone-700' : 'text-stone-300'}`}>
+                Live across all dining areas
+              </p>
             </div>
 
-            <div className="p-5 rounded-3xl border-2 space-y-1 shadow-md bg-slate-900 border-slate-800 text-white">
-              <span className="text-xs font-black uppercase tracking-wider text-stone-400">Est. Monthly SaaS MRR</span>
-              <div className="text-3xl font-black font-mono text-orange-500">${totalMrr} AUD<span className="text-xs font-normal text-stone-400">/mo</span></div>
-              <p className="text-[11px] font-bold text-stone-400">Based on $149/mo Pro Tier</p>
+            <div className={`p-5 rounded-3xl border-2 space-y-1 shadow-md transition-all ${
+              isLight ? 'bg-white border-stone-300 text-stone-950' : 'bg-[#181411] border-stone-800 text-white'
+            }`}>
+              <span className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-stone-600' : 'text-stone-400'}`}>
+                Est. Monthly SaaS MRR
+              </span>
+              <div className="text-3xl font-black font-mono text-orange-500">
+                ${totalMrr} AUD<span className={`text-xs font-normal ${isLight ? 'text-stone-600' : 'text-stone-400'}`}>/mo</span>
+              </div>
+              <p className={`text-[11px] font-bold ${isLight ? 'text-stone-700' : 'text-stone-300'}`}>
+                Based on $149/mo Pro Tier
+              </p>
             </div>
 
-            <div className="p-5 rounded-3xl border-2 space-y-1 shadow-md bg-slate-900 border-slate-800 text-white">
-              <span className="text-xs font-black uppercase tracking-wider text-stone-400">System Core & Sync</span>
-              <div className="text-xl font-black text-emerald-500 flex items-center gap-2 pt-1">
+            <div className={`p-5 rounded-3xl border-2 space-y-1 shadow-md transition-all ${
+              isLight ? 'bg-white border-stone-300 text-stone-950' : 'bg-[#181411] border-stone-800 text-white'
+            }`}>
+              <span className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-stone-600' : 'text-stone-400'}`}>
+                System Core & Sync
+              </span>
+              <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-2 pt-1">
                 <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span>Operational (100%)</span>
               </div>
-              <p className="text-[11px] font-bold text-stone-400">Cloudflare Functions & Workers Active</p>
+              <p className={`text-[11px] font-bold ${isLight ? 'text-stone-700' : 'text-stone-300'}`}>
+                Cloudflare Functions Active
+              </p>
             </div>
           </div>
 
@@ -7873,17 +8001,21 @@
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search venue by name, slug or city..."
-                className="w-full rounded-2xl px-4 py-2.5 text-xs font-medium border-2 bg-slate-900 border-slate-800 text-white focus:outline-none focus:border-amber-500 transition-all"
+                placeholder="Search venue by name, slug or address..."
+                className={`w-full rounded-2xl px-4 py-2.5 text-xs font-bold border-2 focus:outline-none focus:border-amber-500 transition-all ${
+                  isLight
+                    ? 'bg-white border-stone-300 text-stone-950 placeholder-stone-500 shadow-sm'
+                    : 'bg-[#181411] border-stone-800 text-white placeholder-stone-400'
+                }`}
               />
             </div>
 
-            <span className="text-xs font-black text-stone-400">
-              Showing {filteredVenues.length} of {venues.length} venues
+            <span className={`text-xs font-black ${isLight ? 'text-stone-700' : 'text-stone-300'}`}>
+              Showing <strong>{filteredVenues.length}</strong> of <strong>{venues.length}</strong> venues
             </span>
           </div>
 
-          {/* Venues Cards Grid */}
+          {/* Venues Cards Grid (High Contrast Cards) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {filteredVenues.map(venue => {
               const custUrl = getCustomerUrl(venue.slug);
@@ -7895,60 +8027,83 @@
               return (
                 <div
                   key={venue.slug}
-                  className="p-5 rounded-3xl border-2 space-y-4 shadow-lg transition-all bg-slate-900 border-slate-800 text-white"
+                  className={`p-5 rounded-3xl border-2 space-y-4 shadow-lg transition-all ${
+                    isLight
+                      ? 'bg-white border-stone-300 text-stone-950 shadow-stone-900/5'
+                      : 'bg-[#181411] border-stone-800 text-white shadow-2xl'
+                  }`}
                 >
                   {/* Venue Top Info */}
-                  <div className="flex justify-between items-start gap-3 border-b pb-3 border-slate-800">
+                  <div className={`flex justify-between items-start gap-3 border-b pb-3.5 ${
+                    isLight ? 'border-stone-200' : 'border-stone-800'
+                  }`}>
                     <div className="flex items-start gap-3 min-w-0">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-stone-950 font-black text-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-stone-950 font-black text-xl flex items-center justify-center flex-shrink-0 shadow-md border border-amber-400">
                         🍽️
                       </div>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-black text-base truncate">{venue.name}</h3>
-                          <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className={`font-black text-base truncate ${isLight ? 'text-stone-950' : 'text-white'}`}>
+                            {venue.name}
+                          </h3>
+                          <span className="text-[10px] bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-black px-2 py-0.5 rounded-full border border-emerald-500/40">
                             Active
                           </span>
                         </div>
-                        <p className="text-xs text-stone-400 truncate">
+                        <p className={`text-xs font-semibold truncate ${isLight ? 'text-stone-600' : 'text-stone-300'}`}>
                           {venue.subtitle}
                         </p>
-                        <p className="text-[11px] font-mono mt-0.5 text-stone-400">
-                          📍 {venue.address} • ABN: {venue.abn}
+                        <p className={`text-[11px] font-mono mt-0.5 ${isLight ? 'text-stone-700' : 'text-stone-300'}`}>
+                          📍 {venue.address} • <strong>ABN: {venue.abn}</strong>
                         </p>
                       </div>
                     </div>
 
-                    <div className="text-right flex-shrink-0">
-                      <span className="text-xs bg-amber-500/20 text-amber-400 font-black px-2.5 py-1 rounded-xl block border border-amber-500/30">
+                    <div className="text-right flex-shrink-0 space-y-1">
+                      <span className="text-xs bg-amber-500 text-stone-950 font-black px-2.5 py-1 rounded-xl block shadow-xs border border-amber-600/30">
                         {venue.plan}
                       </span>
-                      <div className="mt-1 flex items-center justify-end gap-1 font-mono text-[11px] text-amber-300 font-bold">
+                      <div className={`flex items-center justify-end gap-1 font-mono text-xs font-black ${
+                        isLight ? 'text-stone-900' : 'text-amber-300'
+                      }`}>
                         <span>🔐 PIN:</span>
-                        <strong className="bg-stone-950 px-1.5 py-0.5 rounded border border-amber-500/40 text-amber-400">{pin}</strong>
+                        <strong className={`px-2 py-0.5 rounded border ${
+                          isLight ? 'bg-amber-100 text-amber-950 border-amber-300' : 'bg-stone-950 text-amber-300 border-amber-500/40'
+                        }`}>
+                          {pin}
+                        </strong>
                       </div>
                     </div>
                   </div>
 
                   {/* 3 Essential Links Dispatcher Cards */}
                   <div className="space-y-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 block">
+                    <span className={`text-[10px] font-black uppercase tracking-wider block ${
+                      isLight ? 'text-amber-800' : 'text-amber-400'
+                    }`}>
                       ⚡ 3 Client Handover Links (1-Click Copy & Direct Test):
                     </span>
 
                     {/* 1. Customer Table Menu */}
-                    <div className="p-2.5 rounded-2xl border flex items-center justify-between gap-2 bg-slate-950 border-slate-800">
+                    <div className={`p-2.5 rounded-2xl border flex items-center justify-between gap-2 transition-all ${
+                      isLight ? 'bg-stone-50 border-stone-300' : 'bg-stone-950 border-stone-800'
+                    }`}>
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-base">📱</span>
                         <div className="min-w-0">
-                          <span className="text-[11px] font-black block text-stone-200">1. Customer QR Menu:</span>
-                          <span className="text-[10px] text-stone-400 font-mono truncate block">{custUrl}</span>
+                          <span className={`text-[11px] font-black block ${isLight ? 'text-stone-950' : 'text-stone-100'}`}>
+                            1. Customer QR Menu:
+                          </span>
+                          <span className={`text-[10px] font-mono font-medium truncate block ${isLight ? 'text-stone-600' : 'text-stone-300'}`}>
+                            {custUrl}
+                          </span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
                         <button
+                          type="button"
                           onClick={() => copyToClipboard(custUrl, `Customer Menu Link for ${venue.name}`)}
-                          className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-[11px] shadow-sm transition-all cursor-pointer"
+                          className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-[11px] shadow-sm transition-all cursor-pointer border border-amber-600/30"
                         >
                           📋 Copy
                         </button>
@@ -7956,7 +8111,11 @@
                           href={custUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-stone-200 font-bold text-[11px] transition-all"
+                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border ${
+                            isLight
+                              ? 'bg-white hover:bg-stone-100 text-stone-900 border-stone-300'
+                              : 'bg-stone-800 hover:bg-stone-700 text-stone-200 border-stone-700'
+                          }`}
                         >
                           ↗ Open
                         </a>
@@ -7964,18 +8123,25 @@
                     </div>
 
                     {/* 2. Kitchen KDS Display */}
-                    <div className="p-2.5 rounded-2xl border flex items-center justify-between gap-2 bg-slate-950 border-slate-800">
+                    <div className={`p-2.5 rounded-2xl border flex items-center justify-between gap-2 transition-all ${
+                      isLight ? 'bg-stone-50 border-stone-300' : 'bg-stone-950 border-stone-800'
+                    }`}>
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-base">👨‍🍳</span>
                         <div className="min-w-0">
-                          <span className="text-[11px] font-black block text-stone-200">2. Kitchen KDS Display:</span>
-                          <span className="text-[10px] text-stone-400 font-mono truncate block">{kitchUrl}</span>
+                          <span className={`text-[11px] font-black block ${isLight ? 'text-stone-950' : 'text-stone-100'}`}>
+                            2. Kitchen KDS Display:
+                          </span>
+                          <span className={`text-[10px] font-mono font-medium truncate block ${isLight ? 'text-stone-600' : 'text-stone-300'}`}>
+                            {kitchUrl}
+                          </span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
                         <button
+                          type="button"
                           onClick={() => copyToClipboard(kitchUrl, `Kitchen KDS Link for ${venue.name}`)}
-                          className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-[11px] shadow-sm transition-all cursor-pointer"
+                          className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-[11px] shadow-sm transition-all cursor-pointer border border-amber-600/30"
                         >
                           📋 Copy
                         </button>
@@ -7983,7 +8149,11 @@
                           href={kitchUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-stone-200 font-bold text-[11px] transition-all"
+                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border ${
+                            isLight
+                              ? 'bg-white hover:bg-stone-100 text-stone-900 border-stone-300'
+                              : 'bg-stone-800 hover:bg-stone-700 text-stone-200 border-stone-700'
+                          }`}
                         >
                           ↗ Open
                         </a>
@@ -7991,18 +8161,25 @@
                     </div>
 
                     {/* 3. Admin & Cashier Portal */}
-                    <div className="p-2.5 rounded-2xl border flex items-center justify-between gap-2 bg-slate-950 border-slate-800">
+                    <div className={`p-2.5 rounded-2xl border flex items-center justify-between gap-2 transition-all ${
+                      isLight ? 'bg-stone-50 border-stone-300' : 'bg-stone-950 border-stone-800'
+                    }`}>
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-base">💼</span>
                         <div className="min-w-0">
-                          <span className="text-[11px] font-black block text-stone-200">3. Admin & Cashier Portal:</span>
-                          <span className="text-[10px] text-stone-400 font-mono truncate block">{adminUrl}</span>
+                          <span className={`text-[11px] font-black block ${isLight ? 'text-stone-950' : 'text-stone-100'}`}>
+                            3. Admin & Cashier Portal:
+                          </span>
+                          <span className={`text-[10px] font-mono font-medium truncate block ${isLight ? 'text-stone-600' : 'text-stone-300'}`}>
+                            {adminUrl}
+                          </span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
                         <button
+                          type="button"
                           onClick={() => copyToClipboard(adminUrl, `Admin Link for ${venue.name}`)}
-                          className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-[11px] shadow-sm transition-all cursor-pointer"
+                          className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-[11px] shadow-sm transition-all cursor-pointer border border-amber-600/30"
                         >
                           📋 Copy
                         </button>
@@ -8010,7 +8187,11 @@
                           href={adminUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-stone-200 font-bold text-[11px] transition-all"
+                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border ${
+                            isLight
+                              ? 'bg-white hover:bg-stone-100 text-stone-900 border-stone-300'
+                              : 'bg-stone-800 hover:bg-stone-700 text-stone-200 border-stone-700'
+                          }`}
                         >
                           ↗ Open
                         </a>
@@ -8019,13 +8200,15 @@
                   </div>
 
                   {/* Card Bottom Actions */}
-                  <div className="flex flex-wrap justify-between items-center pt-2 border-t border-slate-800 gap-2">
-                    <div className="flex items-center gap-2">
+                  <div className={`flex flex-wrap justify-between items-center pt-3 border-t gap-2 ${
+                    isLight ? 'border-stone-200' : 'border-stone-800'
+                  }`}>
+                    <div className="flex flex-wrap items-center gap-2">
                       <a
                         href={masterAdmUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-stone-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer active:scale-95"
+                        className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-stone-950 font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer active:scale-95 border border-amber-400"
                       >
                         <span>🚀 Enter Admin & Setup Menu</span>
                         <span>↗</span>
@@ -8034,7 +8217,7 @@
                       <button
                         type="button"
                         onClick={() => setSelectedVenueForShare(venue)}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95 border border-emerald-500"
                       >
                         <span>💬 WhatsApp Pack</span>
                       </button>
@@ -8044,7 +8227,9 @@
                       <button
                         type="button"
                         onClick={() => handleDeleteVenue(venue.slug, venue.name)}
-                        className="text-stone-400 hover:text-red-400 text-xs font-bold px-2 py-1 transition-colors cursor-pointer"
+                        className={`text-xs font-bold px-2 py-1 transition-colors cursor-pointer hover:underline ${
+                          isLight ? 'text-red-700 hover:text-red-900' : 'text-rose-400 hover:text-rose-300'
+                        }`}
                       >
                         🗑️ Delete
                       </button>
@@ -8058,20 +8243,29 @@
           {/* Modal: Onboard New Client Venue Wizard */}
           {isCreateOpen && (
             <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto no-print">
-              <div className="border-2 rounded-3xl p-5 md:p-6 w-full max-w-xl space-y-4 shadow-2xl animate-in fade-in zoom-in duration-150 font-sans bg-slate-900 border-slate-700 text-white">
-                <div className="flex justify-between items-center border-b pb-3 border-slate-800">
+              <div className={`border-2 rounded-3xl p-5 md:p-6 w-full max-w-xl space-y-4 shadow-2xl animate-in fade-in zoom-in duration-150 font-sans ${
+                isLight ? 'bg-white border-amber-400 text-stone-950' : 'bg-[#181411] border-slate-700 text-white'
+              }`}>
+                <div className={`flex justify-between items-center border-b pb-3 ${isLight ? 'border-stone-200' : 'border-stone-800'}`}>
                   <div className="flex items-center gap-2.5">
-                    <span className="text-2xl p-2 rounded-2xl bg-amber-500 text-stone-950 font-black shadow-sm">🏢</span>
+                    <span className="text-2xl p-2 rounded-2xl bg-amber-500 text-stone-950 font-black shadow-sm border border-amber-400">
+                      🏢
+                    </span>
                     <div>
-                      <h3 className="font-extrabold text-base">Onboard New Australian Venue</h3>
-                      <p className="text-xs text-stone-400">
+                      <h3 className={`font-black text-base ${isLight ? 'text-stone-950' : 'text-white'}`}>
+                        Onboard New Australian Venue
+                      </h3>
+                      <p className={`text-xs font-bold ${isLight ? 'text-stone-600' : 'text-stone-300'}`}>
                         Deploy isolated venue and set 6-digit Manager PIN
                       </p>
                     </div>
                   </div>
                   <button
+                    type="button"
                     onClick={() => setIsCreateOpen(false)}
-                    className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-stone-300 flex items-center justify-center font-bold text-xs cursor-pointer"
+                    className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs cursor-pointer ${
+                      isLight ? 'bg-stone-100 hover:bg-stone-200 text-stone-800' : 'bg-stone-800 hover:bg-stone-700 text-stone-300'
+                    }`}
                   >
                     ✕
                   </button>
@@ -8079,7 +8273,7 @@
 
                 <form onSubmit={handleCreateVenue} className="space-y-3.5 text-xs">
                   <div>
-                    <label className="font-bold block mb-1 text-stone-300">
+                    <label className={`font-bold block mb-1 ${isLight ? 'text-stone-800' : 'text-stone-200'}`}>
                       Venue Name *
                     </label>
                     <input
@@ -8088,13 +8282,17 @@
                       value={vName}
                       onChange={(e) => handleNameChange(e.target.value)}
                       placeholder="e.g. Margaret River Taphouse, Carlton Pizzeria"
-                      className="w-full rounded-xl px-3 py-2 text-xs border focus:outline-none focus:border-amber-500 bg-slate-950 border-slate-800 text-white"
+                      className={`w-full rounded-xl px-3 py-2 text-xs font-bold border focus:outline-none focus:border-amber-500 ${
+                        isLight
+                          ? 'bg-stone-50 border-stone-300 text-stone-950 placeholder-stone-400'
+                          : 'bg-stone-950 border-stone-800 text-white placeholder-stone-500'
+                      }`}
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="font-bold block mb-1 text-stone-300">
+                      <label className={`font-bold block mb-1 ${isLight ? 'text-stone-800' : 'text-stone-200'}`}>
                         URL Slug (Auto Generated) *
                       </label>
                       <input
@@ -8103,12 +8301,16 @@
                         value={vSlug}
                         onChange={(e) => setVSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}
                         placeholder="e.g. margaret-river-taphouse"
-                        className="w-full rounded-xl px-3 py-2 text-xs font-mono font-bold border focus:outline-none focus:border-amber-500 bg-slate-950 border-slate-800 text-amber-400"
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-mono font-black border focus:outline-none focus:border-amber-500 ${
+                          isLight
+                            ? 'bg-stone-50 border-stone-300 text-amber-800'
+                            : 'bg-stone-950 border-stone-800 text-amber-400'
+                        }`}
                       />
                     </div>
 
                     <div>
-                      <label className="font-bold block mb-1 text-amber-400">
+                      <label className={`font-black block mb-1 ${isLight ? 'text-amber-900' : 'text-amber-400'}`}>
                         6-Digit Manager PIN *
                       </label>
                       <input
@@ -8118,14 +8320,18 @@
                         value={vPin}
                         onChange={(e) => setVPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
                         placeholder="e.g. 123456"
-                        className="w-full rounded-xl px-3 py-2 text-xs font-mono font-black border focus:outline-none focus:border-amber-500 bg-slate-950 border-amber-500/50 text-amber-300"
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-mono font-black border-2 focus:outline-none focus:border-amber-500 ${
+                          isLight
+                            ? 'bg-amber-50 border-amber-400 text-stone-950'
+                            : 'bg-stone-950 border-amber-500/50 text-amber-300'
+                        }`}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="font-bold block mb-1 text-stone-300">
+                      <label className={`font-bold block mb-1 ${isLight ? 'text-stone-800' : 'text-stone-200'}`}>
                         Cuisine / Subtitle
                       </label>
                       <input
@@ -8133,12 +8339,16 @@
                         value={vSubtitle}
                         onChange={(e) => setVSubtitle(e.target.value)}
                         placeholder="e.g. Woodfired Pizza & Craft Beer"
-                        className="w-full rounded-xl px-3 py-2 text-xs border focus:outline-none focus:border-amber-500 bg-slate-950 border-slate-800 text-white"
+                        className={`w-full rounded-xl px-3 py-2 text-xs border focus:outline-none focus:border-amber-500 ${
+                          isLight
+                            ? 'bg-stone-50 border-stone-300 text-stone-950 placeholder-stone-400'
+                            : 'bg-stone-950 border-stone-800 text-white placeholder-stone-500'
+                        }`}
                       />
                     </div>
 
                     <div>
-                      <label className="font-bold block mb-1 text-stone-300">
+                      <label className={`font-bold block mb-1 ${isLight ? 'text-stone-800' : 'text-stone-200'}`}>
                         Number of Tables
                       </label>
                       <input
@@ -8147,14 +8357,18 @@
                         max="100"
                         value={vTables}
                         onChange={(e) => setVTables(e.target.value)}
-                        className="w-full rounded-xl px-3 py-2 text-xs font-mono border focus:outline-none focus:border-amber-500 bg-slate-950 border-slate-800 text-white"
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-mono font-bold border focus:outline-none focus:border-amber-500 ${
+                          isLight
+                            ? 'bg-stone-50 border-stone-300 text-stone-950'
+                            : 'bg-stone-950 border-stone-800 text-white'
+                        }`}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="font-bold block mb-1 text-stone-300">
+                      <label className={`font-bold block mb-1 ${isLight ? 'text-stone-800' : 'text-stone-200'}`}>
                         Physical Address
                       </label>
                       <input
@@ -8162,12 +8376,16 @@
                         value={vAddress}
                         onChange={(e) => setVAddress(e.target.value)}
                         placeholder="e.g. 100 Main Street, Sydney NSW 2000"
-                        className="w-full rounded-xl px-3 py-2 text-xs border focus:outline-none focus:border-amber-500 bg-slate-950 border-slate-800 text-white"
+                        className={`w-full rounded-xl px-3 py-2 text-xs border focus:outline-none focus:border-amber-500 ${
+                          isLight
+                            ? 'bg-stone-50 border-stone-300 text-stone-950 placeholder-stone-400'
+                            : 'bg-stone-950 border-stone-800 text-white placeholder-stone-500'
+                        }`}
                       />
                     </div>
 
                     <div>
-                      <label className="font-bold block mb-1 text-stone-300">
+                      <label className={`font-bold block mb-1 ${isLight ? 'text-stone-800' : 'text-stone-200'}`}>
                         ABN (Tax Invoice)
                       </label>
                       <input
@@ -8175,14 +8393,18 @@
                         value={vAbn}
                         onChange={(e) => setVAbn(e.target.value)}
                         placeholder="e.g. 51 824 753 556"
-                        className="w-full rounded-xl px-3 py-2 text-xs font-mono border focus:outline-none focus:border-amber-500 bg-slate-950 border-slate-800 text-white"
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-mono font-bold border focus:outline-none focus:border-amber-500 ${
+                          isLight
+                            ? 'bg-stone-50 border-stone-300 text-stone-950 placeholder-stone-400'
+                            : 'bg-stone-950 border-stone-800 text-white placeholder-stone-500'
+                        }`}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="font-bold block mb-1 text-stone-300">
+                      <label className={`font-bold block mb-1 ${isLight ? 'text-stone-800' : 'text-stone-200'}`}>
                         Contact Person (Manager)
                       </label>
                       <input
@@ -8190,18 +8412,26 @@
                         value={vContact}
                         onChange={(e) => setVContact(e.target.value)}
                         placeholder="e.g. John Doe"
-                        className="w-full rounded-xl px-3 py-2 text-xs border focus:outline-none focus:border-amber-500 bg-slate-950 border-slate-800 text-white"
+                        className={`w-full rounded-xl px-3 py-2 text-xs border focus:outline-none focus:border-amber-500 ${
+                          isLight
+                            ? 'bg-stone-50 border-stone-300 text-stone-950 placeholder-stone-400'
+                            : 'bg-stone-950 border-stone-800 text-white placeholder-stone-500'
+                        }`}
                       />
                     </div>
 
                     <div>
-                      <label className="font-bold block mb-1 text-stone-300">
+                      <label className={`font-bold block mb-1 ${isLight ? 'text-stone-800' : 'text-stone-200'}`}>
                         SaaS Subscription Plan
                       </label>
                       <select
                         value={vPlan}
                         onChange={(e) => setVPlan(e.target.value)}
-                        className="w-full rounded-xl px-3 py-2 text-xs font-bold border focus:outline-none focus:border-amber-500 bg-slate-950 border-slate-800 text-white"
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-bold border focus:outline-none focus:border-amber-500 ${
+                          isLight
+                            ? 'bg-stone-50 border-stone-300 text-stone-950'
+                            : 'bg-stone-950 border-stone-800 text-white'
+                        }`}
                       >
                         <option value="Pro Multi-Station ($149/mo)">Pro Multi-Station ($149/mo) - Full KDS & Square</option>
                         <option value="Starter QR ($99/mo)">Starter QR ($99/mo) - Menu & Orders</option>
@@ -8210,17 +8440,19 @@
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                  <div className={`flex justify-end gap-2 pt-3 border-t ${isLight ? 'border-stone-200' : 'border-stone-800'}`}>
                     <button
                       type="button"
                       onClick={() => setIsCreateOpen(false)}
-                      className="px-4 py-2 rounded-xl font-bold bg-slate-800 text-stone-300"
+                      className={`px-4 py-2 rounded-xl font-bold ${
+                        isLight ? 'bg-stone-100 hover:bg-stone-200 text-stone-800' : 'bg-stone-800 hover:bg-stone-700 text-stone-300'
+                      }`}
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-stone-950 font-black shadow-lg hover:brightness-110 active:scale-95"
+                      className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-stone-950 font-black shadow-lg hover:brightness-110 active:scale-95 border border-amber-400"
                     >
                       🚀 Create Venue & Generate Links
                     </button>
@@ -8240,20 +8472,29 @@
 
             return (
               <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto no-print">
-                <div className="border-2 rounded-3xl p-5 md:p-6 w-full max-w-xl space-y-4 shadow-2xl animate-in fade-in zoom-in duration-150 font-sans bg-slate-900 border-slate-700 text-white">
-                  <div className="flex justify-between items-center border-b pb-3 border-slate-800">
+                <div className={`border-2 rounded-3xl p-5 md:p-6 w-full max-w-xl space-y-4 shadow-2xl animate-in fade-in zoom-in duration-150 font-sans ${
+                  isLight ? 'bg-white border-emerald-400 text-stone-950' : 'bg-[#181411] border-emerald-500/70 text-white'
+                }`}>
+                  <div className={`flex justify-between items-center border-b pb-3 ${isLight ? 'border-stone-200' : 'border-stone-800'}`}>
                     <div className="flex items-center gap-2.5">
-                      <span className="text-2xl p-2 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">📦</span>
+                      <span className="text-2xl p-2 rounded-2xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/40">
+                        📦
+                      </span>
                       <div>
-                        <h3 className="font-extrabold text-base">Client Onboarding Pack: {v.name}</h3>
-                        <p className="text-xs text-stone-400">
+                        <h3 className={`font-black text-base ${isLight ? 'text-stone-950' : 'text-white'}`}>
+                          Client Onboarding Pack: {v.name}
+                        </h3>
+                        <p className={`text-xs font-bold ${isLight ? 'text-stone-600' : 'text-stone-300'}`}>
                           All 3 links and 6-digit Manager PIN ready for delivery
                         </p>
                       </div>
                     </div>
                     <button
+                      type="button"
                       onClick={() => setSelectedVenueForShare(null)}
-                      className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-stone-300 flex items-center justify-center font-bold text-xs cursor-pointer"
+                      className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs cursor-pointer ${
+                        isLight ? 'bg-stone-100 hover:bg-stone-200 text-stone-800' : 'bg-stone-800 hover:bg-stone-700 text-stone-300'
+                      }`}
                     >
                       ✕
                     </button>
@@ -8262,18 +8503,24 @@
                   <div className="space-y-3 text-xs">
                     {/* Preformatted WhatsApp Box */}
                     <div>
-                      <label className="font-bold block mb-1 text-stone-300">
+                      <label className={`font-bold block mb-1 ${isLight ? 'text-stone-800' : 'text-stone-200'}`}>
                         Formatted WhatsApp / Email Handover Message:
                       </label>
                       <textarea
                         rows="9"
                         readOnly
                         value={msg}
-                        className="w-full font-mono text-[11px] p-3 rounded-2xl border bg-slate-950 border-slate-800 text-emerald-300"
+                        className={`w-full font-mono text-[11px] p-3 rounded-2xl border ${
+                          isLight
+                            ? 'bg-stone-50 border-stone-300 text-stone-950'
+                            : 'bg-stone-950 border-stone-800 text-emerald-300'
+                        }`}
                       />
                     </div>
 
-                    <div className="flex flex-wrap justify-between items-center gap-2 pt-2 border-t border-slate-800">
+                    <div className={`flex flex-wrap justify-between items-center gap-2 pt-2 border-t ${
+                      isLight ? 'border-stone-200' : 'border-stone-800'
+                    }`}>
                       <button
                         type="button"
                         onClick={() => copyToClipboard(msg, 'Full Onboarding Message')}
@@ -8301,7 +8548,7 @@
       );
     }
 
-    function AppContent() {
+        function AppContent() {
       const { orders, theme, toggleTheme } = useOrderAU();
       const pendingCount = orders.filter(o => o.status === 'pending_approval').length;
       
