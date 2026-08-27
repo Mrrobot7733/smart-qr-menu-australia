@@ -441,6 +441,198 @@
       }
     };
 
+    // --- Square POS Cloud Integration Service (Australia & Global) ---
+    const SquarePOSService = {
+      getBaseUrl: (env = 'sandbox') => {
+        return env === 'production'
+          ? 'https://connect.squareup.com/v2'
+          : 'https://connect.squareupsandbox.com/v2';
+      },
+
+      testConnection: async ({ environment = 'sandbox', accessToken, locationId }) => {
+        if (!accessToken || !locationId) {
+          return { success: false, message: 'Please provide both Square Access Token and Location ID' };
+        }
+        try {
+          const baseUrl = SquarePOSService.getBaseUrl(environment);
+          const res = await fetch(`${baseUrl}/locations/${locationId.trim()}`, {
+            method: 'GET',
+            headers: {
+              'Square-Version': '2024-08-21',
+              'Authorization': `Bearer ${accessToken.trim()}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            const errMsg = errData.errors?.[0]?.detail || `Square API error (${res.status})`;
+            return { success: false, message: errMsg };
+          }
+
+          const data = await res.json();
+          const loc = data.location || {};
+          return {
+            success: true,
+            locationName: loc.name || 'Main Venue',
+            currency: loc.currency || 'AUD',
+            country: loc.country || 'AU',
+            status: loc.status || 'ACTIVE'
+          };
+        } catch (err) {
+          return {
+            success: false,
+            message: err.message || 'Network error connecting to Square. Check internet or CORS settings.'
+          };
+        }
+      },
+
+      syncCatalog: async ({ environment = 'sandbox', accessToken }) => {
+        if (!accessToken) {
+          return { success: false, message: 'Square Access Token is required to sync catalog' };
+        }
+        try {
+          const baseUrl = SquarePOSService.getBaseUrl(environment);
+          const res = await fetch(`${baseUrl}/catalog/list?types=ITEM,CATEGORY`, {
+            method: 'GET',
+            headers: {
+              'Square-Version': '2024-08-21',
+              'Authorization': `Bearer ${accessToken.trim()}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            return { success: false, message: errData.errors?.[0]?.detail || 'Failed to fetch catalog from Square' };
+          }
+
+          const data = await res.json();
+          const objects = data.objects || [];
+          const sqCategories = objects.filter(o => o.type === 'CATEGORY');
+          const sqItems = objects.filter(o => o.type === 'ITEM');
+
+          const mappedCategories = sqCategories.map(c => ({
+            id: c.id,
+            name: c.category_data?.name || 'Category'
+          }));
+
+          const mappedItems = sqItems.map(it => {
+            const itemData = it.item_data || {};
+            const variation = itemData.variations?.[0]?.item_variation_data;
+            const priceCents = variation?.price_money?.amount || 0;
+            const price = Number((priceCents / 100).toFixed(2));
+            return {
+              id: `sq-${it.id}`,
+              squareId: it.id,
+              categoryId: itemData.category_id || (mappedCategories[0]?.id || 'bites'),
+              name: itemData.name || 'Square Dish',
+              description: itemData.description || '',
+              price: price > 0 ? price : 15.00,
+              image: itemData.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+              station: 'kitchen',
+              isAvailable: true,
+              isVisible: true,
+              isGF: false,
+              isVegetarian: false,
+              options: [],
+              extras: []
+            };
+          });
+
+          return {
+            success: true,
+            categories: mappedCategories,
+            items: mappedItems,
+            count: mappedItems.length
+          };
+        } catch (err) {
+          return { success: false, message: err.message || 'Error syncing Square catalog' };
+        }
+      },
+
+      sendOrder: async ({ environment = 'sandbox', accessToken, locationId, order, venueName = 'SmartMenu Venue' }) => {
+        if (!accessToken || !locationId || !order) {
+          return { success: false, message: 'Square credentials or order missing' };
+        }
+
+        try {
+          const baseUrl = SquarePOSService.getBaseUrl(environment);
+          const lineItems = (order.items || []).map(it => {
+            const unitPrice = it.unitPrice || it.price || 0;
+            return {
+              name: it.name || 'Dish',
+              quantity: String(it.quantity || 1),
+              base_price_money: {
+                amount: Math.round(unitPrice * 100),
+                currency: 'AUD'
+              },
+              note: it.notes || (it.selectedExtras?.length ? it.selectedExtras.map(e => `+ ${e.name}`).join(', ') : undefined)
+            };
+          });
+
+          const ticketName = order.orderType === 'takeaway'
+            ? `Takeaway #${order.orderNumber} - ${order.customerName || 'Guest'}`
+            : `Table #${order.tableNumber} - ${order.customerName || 'Guest'}`;
+
+          const payload = {
+            idempotency_key: `sm-${order.id}-${Date.now()}`,
+            order: {
+              location_id: locationId.trim(),
+              reference_id: `SM-${order.orderNumber}`,
+              ticket_name: ticketName,
+              source: {
+                name: 'SmartMenu AU'
+              },
+              line_items: lineItems,
+              taxes: [
+                {
+                  name: 'GST (10% AU Included)',
+                  percentage: '10.0',
+                  type: 'INCLUSIVE'
+                }
+              ],
+              fulfillments: [
+                {
+                  type: order.orderType === 'takeaway' ? 'PICKUP' : 'DINE_IN',
+                  state: 'PROPOSED'
+                }
+              ]
+            }
+          };
+
+          const res = await fetch(`${baseUrl}/orders`, {
+            method: 'POST',
+            headers: {
+              'Square-Version': '2024-08-21',
+              'Authorization': `Bearer ${accessToken.trim()}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            const errMsg = errData.errors?.[0]?.detail || `Square API error (${res.status})`;
+            return { success: false, message: errMsg };
+          }
+
+          const resData = await res.json();
+          const createdSquareOrder = resData.order || {};
+          return {
+            success: true,
+            squareOrderId: createdSquareOrder.id,
+            squareReference: createdSquareOrder.reference_id || `SM-${order.orderNumber}`
+          };
+        } catch (err) {
+          return {
+            success: false,
+            message: err.message || 'Network error sending order to Square POS'
+          };
+        }
+      }
+    };
+
     // --- Australian Venue Profile & Data ---
     const INITIAL_RESTAURANT_AU = {
       name: "Demo Bar & Bistro (Live Demo)",
@@ -456,7 +648,14 @@
       isSundayActive: false,
       tableSessionTimeoutHours: 2, // 2 Hours session timeout (prevents ghost orders after leaving venue)
       stripeAccountId: "acct_demo_australia",
-      stripeDashboardUrl: "https://dashboard.stripe.com/"
+      stripeDashboardUrl: "https://dashboard.stripe.com/",
+      // Square POS Direct Integration
+      squareEnabled: false,
+      squareEnvironment: "sandbox", // "sandbox" or "production"
+      squareAppId: "",
+      squareAccessToken: "",
+      squareLocationId: "",
+      squareAutoSendOrders: true
     };
 
     const INITIAL_CATEGORIES_AU = [
@@ -1054,6 +1253,23 @@
         clearCart();
         playSound.orderSuccess();
         broadcastEvent('NEW_ORDER', newOrder);
+
+        // Square POS Automatic Order Injection for Paid Online Orders
+        if (!isCounter && restaurant.squareEnabled && restaurant.squareAccessToken && restaurant.squareLocationId && restaurant.squareAutoSendOrders) {
+          SquarePOSService.sendOrder({
+            environment: restaurant.squareEnvironment || 'sandbox',
+            accessToken: restaurant.squareAccessToken,
+            locationId: restaurant.squareLocationId,
+            order: newOrder,
+            venueName: restaurant.name
+          }).then(res => {
+            if (res.success) {
+              setOrders(prev => prev.map(o => o.id === newOrder.id ? { ...o, squareOrderId: res.squareOrderId, squareSynced: true } : o));
+              showToast(`✓ Order #${newOrder.orderNumber} sent to Square POS!`);
+            }
+          }).catch(() => {});
+        }
+
         return newOrder;
       };
 
@@ -1081,6 +1297,23 @@
         }
         showToast(`✓ Order #${ord.orderNumber} (PIN ${ord.counterPin}) confirmed & sent to kitchen!`);
         broadcastEvent('ORDER_APPROVED', updated);
+
+        // Square POS Automatic Order Injection for Counter Paid Orders
+        if (restaurant.squareEnabled && restaurant.squareAccessToken && restaurant.squareLocationId && restaurant.squareAutoSendOrders) {
+          SquarePOSService.sendOrder({
+            environment: restaurant.squareEnvironment || 'sandbox',
+            accessToken: restaurant.squareAccessToken,
+            locationId: restaurant.squareLocationId,
+            order: updated,
+            venueName: restaurant.name
+          }).then(res => {
+            if (res.success) {
+              setOrders(prev => prev.map(o => o.id === updated.id ? { ...o, squareOrderId: res.squareOrderId, squareSynced: true } : o));
+              showToast(`✓ Order #${updated.orderNumber} pushed to Square POS!`);
+            }
+          }).catch(() => {});
+        }
+
         return { success: true, order: updated };
       };
 
@@ -1219,7 +1452,7 @@
 
       return (
         <OrderContextAU.Provider value={{
-          venueId, restaurant, setRestaurant, updateRestaurantSettings, categories, items, tables, orders, serviceCalls,
+          venueId, restaurant, setRestaurant, updateRestaurantSettings, categories, setCategories, items, setItems, tables, orders, serviceCalls,
           cart, addToCart, removeFromCart, updateCartQuantity, clearCart, toggleCartItemDiningOption,
           submitOrder, sendServiceCall, resolveServiceCall, updateOrderStatus,
           approveCounterOrder, cancelCounterOrder, clearAllOrders,
@@ -1227,7 +1460,8 @@
           activeTable, setActiveTable, orderType, setOrderType, takeawayTime, setTakeawayTime,
           customerName, setCustomerName,
           theme, setTheme, toggleTheme,
-          activeOrder, activeOrderId, setActiveOrderId, toastMsg, showToast
+          activeOrder, activeOrderId, setActiveOrderId, toastMsg, showToast,
+          SquarePOSService
         }}>
           {children}
           {toastMsg && (
@@ -3936,6 +4170,119 @@
       const [settingsSessionTimeout, setSettingsSessionTimeout] = useState(restaurant.tableSessionTimeoutHours !== undefined ? Number(restaurant.tableSessionTimeoutHours) : 2);
       const [settingsStripeId, setSettingsStripeId] = useState(restaurant.stripeAccountId || 'acct_demo_australia');
       const [settingsStripeUrl, setSettingsStripeUrl] = useState(restaurant.stripeDashboardUrl || 'https://dashboard.stripe.com/');
+
+      // Square POS Integration States
+      const [settingsSquareEnabled, setSettingsSquareEnabled] = useState(!!restaurant.squareEnabled);
+      const [settingsSquareEnv, setSettingsSquareEnv] = useState(restaurant.squareEnvironment || 'sandbox');
+      const [settingsSquareAppId, setSettingsSquareAppId] = useState(restaurant.squareAppId || '');
+      const [settingsSquareToken, setSettingsSquareToken] = useState(restaurant.squareAccessToken || '');
+      const [settingsSquareLocationId, setSettingsSquareLocationId] = useState(restaurant.squareLocationId || '');
+      const [settingsSquareAutoSend, setSettingsSquareAutoSend] = useState(restaurant.squareAutoSendOrders !== false);
+      const [showSquareToken, setShowSquareToken] = useState(false);
+      const [squareTesting, setSquareTesting] = useState(false);
+      const [squareSyncing, setSquareSyncing] = useState(false);
+      const [squareTestResult, setSquareTestResult] = useState(null);
+
+      const handleTestSquareConnection = async () => {
+        if (!settingsSquareToken.trim() || !settingsSquareLocationId.trim()) {
+          if (showToast) showToast('⚠️ Please enter both Square Access Token and Location ID');
+          return;
+        }
+        setSquareTesting(true);
+        setSquareTestResult(null);
+        try {
+          const res = await SquarePOSService.testConnection({
+            environment: settingsSquareEnv,
+            accessToken: settingsSquareToken,
+            locationId: settingsSquareLocationId
+          });
+          setSquareTestResult(res);
+          if (res.success) {
+            if (showToast) showToast(`🟢 Connected to Square! Venue: ${res.locationName} (${res.currency})`);
+          } else {
+            if (showToast) showToast(`❌ Square Connection Failed: ${res.message}`);
+          }
+        } catch (err) {
+          setSquareTestResult({ success: false, message: err.message });
+        } finally {
+          setSquareTesting(false);
+        }
+      };
+
+      const handleSyncSquareCatalog = async () => {
+        if (!settingsSquareToken.trim()) {
+          if (showToast) showToast('⚠️ Square Access Token is required to sync catalog');
+          return;
+        }
+        setSquareSyncing(true);
+        try {
+          const res = await SquarePOSService.syncCatalog({
+            environment: settingsSquareEnv,
+            accessToken: settingsSquareToken
+          });
+          if (res.success && res.items?.length) {
+            if (res.categories?.length && setCategories) {
+              setCategories(res.categories);
+            }
+            if (setItems) {
+              setItems(res.items);
+            }
+            if (showToast) showToast(`✓ Imported ${res.count} dishes from Square POS Catalog!`);
+          } else {
+            if (showToast) showToast(res.message || 'No dishes found in Square Catalog');
+          }
+        } catch (err) {
+          if (showToast) showToast(`Sync failed: ${err.message}`);
+        } finally {
+          setSquareSyncing(false);
+        }
+      };
+
+      const handleSendTestSquareOrder = async () => {
+        if (!settingsSquareToken.trim() || !settingsSquareLocationId.trim()) {
+          if (showToast) showToast('⚠️ Please enter Square credentials first');
+          return;
+        }
+        const sampleOrder = {
+          id: `test-ord-${Date.now()}`,
+          orderNumber: Math.floor(100 + Math.random() * 900),
+          customerName: 'Test Patron (Square Demo)',
+          tableNumber: '1',
+          orderType: 'dine_in',
+          items: [
+            {
+              name: 'Margaret River Wagyu Burger',
+              quantity: 1,
+              unitPrice: 26.00,
+              totalItemPrice: 26.00,
+              notes: 'Medium Rare, No Onion'
+            },
+            {
+              name: 'Pint Stone & Wood Pacific Ale',
+              quantity: 1,
+              unitPrice: 13.50,
+              totalItemPrice: 13.50
+            }
+          ],
+          totalAmount: 39.50
+        };
+
+        if (showToast) showToast(`⏳ Sending sample Order #${sampleOrder.orderNumber} to Square...`);
+        const res = await SquarePOSService.sendOrder({
+          environment: settingsSquareEnv,
+          accessToken: settingsSquareToken,
+          locationId: settingsSquareLocationId,
+          order: sampleOrder,
+          venueName: settingsName
+        });
+
+        if (res.success) {
+          if (showToast) showToast(`✓ Order #${sampleOrder.orderNumber} created on Square POS! ID: ${res.squareOrderId.slice(0, 10)}...`);
+        } else {
+          if (showToast) showToast(`❌ Order push failed: ${res.message}`);
+        }
+      };
+
       const getMenuBasePath = (baseDom = customBaseDomain) => {
         const origin = (baseDom || '').trim() || window.location.origin;
         let path = window.location.pathname || '';
@@ -4010,7 +4357,13 @@
           isSundayActive: settingsSundayActive,
           tableSessionTimeoutHours: Number(settingsSessionTimeout),
           stripeAccountId: settingsStripeId,
-          stripeDashboardUrl: settingsStripeUrl
+          stripeDashboardUrl: settingsStripeUrl,
+          squareEnabled: settingsSquareEnabled,
+          squareEnvironment: settingsSquareEnv,
+          squareAppId: settingsSquareAppId,
+          squareAccessToken: settingsSquareToken,
+          squareLocationId: settingsSquareLocationId,
+          squareAutoSendOrders: settingsSquareAutoSend
         });
       };
 
@@ -4327,6 +4680,19 @@
               }`}
             >
               🖨️ Tables & QR Codes
+            </button>
+            <button
+              onClick={() => setTab('pos')}
+              className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+                tab === 'pos'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black shadow-md'
+                  : (settingsSquareEnabled
+                      ? (theme === 'light' ? 'text-emerald-700 font-bold hover:bg-stone-100' : 'text-emerald-400 font-bold hover:text-white')
+                      : (theme === 'light' ? 'text-stone-700 hover:text-stone-950 hover:bg-stone-100' : 'text-slate-400 hover:text-white'))
+              }`}
+            >
+              <span>🔌 POS & Square</span>
+              {settingsSquareEnabled && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>}
             </button>
             <button
               onClick={() => setTab('stats')}
@@ -5132,6 +5498,269 @@
                     </div>
                   );
                 })()}
+              </div>
+            </div>
+          )}
+
+          {/* View: Square POS & Cash Register Integration Studio */}
+          {tab === 'pos' && (
+            <div className="space-y-6">
+              {/* Square POS Main Card */}
+              <div className={`p-5 md:p-6 rounded-3xl border-2 space-y-6 shadow-xl transition-all ${
+                theme === 'light'
+                  ? 'bg-white border-stone-300 text-stone-900 shadow-stone-900/5'
+                  : 'bg-slate-900 border-slate-800 text-white'
+              }`}>
+                {/* Header Banner */}
+                <div className={`flex flex-wrap justify-between items-start gap-3 pb-4 border-b ${theme === 'light' ? 'border-stone-200' : 'border-slate-800'}`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-black border border-stone-700 flex items-center justify-center text-white text-2xl font-black shadow-lg">
+                      ⬛
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className={`text-lg font-black tracking-tight ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>Square POS Cloud Integration (AU 🇦🇺)</h3>
+                        <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                          settingsSquareEnabled
+                            ? 'bg-emerald-500/20 text-emerald-600 border border-emerald-500/40'
+                            : 'bg-stone-500/20 text-stone-400 border border-stone-500/40'
+                        }`}>
+                          {settingsSquareEnabled ? '● Active' : '○ Standby'}
+                        </span>
+                      </div>
+                      <p className={`text-xs ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>
+                        Automatically push customer QR orders to your physical Square Register, Square Terminal & Kitchen Docket Printers
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSettingsSquareEnabled(!settingsSquareEnabled)}
+                      className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer shadow-sm ${
+                        settingsSquareEnabled
+                          ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                          : 'bg-stone-800 hover:bg-stone-700 text-stone-300'
+                      }`}
+                    >
+                      {settingsSquareEnabled ? '✓ Square Enabled' : 'Enable Square Integration'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Live Status Callout / Test Response */}
+                {squareTestResult && (
+                  <div className={`p-4 rounded-2xl border text-xs space-y-1.5 animate-in fade-in ${
+                    squareTestResult.success
+                      ? (theme === 'light' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : 'bg-emerald-950/70 border-emerald-500/50 text-emerald-200')
+                      : (theme === 'light' ? 'bg-rose-50 border-rose-300 text-rose-950' : 'bg-rose-950/70 border-rose-500/50 text-rose-200')
+                  }`}>
+                    <div className="font-black flex items-center gap-2">
+                      <span>{squareTestResult.success ? '🟢 Square POS Connected Successfully!' : '❌ Connection Warning'}</span>
+                    </div>
+                    {squareTestResult.success ? (
+                      <p className="text-[11px]">
+                        Linked Location: <strong>{squareTestResult.locationName}</strong> • Currency: <strong>{squareTestResult.currency}</strong> • Status: <strong>{squareTestResult.status}</strong>
+                      </p>
+                    ) : (
+                      <p className="text-[11px] font-mono">
+                        {squareTestResult.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Configuration Form */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Left Column: API Credentials */}
+                  <div className={`p-4 rounded-2xl border space-y-3.5 ${
+                    theme === 'light' ? 'bg-stone-50 border-stone-200' : 'bg-slate-950 border-slate-800'
+                  }`}>
+                    <h4 className="font-extrabold text-amber-600 dark:text-amber-500 text-xs flex items-center gap-1.5 uppercase tracking-wider">
+                      <span>🔑</span> <span>Square API Credentials</span>
+                    </h4>
+
+                    <div>
+                      <label className={`font-bold block mb-1 ${theme === 'light' ? 'text-stone-700' : 'text-stone-400'}`}>Environment Mode</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSettingsSquareEnv('sandbox')}
+                          className={`py-2 px-3 rounded-xl font-bold text-xs border transition-all cursor-pointer ${
+                            settingsSquareEnv === 'sandbox'
+                              ? 'bg-amber-500 text-stone-950 border-amber-400 font-black shadow-sm'
+                              : (theme === 'light' ? 'bg-white text-stone-700 border-stone-300' : 'bg-slate-900 text-stone-400 border-slate-800')
+                          }`}
+                        >
+                          🧪 Sandbox (Test Mode)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSettingsSquareEnv('production')}
+                          className={`py-2 px-3 rounded-xl font-bold text-xs border transition-all cursor-pointer ${
+                            settingsSquareEnv === 'production'
+                              ? 'bg-emerald-500 text-stone-950 border-emerald-400 font-black shadow-sm'
+                              : (theme === 'light' ? 'bg-white text-stone-700 border-stone-300' : 'bg-slate-900 text-stone-400 border-slate-800')
+                          }`}
+                        >
+                          🚀 Production (Live POS)
+                        </button>
+                      </div>
+                      <p className={`text-[10px] mt-1 ${theme === 'light' ? 'text-stone-500' : 'text-stone-400'}`}>
+                        Use Sandbox for zero-risk test orders, Production when linked to physical registers in your restaurant.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className={`font-bold block mb-1 ${theme === 'light' ? 'text-stone-700' : 'text-stone-400'}`}>Square Application ID</label>
+                      <input
+                        type="text"
+                        value={settingsSquareAppId}
+                        onChange={(e) => setSettingsSquareAppId(e.target.value)}
+                        placeholder="e.g. sandbox-sq0idb-xxxx or sq0idp-xxxx"
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-mono border focus:outline-none focus:border-amber-500 transition-colors ${
+                          theme === 'light' ? 'bg-white border-stone-300 text-stone-900' : 'bg-slate-900 border-slate-800 text-white'
+                        }`}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className={`font-bold ${theme === 'light' ? 'text-stone-700' : 'text-stone-400'}`}>Square Access Token</label>
+                        <button
+                          type="button"
+                          onClick={() => setShowSquareToken(!showSquareToken)}
+                          className="text-[10px] text-amber-600 dark:text-amber-500 font-bold hover:underline cursor-pointer"
+                        >
+                          {showSquareToken ? '🙈 Hide' : '👁️ Show'}
+                        </button>
+                      </div>
+                      <input
+                        type={showSquareToken ? 'text' : 'password'}
+                        value={settingsSquareToken}
+                        onChange={(e) => setSettingsSquareToken(e.target.value)}
+                        placeholder="EAAAl... (Bearer Token)"
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-mono border focus:outline-none focus:border-amber-500 transition-colors ${
+                          theme === 'light' ? 'bg-white border-stone-300 text-stone-900' : 'bg-slate-900 border-slate-800 text-white'
+                        }`}
+                      />
+                    </div>
+
+                    <div>
+                      <label className={`font-bold block mb-1 ${theme === 'light' ? 'text-stone-700' : 'text-stone-400'}`}>Square Location ID (Venue Branch)</label>
+                      <input
+                        type="text"
+                        value={settingsSquareLocationId}
+                        onChange={(e) => setSettingsSquareLocationId(e.target.value)}
+                        placeholder="e.g. LXXXXXXXXXXXX"
+                        className={`w-full rounded-xl px-3 py-2 text-xs font-mono border focus:outline-none focus:border-amber-500 transition-colors ${
+                          theme === 'light' ? 'bg-white border-stone-300 text-stone-900' : 'bg-slate-900 border-slate-800 text-white'
+                        }`}
+                      />
+                      <p className={`text-[10px] mt-1 ${theme === 'light' ? 'text-stone-500' : 'text-stone-400'}`}>Found under Square Dashboard &gt; Locations &gt; Location Details.</p>
+                    </div>
+
+                    <div className="pt-1">
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold">
+                        <input
+                          type="checkbox"
+                          checked={settingsSquareAutoSend}
+                          onChange={(e) => setSettingsSquareAutoSend(e.target.checked)}
+                          className="w-4 h-4 rounded text-amber-500"
+                        />
+                        <span>Auto-send all confirmed QR orders to Square POS</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Actions & Developer Quick Start Guide */}
+                  <div className="space-y-4">
+                    {/* Action Hub */}
+                    <div className={`p-4 rounded-2xl border space-y-3 ${
+                      theme === 'light' ? 'bg-stone-50 border-stone-200' : 'bg-slate-950 border-slate-800'
+                    }`}>
+                      <h4 className="font-extrabold text-amber-600 dark:text-amber-500 text-xs flex items-center gap-1.5 uppercase tracking-wider">
+                        <span>⚡</span> <span>Integration Diagnostics & Sync</span>
+                      </h4>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          disabled={squareTesting}
+                          onClick={handleTestSquareConnection}
+                          className="w-full bg-stone-800 hover:bg-stone-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          <span>{squareTesting ? '⏳ Testing...' : '⚡ Test Connection'}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleSendTestSquareOrder}
+                          className="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                        >
+                          <span>🧪 Send Test Order ($39.50)</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={squareSyncing}
+                          onClick={handleSyncSquareCatalog}
+                          className="w-full sm:col-span-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 text-white font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          <span>{squareSyncing ? '⏳ Importing from Square...' : '🔄 Import Dishes from Square Catalog'}</span>
+                        </button>
+                      </div>
+
+                      <div className="pt-2 border-t border-stone-800 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={handleSaveSettings}
+                          className="bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black px-5 py-2.5 rounded-xl text-xs shadow hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                        >
+                          💾 Save Square Settings
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Step-by-Step Setup Guide */}
+                    <div className={`p-4 rounded-2xl border text-xs space-y-2 ${
+                      theme === 'light' ? 'bg-amber-50/60 border-amber-200 text-stone-800' : 'bg-slate-950 border-amber-900/40 text-stone-300'
+                    }`}>
+                      <h5 className="font-black text-amber-600 dark:text-amber-500 flex items-center gap-1.5">
+                        <span>📖</span> <span>How to obtain Square API Keys (2 Minutes):</span>
+                      </h5>
+                      <ol className="list-decimal list-inside space-y-1 text-[11px] leading-relaxed">
+                        <li>Log in to <a href="https://developer.squareup.com" target="_blank" rel="noreferrer" className="text-amber-600 dark:text-amber-400 underline font-bold">Square Developer Dashboard</a>.</li>
+                        <li>Click <strong>+ Plus</strong> to create an app named <em>SmartMenu AU</em>.</li>
+                        <li>Under <strong>Credentials</strong>, copy your <strong>Application ID</strong> and <strong>Access Token</strong> (Sandbox or Production).</li>
+                        <li>Under <strong>Locations</strong>, copy your <strong>Location ID</strong> and paste here.</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Australian Multi-POS Middleware Ecosystem Banner */}
+                <div className={`p-4 rounded-2xl border flex flex-wrap justify-between items-center gap-3 text-xs ${
+                  theme === 'light' ? 'bg-stone-50 border-stone-200 text-stone-900' : 'bg-slate-950 border-slate-800 text-stone-200'
+                }`}>
+                  <div className="space-y-0.5">
+                    <h5 className={`font-extrabold text-xs flex items-center gap-2 ${theme === 'light' ? 'text-stone-950' : 'text-stone-300'}`}>
+                      <span>🇦🇺</span> <span>Other Australian POS Systems (Doshii / Lightspeed / OrderMate)</span>
+                    </h5>
+                    <p className={`text-[11px] ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}>
+                      Looking to connect to Lightspeed (Kounta), SENPOS, H&L, or IdealPOS? SmartMenu is architected for Doshii middleware connection.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] bg-stone-800 text-amber-400 font-black px-2.5 py-1 rounded-lg border border-stone-700">
+                      Doshii Ready
+                    </span>
+                    <span className="text-[10px] bg-stone-800 text-teal-400 font-black px-2.5 py-1 rounded-lg border border-stone-700">
+                      Lightspeed Ready
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
