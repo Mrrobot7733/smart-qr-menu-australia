@@ -73,20 +73,45 @@
       color: #1c1917 !important;
     }
     .theme-light .bg-\[\#161311\],
+    .theme-light .bg-\[\#151210\],
+    .theme-light .bg-\[\#14110e\],
     .theme-light .bg-\[\#14110f\],
     .theme-light .bg-\[\#181411\],
+    .theme-light .bg-\[\#181512\],
     .theme-light .bg-\[\#1c1815\],
     .theme-light .bg-\[\#100e0c\],
     .theme-light .bg-\[\#1e1916\],
+    .theme-light .bg-\[\#201b17\],
     .theme-light .bg-\[\#241d18\],
     .theme-light .bg-\[\#261e18\],
     .theme-light .bg-\[\#1c1714\],
+    .theme-light .bg-\[\#120f0d\],
+    .theme-light .bg-\[\#2c1a0e\],
+    .theme-light .bg-\[\#20150d\],
+    .theme-light .bg-\[\#160f09\],
+    .theme-light .bg-\[\#102419\],
+    .theme-light .bg-\[\#26180e\],
+    .theme-light .bg-\[\#0b1b2b\],
+    .theme-light .bg-\[\#102942\],
     .theme-light .bg-stone-900,
     .theme-light .bg-slate-900 {
       background-color: #ffffff !important;
       color: #1c1917 !important;
       border-color: #e7e5e4 !important;
-      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03) !important;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+    }
+    .theme-light .dish-card,
+    .theme-light .group.bg-\[\#181411\],
+    .theme-light .group.bg-\[\#151210\] {
+      background-color: #ffffff !important;
+      border-color: #e7e5e4 !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    }
+    .theme-light .dish-card:hover,
+    .theme-light .group.bg-\[\#181411\]:hover,
+    .theme-light .group.bg-\[\#151210\]:hover {
+      border-color: #f59e0b !important;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.12) !important;
     }
     .theme-light .bg-stone-800,
     .theme-light .bg-slate-800 {
@@ -94,16 +119,18 @@
       color: #1c1917 !important;
       border-color: #e7e5e4 !important;
     }
+    .theme-light h1, .theme-light h2, .theme-light h3, .theme-light h4, .theme-light h5,
     .theme-light .text-white,
     .theme-light .text-stone-100,
     .theme-light .text-stone-200 {
       color: #1c1917 !important;
     }
+    .theme-light p,
     .theme-light .text-stone-300,
     .theme-light .text-stone-400,
     .theme-light .text-slate-300,
     .theme-light .text-slate-400 {
-      color: #57534e !important;
+      color: #44403c !important;
     }
     .theme-light .border-stone-800,
     .theme-light .border-stone-700,
@@ -124,15 +151,14 @@
     }
     .theme-light .bg-black\/60,
     .theme-light .bg-black\/50,
-    .theme-light .bg-black\/40,
-    .theme-light .bg-black\/80 {
+    .theme-light .bg-black\/40 {
       background-color: #f5f3ee !important;
       color: #1c1917 !important;
     }
     .theme-light .text-amber-300,
     .theme-light .text-amber-400,
     .theme-light .text-orange-400 {
-      color: #b45309 !important;
+      color: #d97706 !important;
     }
     .theme-light .bg-amber-950,
     .theme-light .bg-amber-950\/60,
@@ -161,6 +187,30 @@
       background-color: #dbeafe !important;
       color: #1e40af !important;
       border-color: #bfdbfe !important;
+    }
+    /* Retain high-contrast text on badges and gradient buttons */
+    .theme-light .bg-gradient-to-r,
+    .theme-light [class*="from-amber"],
+    .theme-light [class*="from-orange"],
+    .theme-light .bg-amber-500,
+    .theme-light .bg-amber-400 {
+      color: #1c1917 !important;
+    }
+    .theme-light .bg-black\/80,
+    .theme-light .bg-black\/75 {
+      background-color: rgba(0, 0, 0, 0.85) !important;
+    }
+    .theme-light .bg-black\/80 .text-red-400,
+    .theme-light .bg-black\/75 .text-red-400 {
+      color: #f87171 !important;
+    }
+    .theme-light .bg-black\/80 .text-amber-300,
+    .theme-light .bg-black\/75 .text-amber-300 {
+      color: #fcd34d !important;
+    }
+    .theme-light .bg-black\/80 .text-emerald-300,
+    .theme-light .bg-black\/75 .text-emerald-300 {
+      color: #6ee7b7 !important;
     }
 
     @media screen {
@@ -1576,27 +1626,27 @@
                   return (
                     <div
                       onClick={() => openItemDetail(special)}
-                      className="bg-gradient-to-r from-[#0b1b2b] via-[#102942] to-[#0b1b2b] border border-cyan-400/50 rounded-2xl p-2.5 flex items-center justify-between gap-3 shadow-lg cursor-pointer active:scale-[0.99] transition-all hover:border-cyan-400/80"
+                      className="bg-gradient-to-r from-[#0b1b2b] via-[#102942] to-[#0b1b2b] border border-cyan-400/60 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-lg cursor-pointer active:scale-[0.99] transition-all hover:border-cyan-400"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0">
                         <img
                           src={special.image}
                           alt={special.name}
-                          className="w-12 h-12 rounded-xl object-cover flex-shrink-0 border border-cyan-400/30 shadow bg-black/40"
+                          className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border border-cyan-400/40 shadow bg-black/40"
                         />
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[9px] uppercase font-black tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-1.5 py-0.5 rounded">
+                            <span className="text-[9px] uppercase font-black tracking-wider bg-cyan-500/25 text-cyan-200 border border-cyan-400/50 px-1.5 py-0.5 rounded">
                               👨‍🍳 Chef's Pick
                             </span>
                           </div>
-                          <h3 className="font-extrabold text-white text-xs truncate mt-0.5">{special.name}</h3>
-                          <p className="text-[10px] text-cyan-200/70 truncate">{special.description}</p>
+                          <h3 className="font-extrabold text-white text-xs sm:text-sm truncate mt-0.5">{special.name}</h3>
+                          <p className="text-xs text-cyan-100/90 truncate leading-snug">{special.description}</p>
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0 pl-1">
-                        <span className="text-xs font-black text-cyan-300 block font-mono">${special.price.toFixed(2)}</span>
-                        <span className="text-[9px] text-stone-950 bg-cyan-400 hover:bg-cyan-300 font-black px-2 py-0.5 rounded-lg shadow-sm">
+                        <span className="text-sm font-black text-cyan-300 block font-mono">${special.price.toFixed(2)} AUD</span>
+                        <span className="text-[10px] text-stone-950 bg-cyan-400 hover:bg-cyan-300 font-black px-2.5 py-1 rounded-lg shadow-sm inline-block mt-0.5">
                           + Add
                         </span>
                       </div>
@@ -1632,28 +1682,28 @@
                 {/* Compact Search Bar & Dietary Filter */}
                 <div className="flex gap-2 items-center">
                   <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-xs">🔍</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-xs">🔍</span>
                     <input
                       type="text"
                       value={search}
                       onChange={e => setSearch(e.target.value)}
-                      placeholder="Search menu..."
-                      className="w-full bg-[#14110e] border border-stone-800 rounded-xl pl-8 pr-7 py-2 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-amber-500"
+                      placeholder="Search dishes, burgers, beers..."
+                      className="w-full bg-[#181411] border border-stone-800 rounded-xl pl-8 pr-7 py-2 text-xs text-white placeholder-stone-400 focus:outline-none focus:border-amber-500 shadow-sm"
                     />
                     {search && (
-                      <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 font-bold text-xs">✕</button>
+                      <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-white font-bold text-xs">✕</button>
                     )}
                   </div>
 
                   {/* Micro Filter Chips (GF / Veg) */}
-                  <div className="flex gap-1">
+                  <div className="flex gap-1.5">
                     <button
                       type="button"
                       onClick={() => setFilter(f => f === 'gf' ? 'all' : 'gf')}
-                      className={`px-2 py-2 rounded-xl text-[11px] font-black transition-all ${
+                      className={`px-2.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                         filter === 'gf'
-                          ? 'bg-amber-400 text-stone-950 shadow'
-                          : 'bg-[#14110e] text-stone-400 border border-stone-800'
+                          ? 'bg-amber-400 text-stone-950 shadow-md ring-1 ring-amber-400'
+                          : 'bg-[#181411] text-stone-300 border border-stone-800 hover:border-stone-700 hover:text-white'
                       }`}
                       title="Gluten Free"
                     >
@@ -1662,10 +1712,10 @@
                     <button
                       type="button"
                       onClick={() => setFilter(f => f === 'veg' ? 'all' : 'veg')}
-                      className={`px-2 py-2 rounded-xl text-[11px] font-black transition-all ${
+                      className={`px-2.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                         filter === 'veg'
-                          ? 'bg-emerald-400 text-stone-950 shadow'
-                          : 'bg-[#14110e] text-stone-400 border border-stone-800'
+                          ? 'bg-emerald-400 text-stone-950 shadow-md ring-1 ring-emerald-400'
+                          : 'bg-[#181411] text-stone-300 border border-stone-800 hover:border-stone-700 hover:text-white'
                       }`}
                       title="Vegetarian"
                     >
@@ -1678,13 +1728,13 @@
                 <div className="flex gap-1.5 overflow-x-auto pb-1 hide-scrollbar -mx-3.5 px-3.5">
                   <button
                     onClick={() => setSelCat('all')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap flex-shrink-0 transition-all ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-black whitespace-nowrap flex-shrink-0 transition-all cursor-pointer ${
                       selCat === 'all'
-                        ? 'bg-amber-500 text-stone-950 font-black shadow-md'
-                        : 'bg-[#14110e] text-stone-400 border border-stone-800 hover:text-white'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black shadow-md'
+                        : 'bg-[#181411] text-stone-300 border border-stone-800 hover:border-stone-700 hover:text-white'
                     }`}
                   >
-                    All ({items.length})
+                    ✨ All Dishes ({items.length})
                   </button>
                   {categories.map(c => {
                     const count = items.filter(it => it.categoryId === c.id).length;
@@ -1692,10 +1742,10 @@
                       <button
                         key={c.id}
                         onClick={() => setSelCat(c.id)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex-shrink-0 transition-all ${
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex-shrink-0 transition-all cursor-pointer ${
                           selCat === c.id
-                            ? 'bg-amber-500 text-stone-950 font-black shadow-md'
-                            : 'bg-[#14110e] text-stone-400 border border-stone-800 hover:text-white'
+                            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black shadow-md'
+                            : 'bg-[#181411] text-stone-300 border border-stone-800 hover:border-stone-700 hover:text-white'
                         }`}
                       >
                         {c.name} ({count})
@@ -1704,22 +1754,22 @@
                   })}
                 </div>
 
-                {/* Dishes Cards Grid (Optimized Compact Mobile Layout) */}
-                <div className="grid grid-cols-1 gap-2.5">
+                {/* Dishes Cards Grid (High Contrast & Crystal Clear Layout) */}
+                <div className="grid grid-cols-1 gap-3">
                   {filtered.map(it => {
                     const inCartCount = getItemCartQty(it.id);
                     return (
                       <div
                         key={it.id}
                         onClick={() => it.isAvailable && openItemDetail(it)}
-                        className={`group bg-[#151210] border rounded-2xl p-2.5 sm:p-3 flex gap-3 cursor-pointer transition-all active:scale-[0.99] shadow-md ${
+                        className={`group dish-card bg-[#181411] border rounded-2xl p-3 sm:p-3.5 flex gap-3.5 cursor-pointer transition-all active:scale-[0.99] shadow-md ${
                           it.isAvailable
-                            ? inCartCount > 0 ? 'border-amber-500/60 shadow-amber-950/20' : 'border-stone-800/90 hover:border-stone-700'
+                            ? inCartCount > 0 ? 'border-amber-500/80 shadow-amber-950/30 ring-1 ring-amber-500/30' : 'border-stone-800/90 hover:border-stone-700'
                             : 'border-red-900/40 opacity-60'
                         }`}
                       >
                         {/* Food Image */}
-                        <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-stone-900 flex-shrink-0 border border-stone-800">
+                        <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-stone-950 flex-shrink-0 border border-stone-800/80 shadow-inner">
                           <img
                             src={it.image}
                             alt={it.name}
@@ -1727,38 +1777,38 @@
                             loading="lazy"
                           />
                           {/* Micro Badges */}
-                          <div className="absolute top-1 left-1 flex flex-col gap-0.5">
-                            {it.isGF && <span className="bg-black/75 text-amber-300 text-[8px] font-black px-1 py-0.2 rounded">GF</span>}
-                            {it.isVegetarian && <span className="bg-black/75 text-emerald-300 text-[8px] font-black px-1 py-0.2 rounded">VEG</span>}
+                          <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
+                            {it.isGF && <span className="bg-black/85 backdrop-blur-sm text-amber-300 border border-amber-500/40 text-[9px] font-black px-1.5 py-0.5 rounded shadow">GF</span>}
+                            {it.isVegetarian && <span className="bg-black/85 backdrop-blur-sm text-emerald-300 border border-emerald-500/40 text-[9px] font-black px-1.5 py-0.5 rounded shadow">VEG</span>}
                           </div>
                           {!it.isAvailable && (
-                            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center text-red-400 font-black text-[10px]">
+                            <div className="absolute inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center text-red-400 font-black text-xs tracking-wider">
                               SOLD OUT
                             </div>
                           )}
                         </div>
 
                         {/* Dish Details */}
-                        <div className="flex-1 flex flex-col justify-between min-w-0">
+                        <div className="flex-1 flex flex-col justify-between min-w-0 py-0.5">
                           <div>
-                            <h3 className="font-extrabold text-white text-xs sm:text-sm leading-snug group-hover:text-amber-400 transition-colors truncate">
+                            <h3 className="font-extrabold text-white text-sm sm:text-base leading-snug group-hover:text-amber-400 transition-colors">
                               {it.name}
                             </h3>
-                            <p className="text-[11px] text-stone-400 line-clamp-1 mt-0.5 leading-tight">{it.description}</p>
+                            <p className="text-xs text-stone-300 line-clamp-2 mt-1 leading-relaxed">{it.description}</p>
                           </div>
 
-                          <div className="flex justify-between items-center pt-1 mt-1 border-t border-stone-800/80">
+                          <div className="flex justify-between items-center pt-2 mt-1 border-t border-stone-800/80">
                             <div>
                               <span className="font-black text-amber-400 text-sm sm:text-base font-mono">
-                                ${it.price.toFixed(2)}
+                                ${it.price.toFixed(2)} AUD
                               </span>
                             </div>
 
                             {/* Quick Add / Qty Badge */}
                             {inCartCount > 0 ? (
-                              <div className="flex items-center gap-1.5 bg-amber-500/20 border border-amber-500/40 px-2.5 py-1 rounded-xl">
+                              <div className="flex items-center gap-1.5 bg-amber-500/20 border border-amber-500/50 px-3 py-1 rounded-xl shadow-sm">
                                 <span className="text-xs font-black text-amber-400">{inCartCount} in order</span>
-                                <span className="text-[10px] text-amber-300">Edit</span>
+                                <span className="text-[10px] text-amber-300 font-bold">Edit →</span>
                               </div>
                             ) : (
                               <button
@@ -1767,7 +1817,7 @@
                                   openItemDetail(it);
                                 }}
                                 disabled={!it.isAvailable}
-                                className="bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs px-3 py-1 rounded-xl shadow transition-all active:scale-95 flex items-center gap-1"
+                                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-stone-950 font-black text-xs px-3.5 py-1.5 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
                               >
                                 <span>+ Add</span>
                               </button>
@@ -1810,48 +1860,48 @@
           {/* Item Customization Bottom-Sheet Modal */}
           {selItem && (
             <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-              <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-t-[32px] sm:rounded-3xl p-5 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-10">
+              <div className="w-full max-w-lg bg-[#181411] border border-stone-800 rounded-t-[32px] sm:rounded-3xl p-5 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-10">
                 
                 {/* Close Handle & Hero Image */}
                 <div className="relative">
-                  <div className="w-12 h-1 bg-slate-700 rounded-full mx-auto mb-3 sm:hidden"></div>
-                  <div className="w-full h-44 rounded-2xl overflow-hidden bg-slate-950 relative shadow-inner">
+                  <div className="w-12 h-1 bg-stone-700 rounded-full mx-auto mb-3 sm:hidden"></div>
+                  <div className="w-full h-48 rounded-2xl overflow-hidden bg-stone-950 relative shadow-inner border border-stone-800">
                     <img src={selItem.image} alt={selItem.name} className="w-full h-full object-cover" />
                     <button
                       onClick={() => setSelItem(null)}
-                      className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/60 backdrop-blur-md text-white font-black text-xs flex items-center justify-center shadow-lg"
+                      className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/70 backdrop-blur-md text-white font-black text-xs flex items-center justify-center shadow-lg hover:bg-black/90 cursor-pointer"
                     >
                       ✕
                     </button>
                     <div className="absolute bottom-2.5 left-2.5 flex gap-1.5">
-                      {selItem.isGF && <span className="bg-amber-950/90 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded shadow">🌾 Gluten Free</span>}
-                      {selItem.isVegetarian && <span className="bg-emerald-950/90 text-emerald-300 text-[10px] font-black px-2 py-0.5 rounded shadow">🌱 Vegetarian</span>}
+                      {selItem.isGF && <span className="bg-black/85 backdrop-blur-sm text-amber-300 border border-amber-500/40 text-[10px] font-black px-2 py-0.5 rounded shadow">🌾 Gluten Free</span>}
+                      {selItem.isVegetarian && <span className="bg-black/85 backdrop-blur-sm text-emerald-300 border border-emerald-500/40 text-[10px] font-black px-2 py-0.5 rounded shadow">🌱 Vegetarian</span>}
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-black text-white text-lg sm:text-xl">{selItem.name}</h3>
-                    <span className="font-black text-orange-400 text-lg">${selItem.price.toFixed(2)}</span>
+                  <div className="flex justify-between items-start gap-2">
+                    <h3 className="font-black text-white text-lg sm:text-xl leading-snug">{selItem.name}</h3>
+                    <span className="font-black text-amber-400 text-lg sm:text-xl font-mono">${selItem.price.toFixed(2)} AUD</span>
                   </div>
-                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">{selItem.description}</p>
+                  <p className="text-xs text-stone-300 mt-1 leading-relaxed">{selItem.description}</p>
                 </div>
 
                 {/* Options (e.g., Beer Size: Middy, Schooner, Pint) */}
                 {selItem.options?.map((opt, i) => (
-                  <div key={i} className="space-y-2 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
-                    <label className="font-bold text-xs text-white block uppercase tracking-wider">{opt.name}</label>
+                  <div key={i} className="space-y-2 bg-[#120f0d] p-3.5 rounded-2xl border border-stone-800">
+                    <label className="font-bold text-xs text-amber-300 block uppercase tracking-wider">{opt.name}</label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {opt.choices.map(c => (
                         <button
                           key={c}
                           type="button"
                           onClick={() => setSelectedOptions(p => ({ ...p, [opt.name]: c }))}
-                          className={`p-2.5 rounded-xl text-xs font-bold border transition-all text-center ${
+                          className={`p-2.5 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${
                             selectedOptions[opt.name] === c
-                              ? 'bg-orange-500 text-white border-orange-400 shadow-md'
-                              : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
+                              ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black border-amber-400 shadow-md'
+                              : 'bg-[#1c1815] text-stone-200 border-stone-800 hover:bg-[#25201c]'
                           }`}
                         >
                           {c}
@@ -1863,8 +1913,8 @@
 
                 {/* Add-ons & Extras */}
                 {selItem.extras?.length > 0 && (
-                  <div className="space-y-2 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
-                    <label className="font-bold text-xs text-white block uppercase tracking-wider">Choose Extras & Add-ons</label>
+                  <div className="space-y-2 bg-[#120f0d] p-3.5 rounded-2xl border border-stone-800">
+                    <label className="font-bold text-xs text-amber-300 block uppercase tracking-wider">Choose Extras & Add-ons</label>
                     <div className="space-y-1.5">
                       {selItem.extras.map(e => {
                         const isChecked = selectedExtras.some(x => x.id === e.id);
@@ -1875,11 +1925,11 @@
                               setSelectedExtras(p => isChecked ? p.filter(x => x.id !== e.id) : [...p, e]);
                             }}
                             className={`p-2.5 rounded-xl border flex justify-between items-center text-xs cursor-pointer transition-all ${
-                              isChecked ? 'bg-orange-500/20 border-orange-500 text-white' : 'bg-slate-900 border-slate-800 text-slate-300'
+                              isChecked ? 'bg-amber-500/20 border-amber-500/80 text-amber-200 font-bold' : 'bg-[#1c1815] border-stone-800 text-stone-200'
                             }`}
                           >
                             <span className="font-semibold">{isChecked ? '✓ ' : '+ '}{e.name}</span>
-                            <span className="font-bold text-orange-400">+${e.price.toFixed(2)}</span>
+                            <span className="font-bold text-amber-400 font-mono">+${e.price.toFixed(2)} AUD</span>
                           </label>
                         );
                       })}
@@ -1906,7 +1956,7 @@
                       />
                       <div className="flex-1 min-w-0 pr-1">
                         <p className="font-bold text-white text-xs sm:text-sm truncate leading-snug">{suggestedPairing.name}</p>
-                        <p className="text-[10px] text-stone-400 line-clamp-1 mt-0.5">{suggestedPairing.description || "Selected to complement this dish"}</p>
+                        <p className="text-xs text-stone-300 line-clamp-1 mt-0.5">{suggestedPairing.description || "Selected to complement this dish"}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-amber-400 font-black text-xs sm:text-sm font-mono">
                             +${suggestedPairing.price.toFixed(2)} AUD
@@ -1919,7 +1969,7 @@
                           addToCart(suggestedPairing, 1, {}, [], '', itemDiningOption);
                           showToast(`✨ Added to order: ${suggestedPairing.name}`);
                         }}
-                        className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black px-3 py-2 rounded-xl text-xs whitespace-nowrap transition-all active:scale-95 flex-shrink-0 shadow-lg flex items-center gap-1"
+                        className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black px-3 py-2 rounded-xl text-xs whitespace-nowrap transition-all active:scale-95 flex-shrink-0 shadow-lg flex items-center gap-1 cursor-pointer"
                       >
                         <span>+ Add</span>
                       </button>
@@ -1937,10 +1987,10 @@
                     <button
                       type="button"
                       onClick={() => setItemDiningOption('dine_in')}
-                      className={`py-2.5 px-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                      className={`py-2.5 px-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         itemDiningOption === 'dine_in'
                           ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 border-amber-500 font-black shadow-lg shadow-amber-950/50'
-                          : 'bg-[#120f0d] border-stone-800 text-stone-300 hover:border-amber-500/40'
+                          : 'bg-[#120f0d] border-stone-800 text-stone-200 hover:border-amber-500/40'
                       }`}
                     >
                       <span>🍽️ Dine-In (Table #{activeTable})</span>
@@ -1948,10 +1998,10 @@
                     <button
                       type="button"
                       onClick={() => setItemDiningOption('takeaway')}
-                      className={`py-2.5 px-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                      className={`py-2.5 px-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         itemDiningOption === 'takeaway'
                           ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-stone-950 border-emerald-500 font-black shadow-lg shadow-emerald-950/50'
-                          : 'bg-[#120f0d] border-stone-800 text-stone-300 hover:border-emerald-500/40'
+                          : 'bg-[#120f0d] border-stone-800 text-stone-200 hover:border-emerald-500/40'
                       }`}
                     >
                       <span>🛍️ Takeaway / Packaging</span>
@@ -1967,7 +2017,7 @@
                     value={itemNotes}
                     onChange={(e) => setItemNotes(e.target.value)}
                     placeholder="e.g. Sauce on the side, no onion, extra crispy..."
-                    className="w-full bg-[#120f0d] border border-stone-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-amber-500"
+                    className="w-full bg-[#120f0d] border border-stone-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-stone-400 focus:outline-none focus:border-amber-500"
                   />
                 </div>
 
@@ -3816,7 +3866,7 @@
                               <h4 className="font-bold text-white text-sm truncate">{it.name}</h4>
                               <span className="font-black text-orange-400 text-sm ml-1">${it.price.toFixed(2)} AUD</span>
                             </div>
-                            <p className="text-[11px] text-slate-400 line-clamp-2 mt-0.5">{it.description}</p>
+                            <p className="text-xs text-stone-300 line-clamp-2 mt-0.5">{it.description}</p>
                           </div>
                         </div>
 
