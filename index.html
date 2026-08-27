@@ -3527,20 +3527,34 @@
       const [settingsSundayActive, setSettingsSundayActive] = useState(!!restaurant.isSundayActive);
       const [settingsStripeId, setSettingsStripeId] = useState(restaurant.stripeAccountId || 'acct_demo_australia');
       const [settingsStripeUrl, setSettingsStripeUrl] = useState(restaurant.stripeDashboardUrl || 'https://dashboard.stripe.com/');
-      // Base Domain & QR Custom Link State (AU)
+      const getMenuBasePath = (baseDom = customBaseDomain) => {
+        const origin = (baseDom || '').trim() || window.location.origin;
+        let path = window.location.pathname || '';
+        if (path.endsWith('/index.html')) {
+          path = path.slice(0, -11) + '/menu/';
+        } else if (path.endsWith('/GUIDA_INSTALLAZIONE.html')) {
+          path = path.slice(0, -25) + '/menu/';
+        } else if (!path.endsWith('/')) {
+          path = path + '/menu/';
+        } else if (!path.endsWith('/menu/')) {
+          path = path + 'menu/';
+        }
+        return `${origin}${path}`;
+      };
+
       const [customBaseDomain, setCustomBaseDomain] = useState(() => window.location.origin);
       const [customQrUrl, setCustomQrUrl] = useState(() => {
+        const menuBase = getMenuBasePath();
         const vParam = venueId && venueId !== 'demo' ? `venue=${encodeURIComponent(venueId)}&` : '';
-        return `${window.location.origin}${window.location.pathname}?${vParam}table=1`;
+        return `${menuBase}?${vParam}table=1`;
       });
 
       const generateDefaultTableLink = (targetNum, baseDom = customBaseDomain) => {
-        const origin = (baseDom || '').trim() || window.location.origin;
-        const path = window.location.pathname || '';
+        const menuBase = getMenuBasePath(baseDom);
         const vParam = venueId && venueId !== 'demo' ? `venue=${encodeURIComponent(venueId)}&` : '';
         return targetNum === 'takeaway'
-          ? `${origin}${path}?${vParam}mode=takeaway`
-          : `${origin}${path}?${vParam}table=${targetNum}`;
+          ? `${menuBase}?${vParam}mode=takeaway`
+          : `${menuBase}?${vParam}table=${targetNum}`;
       };
 
       const handleSelectTableForQr = (targetNum) => {
@@ -3828,18 +3842,20 @@
               <button
                 type="button"
                 onClick={() => {
-                  const link = `${window.location.origin}${window.location.pathname}?venue=${venueId}&table=1`;
+                  const menuBase = getMenuBasePath();
+                  const vParam = venueId && venueId !== 'demo' ? `venue=${encodeURIComponent(venueId)}&` : '';
+                  const link = `${menuBase}?${vParam}table=1`;
                   navigator.clipboard.writeText(link);
-                  if (showToast) showToast(`📋 Table 1 Link Copied: ${link}`);
+                  if (showToast) showToast(`📋 Standalone Menu Link Copied: ${link}`);
                 }}
                 className={`font-black px-3.5 py-2.5 rounded-xl text-xs border-2 transition-all flex items-center gap-1 shadow-sm active:scale-95 cursor-pointer ${
                   theme === 'light'
                     ? 'bg-white hover:bg-stone-100 text-stone-900 border-stone-300'
                     : 'bg-slate-800 hover:bg-slate-700 text-white border-slate-700'
                 }`}
-                title="Copy Table 1 menu link for this venue"
+                title="Copy standalone customer menu link for Table 1 (/menu/)"
               >
-                <span>📱 Copy Table 1 Link</span>
+                <span>📱 Copy Standalone Menu Link (/menu/)</span>
               </button>
 
               <button
