@@ -1,0 +1,7 @@
+name = "smartmenu-square-proxy"
+main = "worker.js"
+compatibility_date = "2024-08-21"
+
+# Environment Variables (Optional: Can also be passed dynamically in request payload)
+[vars]
+ENVIRONMENT = "production"

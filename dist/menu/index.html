@@ -447,6 +447,7 @@
     };
 
     // --- Square POS Cloud Integration Service (Australia & Global) ---
+    // --- Square POS Cloud Integration Service (Australia & Global) ---
     const SquarePOSService = {
       getBaseUrl: (env = 'sandbox') => {
         return env === 'production'
@@ -454,10 +455,26 @@
           : 'https://connect.squareupsandbox.com/v2';
       },
 
-      testConnection: async ({ environment = 'sandbox', accessToken, locationId }) => {
+      testConnection: async ({ environment = 'sandbox', accessToken, locationId, proxyUrl }) => {
         if (!accessToken || !locationId) {
           return { success: false, message: 'Please provide both Square Access Token and Location ID' };
         }
+
+        // 1. Try Cloudflare Pages Functions / Secure Backend Proxy First
+        try {
+          const endpoint = proxyUrl || '/api/square/test-connection';
+          const proxyRes = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ environment, accessToken: accessToken.trim(), locationId: locationId.trim() })
+          });
+          if (proxyRes.ok) {
+            const data = await proxyRes.json();
+            return data;
+          }
+        } catch (e) {}
+
+        // 2. Direct Square API Client-Side Fallback
         try {
           const baseUrl = SquarePOSService.getBaseUrl(environment);
           const res = await fetch(`${baseUrl}/locations/${locationId.trim()}`, {
@@ -487,15 +504,31 @@
         } catch (err) {
           return {
             success: false,
-            message: err.message || 'Network error connecting to Square. Check internet or CORS settings.'
+            message: err.message || 'Network error connecting to Square POS.'
           };
         }
       },
 
-      syncCatalog: async ({ environment = 'sandbox', accessToken }) => {
+      syncCatalog: async ({ environment = 'sandbox', accessToken, proxyUrl }) => {
         if (!accessToken) {
           return { success: false, message: 'Square Access Token is required to sync catalog' };
         }
+
+        // 1. Try Cloudflare Pages Functions / Secure Backend Proxy First
+        try {
+          const endpoint = proxyUrl || '/api/square/catalog';
+          const proxyRes = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ environment, accessToken: accessToken.trim() })
+          });
+          if (proxyRes.ok) {
+            const data = await proxyRes.json();
+            return data;
+          }
+        } catch (e) {}
+
+        // 2. Direct Square Catalog API Client-Side Fallback
         try {
           const baseUrl = SquarePOSService.getBaseUrl(environment);
           const res = await fetch(`${baseUrl}/catalog/list?types=ITEM,CATEGORY`, {
@@ -556,11 +589,26 @@
         }
       },
 
-      sendOrder: async ({ environment = 'sandbox', accessToken, locationId, order, venueName = 'SmartMenu Venue' }) => {
+      sendOrder: async ({ environment = 'sandbox', accessToken, locationId, order, venueName = 'SmartMenu Venue', proxyUrl }) => {
         if (!accessToken || !locationId || !order) {
           return { success: false, message: 'Square credentials or order missing' };
         }
 
+        // 1. Try Cloudflare Pages Functions / Secure Backend Proxy First
+        try {
+          const endpoint = proxyUrl || '/api/square/order';
+          const proxyRes = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ environment, accessToken: accessToken.trim(), locationId: locationId.trim(), order, venueName })
+          });
+          if (proxyRes.ok) {
+            const data = await proxyRes.json();
+            return data;
+          }
+        } catch (e) {}
+
+        // 2. Direct Square Orders API Client-Side Fallback
         try {
           const baseUrl = SquarePOSService.getBaseUrl(environment);
           const lineItems = (order.items || []).map(it => {
