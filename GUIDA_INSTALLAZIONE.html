@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart QR Menu Australia — Guida Ufficiale Installazione & Configurazione Cliente</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+    @media print {
+      body { background: white; color: black; padding: 0 !important; }
+      .no-print { display: none !important; }
+      .page-break { page-break-before: always; }
+      .card { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
+    }
+  </style>
+</head>
+<body class="p-4 sm:p-8 max-w-4xl mx-auto">
+
+  <!-- Header CTA Print -->
+  <div class="no-print mb-6 p-4 bg-amber-500 text-stone-950 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-lg">
+    <div>
+      <h2 class="font-black text-base">📄 Guida di Installazione & Onboarding Cliente</h2>
+      <p class="text-xs font-bold">Puoi salvare questa guida direttamente in PDF premendo il pulsante a destra.</p>
+    </div>
+    <button onclick="window.print()" class="bg-stone-950 hover:bg-stone-900 text-amber-400 font-black px-5 py-2.5 rounded-xl text-xs shadow transition-all cursor-pointer">
+      🖨️ Salva come PDF / Stampa
+    </button>
+  </div>
+
+  <!-- Manual Cover / Title -->
+  <div class="bg-gradient-to-br from-stone-900 via-stone-850 to-stone-950 text-white p-8 sm:p-10 rounded-3xl shadow-2xl border-2 border-amber-500/60 mb-8">
+    <div class="flex items-center gap-3 mb-3">
+      <span class="text-3xl">🇦🇺</span>
+      <span class="bg-amber-500 text-stone-950 font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+        Official Deployment Manual
+      </span>
+    </div>
+    <h1 class="text-2xl sm:text-4xl font-black text-amber-400 tracking-tight mb-2">
+      Smart QR Menu Australia
+    </h1>
+    <p class="text-sm sm:text-base text-stone-300 font-medium max-w-2xl leading-relaxed">
+      Guida completa passo-passo per l'installazione presso il cliente: configurazione tavoli, QR code dedicati, schermo cucina/bar (KDS), cassa PIN, suddivisione comande e stampanti termiche 80mm.
+    </p>
+    <div class="mt-6 pt-4 border-t border-stone-800 flex flex-wrap gap-4 text-xs text-stone-400 font-mono">
+      <span>Versione: <strong>2026.1 Enterprise</strong></span>
+      <span>•</span>
+      <span>Target: <strong>Pub, Cafe, Bistro & Restaurant</strong></span>
+      <span>•</span>
+      <span>Conformità: <strong>ATO BAS & GST 10%</strong></span>
+    </div>
+  </div>
+
+  <!-- Table of Contents -->
+  <div class="bg-white border-2 border-stone-200 rounded-3xl p-6 mb-8 shadow-sm">
+    <h3 class="font-black text-base text-stone-950 mb-3 flex items-center gap-2">
+      <span>📑 Indice dei Contenuti</span>
+    </h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold text-stone-700">
+      <a href="#step1" class="p-2 hover:bg-stone-50 rounded-xl flex items-center gap-2 text-amber-700">1. Creazione del Locale Cliente (Multi-Venue)</a>
+      <a href="#step2" class="p-2 hover:bg-stone-50 rounded-xl flex items-center gap-2 text-amber-700">2. Come far vedere SOLO il Menù ai Clienti</a>
+      <a href="#step3" class="p-2 hover:bg-stone-50 rounded-xl flex items-center gap-2 text-amber-700">3. Configurazione Schermo Cucina & Bar (KDS)</a>
+      <a href="#step4" class="p-2 hover:bg-stone-50 rounded-xl flex items-center gap-2 text-amber-700">4. Configurazione Admin & Cassa PIN su Tablet/PC</a>
+      <a href="#step5" class="p-2 hover:bg-stone-50 rounded-xl flex items-center gap-2 text-amber-700">5. Separazione Comande: Cucina vs Bar</a>
+      <a href="#step6" class="p-2 hover:bg-stone-50 rounded-xl flex items-center gap-2 text-amber-700">6. Collegamento Stampanti Termiche (ESC/POS 80mm)</a>
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <section id="step1" class="bg-white border-2 border-stone-200 rounded-3xl p-6 sm:p-8 mb-8 shadow-sm space-y-4">
+    <div class="flex items-center gap-3">
+      <span class="w-8 h-8 rounded-xl bg-amber-500 text-stone-950 font-black flex items-center justify-center text-sm">1</span>
+      <h2 class="text-lg sm:text-xl font-black text-stone-950">Creazione del Locale Cliente (Spazio Isolato Multi-Venue)</h2>
+    </div>
+    <p class="text-xs sm:text-sm text-stone-600 leading-relaxed font-medium">
+      L'applicazione include un motore <strong>Multi-Venue nativo</strong>. Ogni ristorante, bar o pub ha un proprio URL univoco con un database isolato al 100% in memoria locale e broadcast.
+    </p>
+
+    <div class="bg-stone-50 border border-stone-200 p-4 rounded-2xl space-y-2">
+      <h4 class="font-black text-xs text-stone-900 uppercase">Come creare il locale del cliente:</h4>
+      <ol class="list-decimal list-inside text-xs text-stone-700 space-y-1.5 font-medium">
+        <li>Apri il link principale: <code class="bg-white px-2 py-0.5 border rounded font-mono font-bold text-amber-700">https://mrrobot7733.github.io/smart-qr-menu-australia/</code></li>
+        <li>Entra nel pannello Admin e in alto clicca sul pulsante dorato: <strong>`➕ Create / Open Client Venue`</strong>.</li>
+        <li>Digita il nome del locale (es: <code class="bg-white px-1.5 py-0.5 border rounded font-mono text-emerald-800">bondi-bistro</code>, <code class="bg-white px-1.5 py-0.5 border rounded font-mono text-emerald-800">sydney-harbour-cafe</code>).</li>
+        <li>L'app genererà istantaneamente il link dedicato del locale con il parametro <code class="bg-amber-100 text-amber-950 font-mono font-bold px-1.5 py-0.5 rounded">?venue=nome-locale</code>.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section id="step2" class="bg-white border-2 border-stone-200 rounded-3xl p-6 sm:p-8 mb-8 shadow-sm space-y-4">
+    <div class="flex items-center gap-3">
+      <span class="w-8 h-8 rounded-xl bg-amber-500 text-stone-950 font-black flex items-center justify-center text-sm">2</span>
+      <h2 class="text-lg sm:text-xl font-black text-stone-950">Come far vedere SOLO il Menù Cliente (Dopo la scansione del QR)</h2>
+    </div>
+    <p class="text-xs sm:text-sm text-stone-600 leading-relaxed font-medium">
+      I clienti seduti ai tavoli o che ordinano da asporto <strong>non devono e non possono vedere la barra di navigazione Admin o Kitchen</strong>. L'applicazione isola automaticamente l'interfaccia in base al link scansionato dal QR Code.
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+      <div class="bg-amber-50/70 border-2 border-amber-300 p-4 rounded-2xl space-y-1.5">
+        <span class="text-[11px] font-black uppercase text-amber-900 block">🍽️ Link QR per il Tavolo 1:</span>
+        <code class="block text-xs font-mono font-bold bg-white p-2 rounded-xl border border-amber-300 text-amber-950 break-all">
+          https://mrrobot7733.github.io/smart-qr-menu-australia/?venue=bondi-bistro&table=1
+        </code>
+        <p class="text-[11px] text-stone-600 font-medium">
+          Il cliente inquadra il QR con la fotocamera dello smartphone: entra <strong>direttamente nel menu del Tavolo 1</strong>, sceglie i piatti, personalizza gli ingredienti e ordina senza vedere bottoni di amministrazione.
+        </p>
+      </div>
+
+      <div class="bg-emerald-50/70 border-2 border-emerald-300 p-4 rounded-2xl space-y-1.5">
+        <span class="text-[11px] font-black uppercase text-emerald-900 block">🛍️ Link QR per Asporto / Bancone:</span>
+        <code class="block text-xs font-mono font-bold bg-white p-2 rounded-xl border border-emerald-300 text-emerald-950 break-all">
+          https://mrrobot7733.github.io/smart-qr-menu-australia/?venue=bondi-bistro&type=takeaway
+        </code>
+        <p class="text-[11px] text-stone-600 font-medium">
+          QR Code posizionato all'ingresso o sulla vetrina per ordini da asporto con indicazione dell'orario di ritiro desiderato.
+        </p>
+      </div>
+    </div>
+
+    <div class="bg-stone-50 border border-stone-200 p-4 rounded-2xl space-y-2">
+      <h4 class="font-black text-xs text-stone-900 uppercase">Come generare e stampare i QR Code per tutti i tavoli:</h4>
+      <p class="text-xs text-stone-600">
+        Nel pannello Admin, vai nella scheda <strong>`🖨️ Tables & QR Codes`</strong>:
+      </p>
+      <ul class="list-disc list-inside text-xs text-stone-700 space-y-1 font-medium">
+        <li>Troverai la griglia di tutti i tavoli creati (Tavolo 1, 2, 3, Area Esterna, Bancone...).</li>
+        <li>Clicca sul pulsante <strong>`🖨️ Print All QR Table Tents`</strong>: il sistema genera un foglio pronto con tutti i cavalieri da tavolo in formato standard da ritagliare o inserire nei porta-menu in plexiglass.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="page-break"></div>
+
+  <!-- STEP 3 -->
+  <section id="step3" class="bg-white border-2 border-stone-200 rounded-3xl p-6 sm:p-8 mb-8 shadow-sm space-y-4">
+    <div class="flex items-center gap-3">
+      <span class="w-8 h-8 rounded-xl bg-amber-500 text-stone-950 font-black flex items-center justify-center text-sm">3</span>
+      <h2 class="text-lg sm:text-xl font-black text-stone-950">Configurazione Schermo Cucina & Bar (Kitchen KDS)</h2>
+    </div>
+    <p class="text-xs sm:text-sm text-stone-600 leading-relaxed font-medium">
+      In cucina e dietro al bancone bar è sufficiente posizionare un <strong>Tablet (iPad, Android Tablet)</strong> o un <strong>Monitor Touch / All-in-One PC</strong> con il browser aperto sulla schermata KDS.
+    </p>
+
+    <div class="bg-stone-900 text-white p-4 rounded-2xl space-y-2 border-2 border-amber-500/50">
+      <span class="text-xs font-black uppercase text-amber-400">🔗 Link Diretto Schermo Cucina / Bar:</span>
+      <code class="block text-xs font-mono font-bold bg-black/70 p-2.5 rounded-xl border border-stone-800 text-amber-300 break-all">
+        https://mrrobot7733.github.io/smart-qr-menu-australia/?venue=[nome-locale]&view=kitchen
+      </code>
+    </div>
+
+    <div class="space-y-2 text-xs text-stone-700 font-medium">
+      <h4 class="font-black text-stone-950 uppercase">Caratteristiche della Schermata Cucina:</h4>
+      <ul class="list-disc list-inside space-y-1">
+        <li><strong>Aggiornamento in tempo reale</strong>: appena un cliente o la cassa sblocca un ordine, la comanda appare all'istante con avviso acustico.</li>
+        <li><strong>Filtri di visualizzazione</strong>: i cuochi possono cliccare su `👨‍🍳 Kitchen Only` per vedere solo i piatti caldi, mentre i baristi possono cliccare su `🍺 Bar Only` per vedere solo drink e cocktail.</li>
+        <li><strong>Stato avanzamento</strong>: pulsante touch rapido `[ 🟢 Plated / Ready ]` per contrassegnare il piatto pronto.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section id="step4" class="bg-white border-2 border-stone-200 rounded-3xl p-6 sm:p-8 mb-8 shadow-sm space-y-4">
+    <div class="flex items-center gap-3">
+      <span class="w-8 h-8 rounded-xl bg-amber-500 text-stone-950 font-black flex items-center justify-center text-sm">4</span>
+      <h2 class="text-lg sm:text-xl font-black text-stone-950">Configurazione Admin & Cassa PIN sul PC / Tablet del Gestore</h2>
+    </div>
+    <p class="text-xs sm:text-sm text-stone-600 leading-relaxed font-medium">
+      Il gestore e il personale alla cassa accedono al pannello di controllo completo inserendo il link Admin:
+    </p>
+
+    <div class="bg-stone-900 text-white p-4 rounded-2xl space-y-2 border-2 border-amber-500/50">
+      <span class="text-xs font-black uppercase text-amber-400">🔗 Link Diretto Pannello Admin / Cassa:</span>
+      <code class="block text-xs font-mono font-bold bg-black/70 p-2.5 rounded-xl border border-stone-800 text-amber-300 break-all">
+        https://mrrobot7733.github.io/smart-qr-menu-australia/?venue=[nome-locale]&view=admin
+      </code>
+    </div>
+
+    <div class="bg-amber-50 border-2 border-amber-300 p-4 rounded-2xl space-y-2">
+      <h4 class="font-black text-xs text-amber-950 uppercase flex items-center gap-1.5">
+        <span>🔢 Come funziona lo Sblocco Scontrini col PIN alla Cassa:</span>
+      </h4>
+      <ol class="list-decimal list-inside text-xs text-stone-800 space-y-1.5 font-medium">
+        <li>Il cliente ordina dallo smartphone scegliendo <em>"Pay at Counter (Cash / EFTPOS)"</em>.</li>
+        <li>Sullo smartphone del cliente compare un <strong>PIN a 4 cifre</strong> (es: <code class="bg-white px-1.5 py-0.5 border rounded font-mono font-black text-stone-950">#4829</code>).</li>
+        <li>Il cliente va alla cassa: il cassiere digita <strong>4829</strong> oppure clicca sulla card in attesa e preme <strong>`🔓 UNLOCK & REVIEW BILL`</strong>.</li>
+        <li>Il cassiere può applicare sconti manager (0%, 5%, 10%, 20%), aggiungere bevande extra o dividere il conto.</li>
+        <li>Seleziona <strong>Cash</strong> o <strong>EFTPOS</strong> e preme <strong>`✓ Confirm & Send to Kitchen`</strong>: la comanda viene stampata e inviata all'istante ai cuochi!</li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="page-break"></div>
+
+  <!-- STEP 5 -->
+  <section id="step5" class="bg-white border-2 border-stone-200 rounded-3xl p-6 sm:p-8 mb-8 shadow-sm space-y-4">
+    <div class="flex items-center gap-3">
+      <span class="w-8 h-8 rounded-xl bg-amber-500 text-stone-950 font-black flex items-center justify-center text-sm">5</span>
+      <h2 class="text-lg sm:text-xl font-black text-stone-950">Come Dividere gli Ordini: Cucina vs Bar</h2>
+    </div>
+    <p class="text-xs sm:text-sm text-stone-600 leading-relaxed font-medium">
+      Il sistema è progettato per dividere automaticamente le preparazioni in base alla postazione di lavoro assegnata a ciascun articolo.
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="p-4 rounded-2xl border-2 border-orange-200 bg-orange-50/50 space-y-1.5">
+        <h4 class="font-black text-xs text-orange-950 uppercase flex items-center gap-1.5">
+          <span>🍳 Postazione Cucina (`station: 'kitchen'`):</span>
+        </h4>
+        <p class="text-xs text-stone-700">
+          Burger, bistecche, patatine, insalate, piatti caldi. La comanda va direttamente allo schermo e alla stampante della cucina.
+        </p>
+      </div>
+
+      <div class="p-4 rounded-2xl border-2 border-amber-200 bg-amber-50/50 space-y-1.5">
+        <h4 class="font-black text-xs text-amber-950 uppercase flex items-center gap-1.5">
+          <span>🍺 Postazione Bar (`station: 'bar'`):</span>
+        </h4>
+        <p class="text-xs text-stone-700">
+          Birre alla spina, cocktail, vini, soft drink, caffè flat white. La comanda va direttamente allo schermo e alla stampante del bancone bar.
+        </p>
+      </div>
+    </div>
+
+    <div class="bg-stone-50 p-4 rounded-2xl border border-stone-200 space-y-1.5 text-xs text-stone-700">
+      <span class="font-black text-stone-950 uppercase block">Come impostare la stazione per un piatto:</span>
+      <p>
+        Nel pannello Admin, nella scheda <strong>`📋 Menu & Prices`</strong>, modifica qualsiasi piatto e imposta il selettore <strong>Station</strong> su <em>`🍳 Kitchen`</em> o <em>`🍺 Bar / Taproom`</em>.
+      </p>
+    </div>
+  </section>
+
+  <!-- STEP 6 -->
+  <section id="step6" class="bg-white border-2 border-stone-200 rounded-3xl p-6 sm:p-8 mb-8 shadow-sm space-y-4">
+    <div class="flex items-center gap-3">
+      <span class="w-8 h-8 rounded-xl bg-amber-500 text-stone-950 font-black flex items-center justify-center text-sm">6</span>
+      <h2 class="text-lg sm:text-xl font-black text-stone-950">Collegamento Stampanti Termiche (ESC/POS 80mm)</h2>
+    </div>
+    <p class="text-xs sm:text-sm text-stone-600 leading-relaxed font-medium">
+      Tutti i documenti generati (comande cucina, comande bar e ricevute fiscali ATO Tax Invoice) sono impaginati su formato standard <strong>80mm Termico</strong>.
+    </p>
+
+    <div class="space-y-3 text-xs text-stone-700 font-medium">
+      <div class="p-4 rounded-2xl border-2 border-stone-200 bg-stone-50 space-y-2">
+        <h4 class="font-black text-stone-950 uppercase">Tipologie di Stampanti Compatibili:</h4>
+        <ul class="list-disc list-inside space-y-1">
+          <li><strong>Stampanti USB / Wi-Fi / Ethernet</strong>: Epson TM-T88, Star Micronics TSP143, Rongta, Munbyn, Bixolon.</li>
+          <li><strong>Stampanti Bluetooth</strong>: Stampanti portatili per comande al tavolo o ordini al banco.</li>
+        </ul>
+      </div>
+
+      <div class="p-4 rounded-2xl border-2 border-amber-300 bg-amber-50 space-y-2">
+        <h4 class="font-black text-amber-950 uppercase">🚀 Trucco Professionale: Stampa Istantanea Senza Finestra di Dialogo (Kiosk Mode):</h4>
+        <p class="text-stone-800">
+          Su Google Chrome (PC o Mac) è possibile abilitare la stampa silenziosa automatica aggiungendo il parametro di avvio:
+        </p>
+        <code class="block font-mono font-bold bg-white p-2 rounded-xl border border-amber-300 text-stone-950">
+          chrome.exe --kiosk-printing "https://mrrobot7733.github.io/smart-qr-menu-australia/?venue=nome-locale&view=admin"
+        </code>
+        <p class="text-stone-800">
+          In questo modo, quando si clicca su <em>Print Docket</em> o <em>Print Tax Invoice</em>, la stampante termica stampa all'istante senza mostrare la schermata di anteprima di Windows/Mac!
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <div class="text-center py-6 text-xs text-stone-500 font-medium border-t border-stone-200 space-y-1">
+    <p><strong>Smart QR Menu Australia Enterprise Edition</strong> • ATO Compliant & Multi-Venue Ready</p>
+    <p>Repository: <a href="https://github.com/mrrobot7733/smart-qr-menu-australia" class="underline text-amber-700">github.com/mrrobot7733/smart-qr-menu-australia</a></p>
+  </div>
+
+</body>
+</html>
