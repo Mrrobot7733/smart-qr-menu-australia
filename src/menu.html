@@ -325,7 +325,18 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useRef, useMemo, createContext, useContext } = React;
+    // 🛡️ SMARTMENU ENTERPRISE DOMAIN LOCK & SECURITY GUARD
+    (function(){
+      var _0xauth = ['smartmenu.au', 'www.smartmenu.au', 'mrrobot7733.github.io', 'localhost', '127.0.0.1'];
+      var _0xhost = window.location.hostname;
+      var _0xvalid = _0xauth.some(function(_0xd){ return _0xhost === _0xd || _0xhost.endsWith('.' + _0xd); });
+      if(!_0xvalid){
+        document.documentElement.innerHTML = '<div style="display:flex;height:100vh;align-items:center;justify-content:center;background:#0e0c0a;color:#f59e0b;font-family:sans-serif;font-weight:900;text-align:center;padding:24px;"><div><div style="font-size:40px;margin-bottom:12px;">🔒</div><h2 style="font-size:22px;margin:0 0 8px 0;letter-spacing:1px;">LICENSE ERROR: UNLICENSED DOMAIN</h2><p style="color:#a8a29e;font-size:13px;max-width:420px;line-height:1.5;margin:0 auto;">This proprietary Smart QR Menu software is registered exclusively to <strong>smartmenu.au</strong>.<br/>Unauthorized distribution, cloning, or hosting is strictly prohibited.</p></div></div>';
+        throw new Error("UNAUTHORIZED DOMAIN: Execution halted by SmartMenu Security Guard.");
+      }
+    })();
+
+    const { useState, useEffect, useRef, useMemo, useCallback, createContext, useContext } = React;
 
     // --- Web Audio Synthesizer (Zero-delay Chimes) ---
     let audioCtx = null;
