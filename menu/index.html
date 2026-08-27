@@ -454,6 +454,7 @@
       cardSurchargeRate: 0.015, // 1.5% Card Processing Surcharge (standard in AU)
       sundaySurchargeRate: 0.10, // 10% Sunday Surcharge (optional)
       isSundayActive: false,
+      tableSessionTimeoutHours: 2, // 2 Hours session timeout (prevents ghost orders after leaving venue)
       stripeAccountId: "acct_demo_australia",
       stripeDashboardUrl: "https://dashboard.stripe.com/"
     };
@@ -1338,9 +1339,158 @@
         setSelItem(null);
       };
 
-      const getItemCartQty = (itemId) => {
-        return cart.filter(c => c.itemId === itemId).reduce((s, i) => s + i.quantity, 0);
+      // --- Table QR Session Expiry & Anti-Ghost Order Engine ---
+      const [isSessionExpired, setIsSessionExpired] = useState(false);
+
+      useEffect(() => {
+        // Only enforce session timeout for dine-in tables if timeout is > 0
+        const timeoutHours = restaurant.tableSessionTimeoutHours !== undefined ? Number(restaurant.tableSessionTimeoutHours) : 2;
+        if (!timeoutHours || timeoutHours <= 0) {
+          setIsSessionExpired(false);
+          return;
+        }
+
+        const timeoutMs = timeoutHours * 60 * 60 * 1000;
+        const sessionKey = `smartmenu_session_${venueId || 'demo'}_table_${activeTable}`;
+        
+        const now = Date.now();
+        let sessionData = null;
+        try {
+          const raw = localStorage.getItem(sessionKey);
+          if (raw) sessionData = JSON.parse(raw);
+        } catch (e) {}
+
+        // Check if there is an active order in progress (placed recently and not completed)
+        const hasLiveOrder = activeOrder && ['pending_approval', 'pending', 'preparing', 'ready'].includes(activeOrder.status);
+
+        if (!sessionData) {
+          // New session started (QR scan or initial visit)
+          const newSession = { startTime: now, lastActive: now };
+          try {
+            localStorage.setItem(sessionKey, JSON.stringify(newSession));
+          } catch(e) {}
+          setIsSessionExpired(false);
+        } else {
+          const age = now - (sessionData.startTime || now);
+          if (age > timeoutMs && !hasLiveOrder) {
+            // Expired!
+            setIsSessionExpired(true);
+          } else {
+            // Valid session - update lastActive
+            setIsSessionExpired(false);
+            sessionData.lastActive = now;
+            try {
+              localStorage.setItem(sessionKey, JSON.stringify(sessionData));
+            } catch(e) {}
+          }
+        }
+
+        // Periodic check every 30 seconds
+        const timer = setInterval(() => {
+          try {
+            const raw = localStorage.getItem(sessionKey);
+            if (raw) {
+              const data = JSON.parse(raw);
+              const currentAge = Date.now() - (data.startTime || Date.now());
+              const currentHasLiveOrder = activeOrder && ['pending_approval', 'pending', 'preparing', 'ready'].includes(activeOrder.status);
+              if (currentAge > timeoutMs && !currentHasLiveOrder) {
+                setIsSessionExpired(true);
+              }
+            }
+          } catch (e) {}
+        }, 30000);
+
+        return () => clearInterval(timer);
+      }, [venueId, activeTable, restaurant.tableSessionTimeoutHours, activeOrder]);
+
+      const handleRefreshTableSession = () => {
+        const sessionKey = `smartmenu_session_${venueId || 'demo'}_table_${activeTable}`;
+        const newSession = { startTime: Date.now(), lastActive: Date.now() };
+        try {
+          localStorage.setItem(sessionKey, JSON.stringify(newSession));
+        } catch(e) {}
+        setIsSessionExpired(false);
+        if (showToast) showToast(`✓ Table #${activeTable} session renewed!`);
       };
+
+      if (isSessionExpired && orderType === 'dine_in') {
+        return (
+          <div className={`min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 text-center font-sans transition-colors ${
+            theme === 'light' ? 'bg-[#f8f6f2] text-stone-900' : 'bg-[#0e0c0a] text-stone-100'
+          }`}>
+            <div className={`max-w-md w-full rounded-3xl p-6 sm:p-8 border-2 shadow-2xl space-y-5 transition-all ${
+              theme === 'light'
+                ? 'bg-white border-amber-300 text-stone-900 shadow-stone-900/10'
+                : 'bg-[#181411] border-amber-500/50 text-white shadow-2xl'
+            }`}>
+              {/* Icon & Badge */}
+              <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-3xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-3xl sm:text-4xl shadow-lg animate-bounce">
+                ⏳
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="inline-block bg-amber-500 text-stone-950 font-black text-[10px] sm:text-xs px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
+                  {currentTable?.name || `Table #${activeTable}`} Session Ended
+                </span>
+                <h2 className={`font-black text-xl sm:text-2xl ${theme === 'light' ? 'text-stone-950' : 'text-white'}`}>
+                  Table Session Expired
+                </h2>
+                <p className={`text-xs sm:text-sm font-medium leading-relaxed max-w-sm mx-auto ${
+                  theme === 'light' ? 'text-stone-600' : 'text-stone-300'
+                }`}>
+                  For your safety and table turnover, table sessions automatically time out after {restaurant.tableSessionTimeoutHours || 2} hours to prevent accidental orders from outside the venue.
+                </p>
+              </div>
+
+              {/* Callout Box */}
+              <div className={`p-4 rounded-2xl border text-xs text-left space-y-1.5 ${
+                theme === 'light' ? 'bg-amber-50/70 border-amber-200 text-stone-800' : 'bg-[#201a16] border-stone-800 text-stone-300'
+              }`}>
+                <div className="font-bold flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                  <span>📍</span> <span>Are you still dining at {restaurant.name}?</span>
+                </div>
+                <p className="text-[11px] leading-snug">
+                  If you are still at <strong>{currentTable?.name || `Table #${activeTable}`}</strong>, tap the button below to renew your table session and continue ordering drinks or dessert.
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={handleRefreshTableSession}
+                  className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-stone-950 font-black py-3.5 px-4 rounded-2xl text-xs sm:text-sm shadow-xl flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
+                >
+                  <span>🔄 I'm Still at {currentTable?.name || `Table #${activeTable}`} (Renew)</span>
+                </button>
+
+                <div className="flex items-center justify-center gap-4 text-xs font-bold pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOrderType('takeaway');
+                      setIsSessionExpired(false);
+                    }}
+                    className={`hover:underline cursor-pointer ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}
+                  >
+                    🛍️ Switch to Takeaway
+                  </button>
+
+                  <span className="text-stone-400">•</span>
+
+                  <button
+                    type="button"
+                    onClick={toggleTheme}
+                    className={`hover:underline cursor-pointer ${theme === 'light' ? 'text-stone-600' : 'text-stone-400'}`}
+                  >
+                    {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
 
       return (
         <div className={`min-h-screen flex flex-col pb-28 font-sans selection:bg-amber-500 selection:text-stone-950 transition-colors ${
