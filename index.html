@@ -7742,11 +7742,14 @@
         try {
           sessionStorage.setItem(`smartmenu_admin_auth_${venueSlug}`, 'true');
         } catch (e) {}
-        window.location.href = `?venue=${encodeURIComponent(venueSlug)}&view=admin&master_token=${MASTER_PIN}`;
+        const target = `/?venue=${encodeURIComponent(venueSlug)}&view=admin&master_token=${MASTER_PIN}`;
+        window.location.href = target;
+        setTimeout(() => { window.location.reload(); }, 50);
       };
 
       const handleNavigateTo = (url) => {
         window.location.href = url;
+        setTimeout(() => { window.location.reload(); }, 50);
       };
 
       const copyToClipboard = (text, label) => {
@@ -8137,17 +8140,17 @@
                         >
                           📋 Copy
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleNavigateTo(custUrl)}
-                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border cursor-pointer ${
+                        <a
+                          href={custUrl}
+                          onClick={(e) => { e.preventDefault(); handleNavigateTo(custUrl); }}
+                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border cursor-pointer inline-flex items-center gap-1 ${
                             isLight
                               ? 'bg-white hover:bg-stone-100 text-stone-900 border-stone-300'
                               : 'bg-stone-800 hover:bg-stone-700 text-stone-200 border-stone-700'
                           }`}
                         >
-                          ↗ Open
-                        </button>
+                          <span>↗ Open</span>
+                        </a>
                       </div>
                     </div>
 
@@ -8174,17 +8177,17 @@
                         >
                           📋 Copy
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleNavigateTo(kitchUrl)}
-                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border cursor-pointer ${
+                        <a
+                          href={kitchUrl}
+                          onClick={(e) => { e.preventDefault(); handleNavigateTo(kitchUrl); }}
+                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border cursor-pointer inline-flex items-center gap-1 ${
                             isLight
                               ? 'bg-white hover:bg-stone-100 text-stone-900 border-stone-300'
                               : 'bg-stone-800 hover:bg-stone-700 text-stone-200 border-stone-700'
                           }`}
                         >
-                          ↗ Open
-                        </button>
+                          <span>↗ Open</span>
+                        </a>
                       </div>
                     </div>
 
@@ -8211,17 +8214,17 @@
                         >
                           📋 Copy
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleNavigateTo(adminUrl)}
-                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border cursor-pointer ${
+                        <a
+                          href={adminUrl}
+                          onClick={(e) => { e.preventDefault(); handleNavigateTo(adminUrl); }}
+                          className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all border cursor-pointer inline-flex items-center gap-1 ${
                             isLight
                               ? 'bg-white hover:bg-stone-100 text-stone-900 border-stone-300'
                               : 'bg-stone-800 hover:bg-stone-700 text-stone-200 border-stone-700'
                           }`}
                         >
-                          ↗ Open
-                        </button>
+                          <span>↗ Open</span>
+                        </a>
                       </div>
                     </div>
                   </div>
@@ -8231,14 +8234,14 @@
                     isLight ? 'border-stone-200' : 'border-stone-800'
                   }`}>
                     <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleEnterAdminAsMaster(venue.slug)}
+                      <a
+                        href={masterAdmUrl}
+                        onClick={(e) => { e.preventDefault(); handleEnterAdminAsMaster(venue.slug); }}
                         className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-stone-950 font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer active:scale-95 border border-amber-400"
                       >
                         <span>🚀 Enter Admin & Setup Menu</span>
                         <span>→</span>
-                      </button>
+                      </a>
 
                       <button
                         type="button"
