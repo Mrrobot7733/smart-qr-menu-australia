@@ -43,9 +43,10 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- QR Code & Confetti Libraries -->
+  <!-- QR Code, Confetti & Real-Time Cloud MQTT Sync -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
 
   <style>
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -817,7 +818,6 @@
         try { localStorage.setItem('smart_qr_theme_au', val); } catch(e) {}
         if (channel) channel.postMessage({ type: 'THEME', payload: val });
       };
-
       const toggleTheme = () => {
         const next = theme === 'light' ? 'dark' : 'light';
         setTheme(next);
@@ -825,6 +825,22 @@
       };
 
       const channel = useMemo(() => typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(`smart_qr_sync_${venueId}`) : null, [venueId]);
+      const clientId = useMemo(() => `sm_${Math.random().toString(36).substr(2, 9)}`, []);
+
+      const broadcastEvent = useCallback((type, payload) => {
+        if (channel) {
+          channel.postMessage({ type, payload });
+        }
+        if (window.__SM_MQTT_CLIENT__ && window.__SM_MQTT_CLIENT__.connected) {
+          try {
+            window.__SM_MQTT_CLIENT__.publish(window.__SM_MQTT_TOPIC__, JSON.stringify({
+              type,
+              payload,
+              senderId: clientId
+            }), { qos: 1 });
+          } catch (e) {}
+        }
+      }, [channel, clientId]);
 
       useEffect(() => {
         if (!channel) return;
@@ -844,6 +860,72 @@
         channel.addEventListener('message', handler);
         return () => channel.removeEventListener('message', handler);
       }, [channel]);
+
+      // Cross-Device Real-Time Cloud Synchronization (Phone <-> Mac/PC KDS)
+      useEffect(() => {
+        if (typeof mqtt === 'undefined') return;
+        const topic = `smartmenu_au_cloud_${venueId}`;
+        window.__SM_MQTT_TOPIC__ = topic;
+        let client = null;
+
+        try {
+          client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+            keepalive: 60,
+            clientId: `c_${clientId}`,
+            clean: true,
+            reconnectPeriod: 2500
+          });
+
+          client.on('connect', () => {
+            client.subscribe(topic, { qos: 1 });
+          });
+
+          client.on('message', (t, msg) => {
+            if (t !== topic) return;
+            try {
+              const data = JSON.parse(msg.toString());
+              if (!data || data.senderId === clientId) return;
+              const { type, payload } = data;
+
+              if (type === 'NEW_ORDER') {
+                setOrders(p => {
+                  if (p.some(o => o.id === payload.id)) return p;
+                  return [payload, ...p];
+                });
+                if (typeof playSound !== 'undefined' && playSound.kitchenChime) playSound.kitchenChime();
+              } else if (type === 'ORDER_APPROVED') {
+                setOrders(p => p.map(o => o.id === payload.id ? payload : o));
+                if (typeof playSound !== 'undefined' && playSound.kitchenChime) playSound.kitchenChime();
+              } else if (type === 'STATUS') {
+                setOrders(p => p.map(o => o.id === payload.id ? { ...o, status: payload.status } : o));
+              } else if (type === 'CLEAR_ORDERS') {
+                setOrders([]);
+                setActiveOrderId(null);
+              } else if (type === 'CALL') {
+                setServiceCalls(p => {
+                  if (p.some(c => c.id === payload.id)) return p;
+                  return [payload, ...p];
+                });
+                if (typeof playSound !== 'undefined' && playSound.waiterAlert) playSound.waiterAlert();
+              } else if (type === 'RESOLVE') {
+                setServiceCalls(p => p.map(c => c.id === payload.id ? payload : c));
+              } else if (type === 'ITEMS') {
+                setItems(payload);
+              } else if (type === 'TABLES') {
+                setTables(payload);
+              }
+            } catch (err) {}
+          });
+
+          window.__SM_MQTT_CLIENT__ = client;
+        } catch (e) {}
+
+        return () => {
+          if (client) {
+            try { client.end(); } catch (e) {}
+          }
+        };
+      }, [venueId, clientId]);
 
       const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(null), 2800); };
 
@@ -888,54 +970,38 @@
       const clearCart = () => setCart([]);
 
       const submitOrder = ({ paymentMethod, customerName: name, notes, tipAmount = 0, surchargeAmount = 0, splitCount, splitShareAmount, orderType: oType, takeawayTime: tTime }) => {
-        if (cart.length === 0) return null;
-        const hasDineIn = cart.some(i => i.diningOption === 'dine_in');
-        const hasTakeaway = cart.some(i => i.diningOption === 'takeaway');
-        const calculatedType = (hasDineIn && hasTakeaway) ? 'hybrid' : (hasTakeaway ? 'takeaway' : 'dine_in');
-        const finalOrderType = oType || calculatedType;
+        if (cart.length === 0) {
+          showToast('⚠️ Cart is empty!');
+          return null;
+        }
 
-        const subtotal = cart.reduce((s, i) => s + i.totalItemPrice, 0);
-        const totalAmount = subtotal + tipAmount + surchargeAmount;
-        const gstAmount = totalAmount / 11; // 10% GST included (1/11th of total in AU)
+        const isCounter = paymentMethod === 'counter_cash' || paymentMethod === 'counter_eftpos' || paymentMethod === 'counter';
+        const rawItemsSubtotal = cart.reduce((s, i) => s + i.totalItemPrice, 0);
+        const calcGst = Number((rawItemsSubtotal / 11).toFixed(2));
+        const finalSplitCount = splitCount || 1;
+        const total = (rawItemsSubtotal + tipAmount + surchargeAmount) / finalSplitCount;
 
-        // Generate random 3-digit order number (100 - 999) for audible counter calling
-        const existingNums = new Set(orders.map(o => o.orderNumber));
-        let orderNum;
-        let attempts = 0;
-        do {
-          orderNum = Math.floor(100 + Math.random() * 900);
-          attempts++;
-        } while (existingNums.has(orderNum) && attempts < 100);
-
-        let hasBar = false, hasKitchen = false;
-        cart.forEach(c => { if (c.station === 'bar') hasBar = true; else hasKitchen = true; });
-
-        const isCounterPay = paymentMethod === 'counter';
-        const counterPin = isCounterPay ? Math.floor(1000 + Math.random() * 9000).toString() : undefined;
+        const counterPin = Math.floor(1000 + Math.random() * 9000).toString();
 
         const newOrder = {
-          id: `ord-au-${Date.now()}`,
-          orderNumber: orderNum,
-          orderType: finalOrderType,
-          hasDineIn,
-          hasTakeaway,
-          tableNumber: finalOrderType === 'takeaway' ? 'Takeaway' : activeTable,
-          takeawayTime: hasTakeaway ? (tTime || takeawayTime || 'As soon as possible (~15-20 min)') : undefined,
-          customerName: name || customerName || (finalOrderType === 'takeaway' ? 'Pickup Customer' : `Table #${activeTable}`),
+          id: `ord-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+          orderNumber: Math.floor(100 + Math.random() * 900),
+          counterPin: counterPin,
+          venueId: venueId,
+          tableNumber: oType === 'takeaway' ? 'TAKEAWAY' : activeTable,
+          orderType: oType || orderType || 'dine_in',
+          takeawayTime: tTime || takeawayTime || 'ASAP',
+          customerName: name || 'Guest',
           items: [...cart],
-          subtotal,
-          tipAmount,
-          surchargeAmount,
-          totalAmount,
-          gstAmount: Number(gstAmount.toFixed(2)),
-          abn: restaurant.abn,
-          paymentMethod,
-          splitCount: (hasDineIn && !hasTakeaway) ? (splitCount || 1) : 1,
-          splitShareAmount: (hasDineIn && !hasTakeaway) ? (splitShareAmount || totalAmount) : totalAmount,
-          paymentStatus: isCounterPay ? 'pending_counter' : 'paid',
-          status: isCounterPay ? 'pending_approval' : 'new',
-          counterPin,
-          station: hasKitchen && hasBar ? 'both' : (hasBar ? 'bar' : 'kitchen'),
+          subtotal: rawItemsSubtotal,
+          gstAmount: calcGst,
+          tipAmount: tipAmount / finalSplitCount,
+          surchargeAmount: surchargeAmount / finalSplitCount,
+          splitCount: finalSplitCount,
+          totalAmount: total,
+          status: isCounter ? 'pending_approval' : 'new',
+          paymentStatus: isCounter ? 'pending' : 'paid',
+          paymentMethod: paymentMethod || 'online_card',
           notes: notes || '',
           createdAt: new Date().toISOString()
         };
@@ -944,7 +1010,7 @@
         setActiveOrderId(newOrder.id);
         clearCart();
         playSound.orderSuccess();
-        if (channel) channel.postMessage({ type: 'NEW_ORDER', payload: newOrder });
+        broadcastEvent('NEW_ORDER', newOrder);
         return newOrder;
       };
 
@@ -971,7 +1037,7 @@
           playSound.kitchenChime();
         }
         showToast(`✓ Order #${ord.orderNumber} (PIN ${ord.counterPin}) confirmed & sent to kitchen!`);
-        if (channel) channel.postMessage({ type: 'ORDER_APPROVED', payload: updated });
+        broadcastEvent('ORDER_APPROVED', updated);
         return { success: true, order: updated };
       };
 
@@ -983,7 +1049,7 @@
           setActiveOrderId(null);
         }
         showToast(`Order #${ord ? ord.orderNumber : ''} cancelled and voided`);
-        if (channel) channel.postMessage({ type: 'STATUS', payload: { id: orderId, status: 'cancelled' } });
+        broadcastEvent('STATUS', { id: orderId, status: 'cancelled' });
       };
 
       const sendServiceCall = (type = 'call_waiter') => {
@@ -997,19 +1063,19 @@
         };
         setServiceCalls(p => [call, ...p]);
         showToast('🔔 Waiter has been called to your table!');
-        if (channel) channel.postMessage({ type: 'CALL', payload: call });
+        broadcastEvent('CALL', call);
       };
 
       const resolveServiceCall = (id) => {
         const updated = serviceCalls.map(c => c.id === id ? { ...c, status: 'resolved' } : c);
         setServiceCalls(updated);
-        if (channel) channel.postMessage({ type: 'RESOLVE', payload: updated.find(c => c.id === id) });
+        broadcastEvent('RESOLVE', updated.find(c => c.id === id));
       };
 
       const updateOrderStatus = (id, st) => {
         const updated = orders.map(o => o.id === id ? { ...o, status: st } : o);
         setOrders(updated);
-        if (channel) channel.postMessage({ type: 'STATUS', payload: updated.find(o => o.id === id) });
+        broadcastEvent('STATUS', updated.find(o => o.id === id));
       };
 
       const toggleItemStock = (id) => {
@@ -1017,7 +1083,7 @@
         setItems(updated);
         const it = updated.find(i => i.id === id);
         showToast(it.isAvailable ? `"${it.name}" marked as In Stock` : `"${it.name}" marked as Sold Out (86)`);
-        if (channel) channel.postMessage({ type: 'ITEMS', payload: updated });
+        broadcastEvent('ITEMS', updated);
       };
 
       const toggleItemVisibility = (id) => {
@@ -1025,7 +1091,7 @@
         setItems(updated);
         const it = updated.find(i => i.id === id);
         showToast(it.isVisible !== false ? `"${it.name}" is now visible on menu` : `"${it.name}" hidden from customer menu`);
-        if (channel) channel.postMessage({ type: 'ITEMS', payload: updated });
+        broadcastEvent('ITEMS', updated);
       };
 
       const saveItem = (item) => {
@@ -1039,14 +1105,14 @@
           showToast(`New item "${item.name}" created!`);
         }
         setItems(updated);
-        if (channel) channel.postMessage({ type: 'ITEMS', payload: updated });
+        broadcastEvent('ITEMS', updated);
       };
 
       const deleteItem = (id) => {
         const updated = items.filter(i => i.id !== id);
         setItems(updated);
         showToast(`Item removed from menu`);
-        if (channel) channel.postMessage({ type: 'ITEMS', payload: updated });
+        broadcastEvent('ITEMS', updated);
       };
 
       const saveTable = (table) => {
@@ -1066,7 +1132,7 @@
           showToast(`New table "${newT.name}" added successfully!`);
         }
         setTables(updated);
-        if (channel) channel.postMessage({ type: 'TABLES', payload: updated });
+        broadcastEvent('TABLES', updated);
       };
 
       const deleteTable = (id) => {
@@ -1077,7 +1143,7 @@
         const updated = tables.filter(t => t.id !== id);
         setTables(updated);
         showToast('Table deleted successfully');
-        if (channel) channel.postMessage({ type: 'TABLES', payload: updated });
+        broadcastEvent('TABLES', updated);
       };
 
       const updateRestaurantSettings = (newSettings) => {
@@ -1086,14 +1152,14 @@
           return updated;
         });
         showToast('⚙️ Venue Settings updated!');
-        if (channel) channel.postMessage({ type: 'SETTINGS', payload: newSettings });
+        broadcastEvent('SETTINGS', newSettings);
       };
 
       const clearAllOrders = () => {
         setOrders([]);
         setActiveOrderId(null);
         showToast('🗑️ All orders cleared from memory!');
-        if (channel) channel.postMessage({ type: 'CLEAR_ORDERS' });
+        broadcastEvent('CLEAR_ORDERS');
       };
 
       const resetDemoData = () => {
@@ -1103,7 +1169,7 @@
         setActiveOrderId(null);
         setServiceCalls([]);
         showToast('Menu reset and orders cleared!');
-        if (channel) channel.postMessage({ type: 'RESET_DEMO' });
+        broadcastEvent('RESET_DEMO');
       };
 
       const activeOrder = orders.find(o => o.id === activeOrderId);
