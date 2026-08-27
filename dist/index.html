@@ -1138,7 +1138,21 @@
       const [takeawayTime, setTakeawayTime] = useState('As soon as possible (~15-20 min)');
       const [customerName, setCustomerName] = useState('');
       const [cart, setCart] = useState([]);
+      const [myOrderIds, setMyOrderIds] = useState(() => {
+        try {
+          const raw = localStorage.getItem(`smart_qr_${venueId}_table_${activeTable}_my_orders`);
+          if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return [];
+      });
+
       const [activeOrderId, setActiveOrderId] = useState(null);
+
+      useEffect(() => {
+        if (!activeOrderId && myOrderIds.length > 0) {
+          setActiveOrderId(myOrderIds[0]);
+        }
+      }, [myOrderIds, activeOrderId]);
       const [toastMsg, setToastMsg] = useState(null);
 
       // Visual Theme (Light Day Cafe vs Dark Night Lounge)
@@ -1349,6 +1363,13 @@
 
         setOrders(p => [newOrder, ...p]);
         setActiveOrderId(newOrder.id);
+        setMyOrderIds(prev => {
+          const updated = [newOrder.id, ...prev.filter(id => id !== newOrder.id)];
+          try {
+            localStorage.setItem(`smart_qr_${venueId}_table_${activeTable}_my_orders`, JSON.stringify(updated));
+          } catch (e) {}
+          return updated;
+        });
         clearCart();
         playSound.orderSuccess();
         broadcastEvent('NEW_ORDER', newOrder);
@@ -1559,7 +1580,7 @@
           activeTable, setActiveTable, orderType, setOrderType, takeawayTime, setTakeawayTime,
           customerName, setCustomerName,
           theme, setTheme, toggleTheme,
-          activeOrder, activeOrderId, setActiveOrderId, toastMsg, showToast,
+          activeOrder, activeOrderId, setActiveOrderId, myOrderIds, setMyOrderIds, toastMsg, showToast,
           SquarePOSService
         }}>
           {children}
@@ -1581,8 +1602,19 @@
         customerName, setCustomerName, orderType, setOrderType, takeawayTime, setTakeawayTime,
         addToCart, removeFromCart, updateCartQuantity,
         toggleCartItemDiningOption, submitOrder, sendServiceCall, orders,
-        cancelCounterOrder, setActiveOrderId, theme, toggleTheme
+        cancelCounterOrder, setActiveOrderId, myOrderIds, theme, toggleTheme
       } = useOrderAU();
+
+      const myTableOrders = useMemo(() => {
+        return (orders || []).filter(o => {
+          if (o.status === 'cancelled') return false;
+          if ((myOrderIds || []).includes(o.id)) return true;
+          if (orderType === 'dine_in' && String(o.tableNumber) === String(activeTable)) return true;
+          return false;
+        });
+      }, [orders, myOrderIds, orderType, activeTable]);
+
+      const effectiveActiveOrder = activeOrder || (myTableOrders.length > 0 ? myTableOrders[0] : null);
 
       const currentTable = useMemo(() => {
         return tables?.find(t => String(t.number) === String(activeTable) || t.id === String(activeTable)) || { number: activeTable, name: `Table ${activeTable}`, area: 'Main Bistro Hall' };
@@ -1659,7 +1691,7 @@
       const cardSurcharge = (cartSubtotal + tipAmount) * (restaurant.cardSurchargeRate || 0);
       const cartTotal = cartSubtotal + tipAmount + cardSurcharge;
 
-      const showTracker = isTrackerOpen && activeOrder;
+      const showTracker = isTrackerOpen && (effectiveActiveOrder || myTableOrders.length > 0);
 
       const openItemDetail = (item) => {
         setSelItem(item);
@@ -1852,13 +1884,14 @@
 
               {/* Header Right Actions */}
               <div className="flex items-center gap-1.5 flex-shrink-0">
-                {activeOrder && (
+                {myTableOrders.length > 0 && (
                   <button
                     onClick={() => setIsTrackerOpen(true)}
-                    className="bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 px-2 py-1 rounded-xl text-[11px] font-black flex items-center gap-1 shadow animate-pulse"
+                    className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 text-white font-black px-2.5 py-1 rounded-xl text-[11px] flex items-center gap-1.5 shadow-md animate-pulse cursor-pointer active:scale-95"
+                    title="View all active orders and rounds for this table"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                    <span>#{activeOrder.orderNumber}</span>
+                    <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                    <span>{myTableOrders.length === 1 ? `#${myTableOrders[0].orderNumber}` : `${myTableOrders.length} Orders Live`}</span>
                   </button>
                 )}
                 
@@ -1941,19 +1974,69 @@
               </div>
             )}
 
-            {showTracker && activeOrder ? (
-              /* Live Order Status Tracker (UberEats Style) */
+            {showTracker && (effectiveActiveOrder || myTableOrders.length > 0) ? (() => {
+              const currentOrder = effectiveActiveOrder || myTableOrders[0];
+              const totalSessionSpend = myTableOrders.reduce((s, o) => s + (o.paymentStatus === 'paid' ? o.totalAmount : 0), 0);
+
+              return (
+              /* Live Order Status Tracker (UberEats Style) with Multi-Round Tabs */
               <div className="space-y-4 animate-in fade-in">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <button
                     type="button"
                     onClick={() => setIsTrackerOpen(false)}
-                    className="text-xs font-black text-stone-200 bg-[#1c1815] border border-amber-500/40 px-4 py-2.5 rounded-2xl flex items-center gap-2 hover:bg-[#25201c] active:scale-95 transition-all shadow-lg"
+                    className="text-xs font-black text-stone-200 bg-[#1c1815] border border-amber-500/40 px-4 py-2 rounded-2xl flex items-center gap-2 hover:bg-[#25201c] active:scale-95 transition-all shadow-lg cursor-pointer"
                   >
-                    <span>← Back to Menu ({orderType === 'takeaway' ? '🛍️ Takeaway' : (currentTable?.name || `Table #${activeTable}`)})</span>
+                    <span>➕ Order More Food & Drinks</span>
                   </button>
-                  <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">● Live Status</span>
+                  <span className="text-[10px] text-amber-400 font-black uppercase tracking-wider bg-amber-500/20 px-2.5 py-1 rounded-full border border-amber-500/30">
+                    ● {myTableOrders.length} {myTableOrders.length === 1 ? 'Order Active' : 'Rounds in Session'}
+                  </span>
                 </div>
+
+                {/* Multi-Round Switcher Tabs (If customer placed multiple orders) */}
+                {myTableOrders.length > 1 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 hide-scrollbar">
+                      {myTableOrders.map((ord, idx) => {
+                        const isSelected = ord.id === currentOrder.id;
+                        const roundNum = myTableOrders.length - idx;
+                        return (
+                          <button
+                            key={ord.id}
+                            type="button"
+                            onClick={() => setActiveOrderId(ord.id)}
+                            className={`px-3 py-2 rounded-2xl text-xs font-black whitespace-nowrap transition-all border flex items-center gap-2 cursor-pointer shadow-sm ${
+                              isSelected
+                                ? 'bg-amber-500 text-stone-950 border-amber-400 shadow-md ring-2 ring-amber-400/50 scale-102'
+                                : (theme === 'light' ? 'bg-white text-stone-800 border-stone-300 hover:bg-amber-50' : 'bg-[#1c1815] text-stone-300 border-stone-800 hover:bg-[#25201c]')
+                            }`}
+                          >
+                            <span>Round {roundNum}: #{ord.orderNumber}</span>
+                            <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full font-black ${
+                              ord.status === 'ready'
+                                ? 'bg-emerald-500 text-stone-950'
+                                : ord.status === 'preparing'
+                                ? 'bg-orange-500 text-stone-950 animate-pulse'
+                                : (ord.paymentStatus === 'paid' ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-stone-950')
+                            }`}>
+                              ${ord.totalAmount?.toFixed(2)}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className={`p-2.5 rounded-2xl border flex justify-between items-center text-xs font-bold ${
+                      theme === 'light' ? 'bg-amber-100/70 border-amber-300 text-stone-950' : 'bg-gradient-to-r from-amber-950/40 via-[#201812] to-amber-950/40 border-amber-500/40 text-amber-300'
+                    }`}>
+                      <span>Session Spend ({myTableOrders.length} Rounds):</span>
+                      <span className="font-mono font-black text-sm text-emerald-600 dark:text-emerald-400">
+                        ${totalSessionSpend.toFixed(2)} AUD
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 <div className={`border rounded-3xl p-5 shadow-xl space-y-5 transition-colors ${
                   theme === 'light' ? 'bg-white border-stone-200 shadow-stone-900/5 text-stone-900' : 'bg-gradient-to-b from-[#1c1815] to-[#120f0d] border-amber-900/30 text-white'
@@ -2265,7 +2348,7 @@
                   </div>
                 </div>
               </div>
-            ) : (
+            ); })() : (
               <>
                 {/* Active Order Mini-Tracker Bar (Visible on menu while order is active) */}
                 {activeOrder && (
@@ -2541,6 +2624,34 @@
               </>
             )}
           </main>
+
+          {/* Persistent Live Orders Tracker Pill (When customer placed orders and is browsing menu) */}
+          {myTableOrders.length > 0 && !isTrackerOpen && !isCartOpen && !isCheckoutOpen && !selItem && (
+            <div className={`fixed ${cartCount > 0 ? 'bottom-20' : 'bottom-4'} left-0 right-0 z-40 px-4 max-w-lg mx-auto animate-in slide-in-from-bottom-5`}>
+              <button
+                type="button"
+                onClick={() => setIsTrackerOpen(true)}
+                className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white p-3 sm:p-3.5 rounded-2xl shadow-xl shadow-emerald-950/60 flex justify-between items-center font-black border border-emerald-400/50 hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
+                  <div className="text-left">
+                    <p className="text-[10px] uppercase font-bold text-emerald-100 tracking-wider">
+                      {myTableOrders.length === 1 ? 'Live Order in Kitchen' : `${myTableOrders.length} Live Orders Active`}
+                    </p>
+                    <p className="text-xs font-black leading-none mt-0.5">
+                      {myTableOrders.length === 1 ? `Order #${myTableOrders[0].orderNumber} (Tap to view status & PIN)` : `Tap to view all ${myTableOrders.length} rounds`}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1 bg-black/30 px-3 py-1.5 rounded-xl text-xs font-black text-white shadow-inner">
+                  <span>Track</span>
+                  <span>↗</span>
+                </div>
+              </button>
+            </div>
+          )}
 
           {/* Floating iOS-Style Cart Pill */}
           {cartCount > 0 && !isCartOpen && !isCheckoutOpen && !selItem && (
@@ -3274,7 +3385,7 @@
 
           {/* 🧾 Customer Official ATO Tax Invoice Modal with Direct PDF / Print Export */}
           {viewInvoiceModal && activeOrder && (() => {
-            const ord = activeOrder;
+            const ord = effectiveActiveOrder || (myTableOrders.length > 0 ? myTableOrders[0] : activeOrder);
             const isHybrid = ord.items?.some(i => i.diningOption === 'dine_in') && ord.items?.some(i => i.diningOption === 'takeaway');
             const isTakeawayOnly = ord.orderType === 'takeaway' || (!ord.items?.some(i => i.diningOption === 'dine_in') && ord.items?.some(i => i.diningOption === 'takeaway'));
             const subtotalCalc = ord.items?.reduce((s, i) => s + (i.totalItemPrice || (i.price * i.quantity)), 0) || 0;
@@ -4220,6 +4331,14 @@
         if (next.length === 6) {
           verifyAndUnlockPin(next);
         }
+      };
+
+            const handleAdminLock = () => {
+        setIsAdminAuthenticated(false);
+        try {
+          sessionStorage.removeItem(`smartmenu_admin_auth_${venueId}`);
+        } catch (e) {}
+        if (showToast) showToast('🔒 Admin Session Locked');
       };
 
       const handleAdminPinBackspace = () => {
